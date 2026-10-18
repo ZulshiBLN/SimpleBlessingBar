@@ -25,7 +25,10 @@ globals = {
 -- reported instead of trusted. SlashCmdList is shared by every addon; only our
 -- own entry may be written.
 read_globals = {
-    "C_AddOns", "CreateFrame", "GetLocale", "UnitClass",
+    "C_AddOns", "C_Item", "C_Spell", "C_UnitAuras", "CreateFrame",
+    "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
+    "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
+    "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }
 

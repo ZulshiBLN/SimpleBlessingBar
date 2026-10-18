@@ -43,6 +43,23 @@ function ns.InitDB()
         SimpleBlessingBarGlobalDB.language = nil -- unknown language code
     end
 
+    -- Version 1 held nothing but its version; version 2 adds the fields below. The checks
+    -- that follow create them, so the migration is these checks, and running it twice
+    -- changes nothing.
+    local classes = {}
+    for _, class in ipairs(D.CLASS_ORDER) do classes[class] = true end
+    if type(db.assign) ~= "table" then db.assign = {} end
+    for class, family in pairs(db.assign) do
+        if not classes[class] or not D.BLESSINGS[family] then db.assign[class] = nil end
+    end
+    if not D.AURAS[db.aura] then db.aura = D.DEFAULT_AURA end
+    if type(db.locked) ~= "boolean" then db.locked = false end
+    -- x ~= x is true only for NaN; math.huge passes the type check but is no position
+    local function finite(v) return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge end
+    if type(db.point) ~= "string" or type(db.rel) ~= "string" or not finite(db.x) or not finite(db.y) then
+        db.point, db.rel, db.x, db.y = nil, nil, nil, nil
+    end
+
     db.dbVersion = D.DB_VERSION
 
     for _, fn in ipairs(dbCallbacks) do fn(db) end

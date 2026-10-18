@@ -34,4 +34,5 @@
 Locales.lua
 Data.lua
 Core.lua
+Blessings.lua
 Main.lua
