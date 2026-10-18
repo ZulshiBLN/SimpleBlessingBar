@@ -20,17 +20,6 @@ function ns.Print(msg)
 end
 
 ---------------------------------------------------------------------------
--- Names from the client
----------------------------------------------------------------------------
--- A spell's name from the client is in the client's language. When the addon's language
--- differs, the addon's own translation (checked against Wowhead) is shown instead, so a
--- menu does not mix two languages.
-function ns.LocalName(clientName, key)
-    if clientName and ns.GetLocaleCode() == ns.clientLocale then return clientName end
-    return ns.L[key]
-end
-
----------------------------------------------------------------------------
 -- Secure attributes
 ---------------------------------------------------------------------------
 -- The only way the addon writes a secure attribute. In combat the client refuses the

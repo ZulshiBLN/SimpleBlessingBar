@@ -28,7 +28,7 @@ read_globals = {
     "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CLASS_ICON_TCOORDS", "CreateFrame",
     "UIParent",
     "GameTooltip", "GetCVarBool", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
-    "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell", "MenuUtil",
+    "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }
@@ -40,9 +40,8 @@ read_globals = {
 -- checked alone.
 files["tests/"] = {
     std = "lua51+busted",
-    -- Specs build the mocked world by changing STATE's fields, and wrap a mocked API
-    -- (MenuUtil) to count its calls
-    globals = { "STATE", "MenuUtil" },
+    -- Specs build the mocked world by changing STATE's fields
+    globals = { "STATE" },
     read_globals = {
         "io", "require", "loadfile",
         -- What tests/helpers/mock.lua provides to drive the mocked client
