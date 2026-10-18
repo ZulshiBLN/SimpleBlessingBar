@@ -19,6 +19,40 @@ for _, list in pairs(D.AURAS) do
     for _, id in ipairs(list) do AURA_IDS[id] = true end
 end
 
+-- The highlight ("marching ants" like spell procs in the Retail client), as in
+-- SimpleConjureBar. It sits on its own frame above the button; the animation runs
+-- (OnUpdate) only while the highlight is visible.
+local function AttachAnts(b)
+    local holder = CreateFrame("Frame", nil, b)
+    holder:SetAllPoints()
+    holder:SetFrameLevel(b:GetFrameLevel() + 2)
+
+    local ants = holder:CreateTexture(nil, "OVERLAY")
+    ants:SetTexture(D.ANTS_TEX)
+    ants:SetDesaturated(true)
+    ants:SetBlendMode("ADD")
+    ants:SetVertexColor(D.ANTS_COLOR.r, D.ANTS_COLOR.g, D.ANTS_COLOR.b, D.ANTS_COLOR.a)
+    ants:SetPoint("CENTER")
+    ants:SetSize(SIZE * 1.42, SIZE * 1.42)
+    ants:Hide()
+
+    local frame, timer = 0, 0
+    local function SetFrame(i)
+        local col, row = i % D.ANTS_COLS, math.floor(i / D.ANTS_COLS)
+        ants:SetTexCoord(col * D.ANTS_CELL, (col + 1) * D.ANTS_CELL, row * D.ANTS_CELL, (row + 1) * D.ANTS_CELL)
+    end
+    SetFrame(0)
+
+    b.ants, b.antsHolder = ants, holder
+    b.antsUpdate = function(_, elapsed)
+        timer = timer + elapsed
+        if timer < D.ANTS_STEP then return end
+        frame = (frame + math.floor(timer / D.ANTS_STEP)) % D.ANTS_FRAMES
+        timer = timer % D.ANTS_STEP
+        SetFrame(frame)
+    end
+end
+
 local function NewButton(name, x)
     local b = CreateFrame("Button", name, ns.bar, "SecureActionButtonTemplate")
     b:SetSize(SIZE, SIZE)
@@ -27,11 +61,7 @@ local function NewButton(name, x)
     b:RegisterForClicks("AnyUp", "AnyDown")
     b.icon = b:CreateTexture(nil, "ARTWORK")
     b.icon:SetAllPoints()
-    b.glow = b:CreateTexture(nil, "OVERLAY")
-    b.glow:SetAllPoints()
-    b.glow:SetTexture("Interface\\Buttons\\CheckButtonHilight")
-    b.glow:SetBlendMode("ADD")
-    b.glow:Hide()
+    AttachAnts(b)
     return b
 end
 
@@ -68,8 +98,17 @@ local function OwnAuraUp()
     end
 end
 
-local function SetGlow(b, on)
-    if on then b.glow:Show() else b.glow:Hide() end
+-- Shows or hides a button's highlight and starts or stops its animation
+local function SetAnts(b, shown)
+    if shown == b.antsShown then return end
+    b.antsShown = shown
+    if shown then
+        b.ants:Show()
+        b.antsHolder:SetScript("OnUpdate", b.antsUpdate)
+    else
+        b.ants:Hide()
+        b.antsHolder:SetScript("OnUpdate", nil)
+    end
 end
 
 local function Update()
@@ -77,10 +116,10 @@ local function Update()
     local spell = B.Rank(list)
     SetSpell(aura, spell)
     aura.icon:SetTexture(C_Spell.GetSpellTexture(spell or list[1]))
-    SetGlow(aura, #ns.KnownAuras() > 0 and not OwnAuraUp())
+    SetAnts(aura, #ns.KnownAuras() > 0 and not OwnAuraUp())
 
     local known = IsPlayerSpell(D.RIGHTEOUS_FURY)
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
-    SetGlow(fury, known and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
+    SetAnts(fury, known and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
 end
 table.insert(ns.onRefresh, Update)

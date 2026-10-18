@@ -59,6 +59,8 @@ function Methods:SetText(t) self.text = t end
 function Methods:GetText() return self.text end
 function Methods:IsMouseOver() return false end
 function Methods:GetName() return rawget(self, "name") end
+function Methods:GetFrameLevel() return rawget(self, "level") or 1 end
+function Methods:SetFrameLevel(l) self.level = l end
 function Methods:GetParent() return rawget(self, "parent") end
 
 function NEWOBJ(kind, name, parent)

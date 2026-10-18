@@ -47,7 +47,7 @@ describe("the aura button", function()
         STATE.known = first(D.AURAS.DEVOTION, 1)
         STATE.known[D.AURAS.FIRE[1]] = true
         refresh()
-        local glow = ns.auraButton.glow
+        local glow = ns.auraButton.ants
         assert.is_true(glow:IsShown())
 
         STATE.units.player.auras = { { spellId = D.AURAS.FIRE[1], expirationTime = 0, mine = true } }
@@ -60,21 +60,34 @@ describe("the aura button", function()
         assert.is_true(glow:IsShown())
     end)
 
+    it("animates the marching ants only while they are shown", function()
+        local ns, D = login()
+        local b = ns.auraButton
+        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
+        STATE.known = first(D.AURAS.DEVOTION, 1)
+        refresh()
+        assert.is_true(b.ants:IsShown())
+        assert.are.equal(b.antsUpdate, b.antsHolder:GetScript("OnUpdate"))
+        STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = true } }
+        refresh()
+        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
+    end)
+
     it("does not glow while no aura is known, and keeps its glow in combat", function()
         local ns, D = login()
-        assert.is_false(ns.auraButton.glow:IsShown())
+        assert.is_false(ns.auraButton.ants:IsShown())
 
         STATE.known = first(D.AURAS.DEVOTION, 1)
         refresh()
-        assert.is_true(ns.auraButton.glow:IsShown())
+        assert.is_true(ns.auraButton.ants:IsShown())
         STATE.combat = true
         STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = true } }
         refresh()
         TICK()
-        assert.is_true(ns.auraButton.glow:IsShown())
+        assert.is_true(ns.auraButton.ants:IsShown())
         STATE.combat = false
         FIRE("PLAYER_REGEN_ENABLED")
-        assert.is_false(ns.auraButton.glow:IsShown())
+        assert.is_false(ns.auraButton.ants:IsShown())
     end)
 end)
 
@@ -95,7 +108,7 @@ describe("the Righteous Fury button", function()
         local rf = ns.D.RIGHTEOUS_FURY
         STATE.known[rf] = true
         FIRE("PLAYER_LOGIN")
-        local glow = ns.furyButton.glow
+        local glow = ns.furyButton.ants
         assert.is_true(glow:IsShown())
 
         STATE.units.player.auras = { { spellId = rf, expirationTime = 1800, mine = true } }
@@ -118,7 +131,7 @@ describe("the Righteous Fury button", function()
 
     it("is not highlighted and has no action while it is not learned", function()
         local ns = login()
-        assert.is_false(ns.furyButton.glow:IsShown())
+        assert.is_false(ns.furyButton.ants:IsShown())
         assert.is_nil(ns.furyButton:GetAttribute("type1"))
     end)
 end)

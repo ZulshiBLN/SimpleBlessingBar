@@ -46,6 +46,15 @@ D.SYMBOL_OF_KINGS = 21177
 -- Class buttons appear in this order, each only while the class is in the group
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 
+-- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
+-- 48 px in a 256 px texture, desaturated and tinted
+D.ANTS_TEX    = "Interface\\SpellActivationOverlay\\IconAlertAnts"
+D.ANTS_FRAMES = 22
+D.ANTS_COLS   = 5
+D.ANTS_CELL   = 48 / 256
+D.ANTS_STEP   = 0.01                            -- seconds per frame: SimpleConjureBar's default
+D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's default gold
+
 ---------------------------------------------------------------------------
 -- Defaults
 ---------------------------------------------------------------------------
