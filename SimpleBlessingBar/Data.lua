@@ -52,6 +52,10 @@ D.BUY_LOCK = 3
 -- Class buttons appear in this order, each only while the class is in the group
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 
+-- The bar's default order: the aura and Righteous Fury buttons, then the class buttons as one
+-- block; the order inside the block defaults to D.CLASS_ORDER (Michel, 2026-10-18)
+D.DEFAULT_ORDER = { "AURA", "FURY", "CLASSES" }
+
 -- Demo mode's sample counts per class; a 0 shows a class whose members all have the blessing
 D.DEMO_COUNTS = {
     WARRIOR = 2, PALADIN = 0, HUNTER = 1, ROGUE = 3, PRIEST = 1, SHAMAN = 2, MAGE = 0, WARLOCK = 4, DRUID = 1,

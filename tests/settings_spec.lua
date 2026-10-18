@@ -137,6 +137,26 @@ describe("settings version 5", function()
         assert.are.same(once, SimpleBlessingBarDB)
     end)
 
+    it("repair both orders: unknown keys and doubles out, missing ones appended", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 5,
+            order = { "CLASSES", "BOGUS", "CLASSES", 7 },
+            classOrder = { "MAGE", "DEATHKNIGHT", "MAGE", "WARRIOR" },
+        } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.same({ "CLASSES", "AURA", "FURY" }, db.order)
+        assert.are.same({ "MAGE", "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "WARLOCK", "DRUID" },
+            db.classOrder)
+        for _, bad in ipairs({ "x", 5 }) do
+            ns = addon.load("enUS", { db = { dbVersion = 5, order = bad, classOrder = bad } })
+            ns.InitDB()
+            assert.are.same(D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
+            assert.are_not.equal(ns.D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
+            assert.are.same(D.CLASS_ORDER, SimpleBlessingBarDB.classOrder)
+        end
+    end)
+
     it("clamp and repair damaged supply values", function()
         local ns = addon.load("enUS", { db = { dbVersion = 5,
             symbolWarn = "x", symbolAmount = 500, goldReserve = -3, autoBuy = 1,

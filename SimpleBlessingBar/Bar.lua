@@ -409,17 +409,11 @@ function ns.Refresh()
     if not db or InCombatLockdown() then return end
     ns.attrPending = false
 
-    -- The aura and Righteous Fury buttons first, each if the settings show it, then the
-    -- classes in the group. A hidden button leaves no gap.
-    local shown = {}
-    for _, own in ipairs({ { ns.auraButton, "showAura" }, { ns.furyButton, "showFury" } }) do
-        local b, key = own[1], own[2]
-        if db[key] then
-            shown[#shown + 1] = b
-            b:Show()
-        else
-            b:Hide()
-        end
+    -- The aura and Righteous Fury buttons, each if the settings show it, and the classes in
+    -- the group as one block, in the order set on the Order page. A hidden button leaves no gap.
+    local own = { AURA = { ns.auraButton, "showAura" }, FURY = { ns.furyButton, "showFury" } }
+    for _, entry in pairs(own) do
+        if db[entry[2]] then entry[1]:Show() else entry[1]:Hide() end
     end
     -- Demo mode shows every class, without reading the roster
     local present = {}
@@ -431,16 +425,25 @@ function ns.Refresh()
             if class then present[class] = true end
         end
     end
-    for _, class in ipairs(D.CLASS_ORDER) do
+    local classes = {}
+    for _, class in ipairs(db.classOrder) do
         local b = buttons[class]
         if present[class] then
-            shown[#shown + 1] = b
+            classes[#classes + 1] = b
             b:Show()
             Update(b, db.assign[class])
         elseif b:IsShown() then
             SetAction(b, nil)
             ns.SetAnts(b, false)
             b:Hide()
+        end
+    end
+    local shown = {}
+    for _, key in ipairs(db.order) do
+        if key == "CLASSES" then
+            for _, b in ipairs(classes) do shown[#shown + 1] = b end
+        elseif db[own[key][2]] then
+            shown[#shown + 1] = own[key][1]
         end
     end
     -- A drag in progress keeps its own anchor; it re-anchors when it ends

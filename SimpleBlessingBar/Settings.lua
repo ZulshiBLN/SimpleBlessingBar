@@ -166,6 +166,16 @@ function UI.AddHeader(labelKey, gap)
     return h
 end
 
+-- Small explanatory text in its own row. lines: number of lines (texts use "\n" breaks)
+function UI.AddNote(labelKey, gap, lines)
+    local t = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    t:SetJustifyH("LEFT")
+    t:SetPoint("TOPLEFT", INSET, Place(12 * (lines or 1) + 2 * ((lines or 1) - 1), gap or 8))
+    SetL(t, labelKey)
+    measures[#measures + 1] = function() return t:GetStringWidth() end
+    return t
+end
+
 -- Plain slider without template
 function UI.MakeSlider(parent)
     local slider = CreateFrame("Slider", nil, parent)

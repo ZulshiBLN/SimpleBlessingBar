@@ -92,6 +92,18 @@ locales.enUS = {
     OPT_SYMBOL_WARN = "Warning threshold",
     SYMBOL_OF_KINGS = "Symbol of Kings",
     OPT_SYMBOL_AMOUNT = "Keep in bags (0 = don't buy)",
+    CLASS_WARRIOR = "Warrior",
+    CLASS_PALADIN = "Paladin",
+    CLASS_HUNTER = "Hunter",
+    CLASS_ROGUE = "Rogue",
+    CLASS_PRIEST = "Priest",
+    CLASS_SHAMAN = "Shaman",
+    CLASS_MAGE = "Mage",
+    CLASS_WARLOCK = "Warlock",
+    CLASS_DRUID = "Druid",
+    ORDER_CLASSES = "Classes",
+    TAB_ORDER = "Order",
+    ORDER_HINT = "Drag rows to reorder. Top = start of the bar (anchor side)",
 }
 
 locales.deDE = {
@@ -178,6 +190,18 @@ locales.deDE = {
     OPT_SYMBOL_WARN = "Warnschwelle",
     SYMBOL_OF_KINGS = "Symbol der Könige",
     OPT_SYMBOL_AMOUNT = "Im Inventar halten (0 = nicht kaufen)",
+    CLASS_WARRIOR = "Krieger",
+    CLASS_PALADIN = "Paladin",
+    CLASS_HUNTER = "Jäger",
+    CLASS_ROGUE = "Schurke",
+    CLASS_PRIEST = "Priester",
+    CLASS_SHAMAN = "Schamane",
+    CLASS_MAGE = "Magier",
+    CLASS_WARLOCK = "Hexenmeister",
+    CLASS_DRUID = "Druide",
+    ORDER_CLASSES = "Klassen",
+    TAB_ORDER = "Reihenfolge",
+    ORDER_HINT = "Zeilen ziehen zum Sortieren. Oben = Anfang der Leiste (Ankerseite)",
 }
 
 locales.frFR = {
@@ -264,6 +288,18 @@ locales.frFR = {
     OPT_SYMBOL_WARN = "Seuil d'alerte",
     SYMBOL_OF_KINGS = "Symbole des rois",
     OPT_SYMBOL_AMOUNT = "Garder dans les sacs (0 = ne pas acheter)",
+    CLASS_WARRIOR = "Guerrier",
+    CLASS_PALADIN = "Paladin",
+    CLASS_HUNTER = "Chasseur",
+    CLASS_ROGUE = "Voleur",
+    CLASS_PRIEST = "Prêtre",
+    CLASS_SHAMAN = "Chaman",
+    CLASS_MAGE = "Mage",
+    CLASS_WARLOCK = "Démoniste",
+    CLASS_DRUID = "Druide",
+    ORDER_CLASSES = "Classes",
+    TAB_ORDER = "Ordre",
+    ORDER_HINT = "Faites glisser les lignes pour trier. En haut = début de la barre (côté ancre)",
 }
 
 locales.esES = {
@@ -350,6 +386,18 @@ locales.esES = {
     OPT_SYMBOL_WARN = "Umbral de aviso",
     SYMBOL_OF_KINGS = "Símbolo de Reyes",
     OPT_SYMBOL_AMOUNT = "Mantener en las bolsas (0 = no comprar)",
+    CLASS_WARRIOR = "Guerrero",
+    CLASS_PALADIN = "Paladín",
+    CLASS_HUNTER = "Cazador",
+    CLASS_ROGUE = "Pícaro",
+    CLASS_PRIEST = "Sacerdote",
+    CLASS_SHAMAN = "Chamán",
+    CLASS_MAGE = "Mago",
+    CLASS_WARLOCK = "Brujo",
+    CLASS_DRUID = "Druida",
+    ORDER_CLASSES = "Clases",
+    TAB_ORDER = "Orden",
+    ORDER_HINT = "Arrastra las filas para ordenar. Arriba = inicio de la barra (lado del ancla)",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -440,6 +488,18 @@ locales.itIT = {
     OPT_SYMBOL_WARN = "Soglia di avviso",
     SYMBOL_OF_KINGS = "Simbolo dei Re",
     OPT_SYMBOL_AMOUNT = "Tenere nelle borse (0 = non comprare)",
+    CLASS_WARRIOR = "Guerriero",
+    CLASS_PALADIN = "Paladino",
+    CLASS_HUNTER = "Cacciatore",
+    CLASS_ROGUE = "Ladro",
+    CLASS_PRIEST = "Sacerdote",
+    CLASS_SHAMAN = "Sciamano",
+    CLASS_MAGE = "Mago",
+    CLASS_WARLOCK = "Stregone",
+    CLASS_DRUID = "Druido",
+    ORDER_CLASSES = "Classi",
+    TAB_ORDER = "Ordine",
+    ORDER_HINT = "Trascina le righe per ordinare. In alto = inizio della barra (lato dell'ancora)",
 }
 
 locales.ptBR = {
@@ -526,6 +586,18 @@ locales.ptBR = {
     OPT_SYMBOL_WARN = "Limite de aviso",
     SYMBOL_OF_KINGS = "Símbolo dos Reis",
     OPT_SYMBOL_AMOUNT = "Manter nas bolsas (0 = não comprar)",
+    CLASS_WARRIOR = "Guerreiro",
+    CLASS_PALADIN = "Paladino",
+    CLASS_HUNTER = "Caçador",
+    CLASS_ROGUE = "Ladino",
+    CLASS_PRIEST = "Sacerdote",
+    CLASS_SHAMAN = "Xamã",
+    CLASS_MAGE = "Mago",
+    CLASS_WARLOCK = "Bruxo",
+    CLASS_DRUID = "Druida",
+    ORDER_CLASSES = "Classes",
+    TAB_ORDER = "Ordem",
+    ORDER_HINT = "Arraste as linhas para ordenar. Topo = início da barra (lado da âncora)",
 }
 
 locales.ruRU = {
@@ -612,6 +684,18 @@ locales.ruRU = {
     OPT_SYMBOL_WARN = "Порог предупреждения",
     SYMBOL_OF_KINGS = "Знак королей",
     OPT_SYMBOL_AMOUNT = "Держать в сумках (0 = не покупать)",
+    CLASS_WARRIOR = "Воин",
+    CLASS_PALADIN = "Паладин",
+    CLASS_HUNTER = "Охотник",
+    CLASS_ROGUE = "Разбойник",
+    CLASS_PRIEST = "Жрец",
+    CLASS_SHAMAN = "Шаман",
+    CLASS_MAGE = "Маг",
+    CLASS_WARLOCK = "Чернокнижник",
+    CLASS_DRUID = "Друид",
+    ORDER_CLASSES = "Классы",
+    TAB_ORDER = "Порядок",
+    ORDER_HINT = "Перетаскивайте строки для сортировки. Вверху = начало панели",
 }
 
 locales.koKR = {
@@ -698,6 +782,18 @@ locales.koKR = {
     OPT_SYMBOL_WARN = "경고 기준",
     SYMBOL_OF_KINGS = "왕의 징표",
     OPT_SYMBOL_AMOUNT = "가방에 보관 (0 = 구매 안 함)",
+    CLASS_WARRIOR = "전사",
+    CLASS_PALADIN = "성기사",
+    CLASS_HUNTER = "사냥꾼",
+    CLASS_ROGUE = "도적",
+    CLASS_PRIEST = "사제",
+    CLASS_SHAMAN = "주술사",
+    CLASS_MAGE = "마법사",
+    CLASS_WARLOCK = "흑마법사",
+    CLASS_DRUID = "드루이드",
+    ORDER_CLASSES = "직업",
+    TAB_ORDER = "순서",
+    ORDER_HINT = "줄을 끌어서 정렬하세요. 위 = 바의 시작 (고정점 쪽)",
 }
 
 locales.zhCN = {
@@ -784,6 +880,18 @@ locales.zhCN = {
     OPT_SYMBOL_WARN = "警告阈值",
     SYMBOL_OF_KINGS = "王者印记",
     OPT_SYMBOL_AMOUNT = "背包中保持 (0 = 不购买)",
+    CLASS_WARRIOR = "战士",
+    CLASS_PALADIN = "圣骑士",
+    CLASS_HUNTER = "猎人",
+    CLASS_ROGUE = "潜行者",
+    CLASS_PRIEST = "牧师",
+    CLASS_SHAMAN = "萨满祭司",
+    CLASS_MAGE = "法师",
+    CLASS_WARLOCK = "术士",
+    CLASS_DRUID = "德鲁伊",
+    ORDER_CLASSES = "职业",
+    TAB_ORDER = "顺序",
+    ORDER_HINT = "拖动行以排序。上方 = 动作条起点（锚点一侧）",
 }
 
 locales.zhTW = {
@@ -870,6 +978,18 @@ locales.zhTW = {
     OPT_SYMBOL_WARN = "警告門檻",
     SYMBOL_OF_KINGS = "王者印記",
     OPT_SYMBOL_AMOUNT = "背包中保持 (0 = 不購買)",
+    CLASS_WARRIOR = "戰士",
+    CLASS_PALADIN = "聖騎士",
+    CLASS_HUNTER = "獵人",
+    CLASS_ROGUE = "盜賊",
+    CLASS_PRIEST = "牧師",
+    CLASS_SHAMAN = "薩滿",
+    CLASS_MAGE = "法師",
+    CLASS_WARLOCK = "術士",
+    CLASS_DRUID = "德魯伊",
+    ORDER_CLASSES = "職業",
+    TAB_ORDER = "順序",
+    ORDER_HINT = "拖曳列以排序。上方 = 動作條起點（錨點一側）",
 }
 
 local client = GetLocale()

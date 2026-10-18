@@ -106,6 +106,25 @@ end
 local function CopyColor(c) return { r = c.r, g = c.g, b = c.b, a = c.a } end
 ns.CopyColor = CopyColor
 
+-- An order of keys as saved: each of `default`'s keys once. Unknown keys and doubles are
+-- dropped, missing ones appended in default order; a non-table becomes a copy of the default.
+local function ValidOrder(saved, default)
+    local valid, seen, out = {}, {}, {}
+    for _, k in ipairs(default) do valid[k] = true end
+    if type(saved) == "table" then
+        for _, k in ipairs(saved) do
+            if valid[k] and not seen[k] then
+                out[#out + 1] = k
+                seen[k] = true
+            end
+        end
+    end
+    for _, k in ipairs(default) do
+        if not seen[k] then out[#out + 1] = k end
+    end
+    return out
+end
+
 -- Saved variables are plain files that can be edited or damaged, so every value is checked
 -- before anything reads it.
 function ns.InitDB()
@@ -153,6 +172,10 @@ function ns.InitDB()
     -- Version 4 adds the flyout direction and narrows the auto-close time to 1-5 s; the number
     -- loop above already clamps a saved 6-10 to 5.
     if not D.FLYOUT_DIRS[db.flyoutDir] then db.flyoutDir = D.FLYOUT_DIR_DEFAULT end
+
+    -- Version 5 adds the supplies (the loops above) and the two orders
+    db.order = ValidOrder(db.order, D.DEFAULT_ORDER)
+    db.classOrder = ValidOrder(db.classOrder, D.CLASS_ORDER)
 
     db.dbVersion = D.DB_VERSION
 

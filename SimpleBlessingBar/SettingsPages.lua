@@ -258,4 +258,208 @@ controls.goldReserve = UI.AddNumberSlider({
 })
 controls.amountRows = amountRows
 
+---------------------------------------------------------------------------
+-- Order: the bar's order by drag and drop, as in SimpleConjureBar. The class buttons move
+-- only as one block; inside it, indented, the classes move among themselves (Michel,
+-- 2026-10-18).
+---------------------------------------------------------------------------
+local orderPage = UI.NewPage("TAB_ORDER")
+
+-- Name and icon per row
+local ORDER_INFO = {
+    AURA    = { name = function() return L.TRACK_AURA end,
+                icon = function() return C_Spell.GetSpellTexture(D.AURAS[db.aura][1]) end },
+    FURY    = { name = function() return ns.LocalName(C_Spell.GetSpellName(D.RIGHTEOUS_FURY), "RIGHTEOUS_FURY") end,
+                icon = function() return C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY) end },
+    CLASSES = { name = function() return L.ORDER_CLASSES end,
+                icon = function() return C_Spell.GetSpellTexture(D.BLESSINGS.KINGS.greater[1]) end },
+}
+local function ClassName(class)
+    return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
+end
+
+do
+    UI.AddNote("ORDER_HINT", 10)
+
+    local ROW, ROW_GAP, INDENT = 26, 2, 24
+    local rows = {}
+    controls.orderRows = rows
+    local RefreshOrder
+    local drag -- { kind = "top" | "class", index } while dragging
+
+    -- The rows top to bottom: each top entry, and under "CLASSES" the classes, indented
+    local function Entries()
+        local list = {}
+        for ti, key in ipairs(db.order) do
+            list[#list + 1] = { top = ti, key = key }
+            if key == "CLASSES" then
+                for ci, class in ipairs(db.classOrder) do
+                    list[#list + 1] = { top = ti, class = ci, key = class }
+                end
+            end
+        end
+        return list
+    end
+
+    -- Row under the mouse cursor (1..n), no matter where exactly the row is grabbed
+    local function SlotUnderCursor()
+        local top = rows[1]:GetTop()
+        if not top then return end
+        local _, cy = GetCursorPosition()
+        cy = cy / rows[1]:GetEffectiveScale()
+        local slot = math.floor((top - cy) / (ROW + ROW_GAP)) + 1
+        return math.max(1, math.min(#rows, slot))
+    end
+
+    local function Move(list, from, to)
+        local key = table.remove(list, from)
+        table.insert(list, to, key)
+    end
+
+    local function StopOrderDrag()
+        if not drag then return end
+        drag = nil
+        orderPage:SetScript("OnUpdate", nil)
+        RefreshOrder()
+        ns.Refresh() -- the bar is rebuilt only once the row is dropped
+    end
+
+    local function OnDragUpdate()
+        -- Safety net: the mouse button was released outside the window
+        if not IsMouseButtonDown("LeftButton") then StopOrderDrag() return end
+        local slot = SlotUnderCursor()
+        if not slot then return end
+        local entries = Entries()
+        local entry = entries[slot]
+        if drag.kind == "top" then
+            if entry.top ~= drag.index then
+                Move(db.order, drag.index, entry.top)
+                drag.index = entry.top
+                RefreshOrder()
+            end
+        else
+            -- A class stays inside its block: above the block it goes first, below it last
+            local target = entry.class
+            if not target then
+                local first
+                for i, e in ipairs(entries) do
+                    if e.class and not first then first = i end
+                end
+                target = slot < first and 1 or #db.classOrder
+            end
+            if target ~= drag.index then
+                Move(db.classOrder, drag.index, target)
+                drag.index = target
+                RefreshOrder()
+            end
+        end
+    end
+
+    local function StartOrderDrag(slot)
+        local entry = Entries()[slot]
+        drag = entry.class and { kind = "class", index = entry.class } or { kind = "top", index = entry.top }
+        RefreshOrder()
+        orderPage:SetScript("OnUpdate", OnDragUpdate)
+    end
+
+    for i = 1, #D.DEFAULT_ORDER + #D.CLASS_ORDER do
+        local row = CreateFrame("Frame", nil, orderPage)
+        row:SetHeight(ROW)
+        row:SetPoint("TOPLEFT", INSET, Place(ROW, ROW_GAP))
+        row:EnableMouse(true)
+
+        -- Background: subtle on hover, gold while dragging
+        row.bg = row:CreateTexture(nil, "BACKGROUND")
+        row.bg:SetAllPoints()
+        row.bg:SetColorTexture(1, 1, 1, 0)
+
+        row.num = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        row.num:SetWidth(16)
+        row.num:SetJustifyH("RIGHT")
+
+        row.icon = row:CreateTexture(nil, "ARTWORK")
+        row.icon:SetSize(22, 22)
+        row.icon:SetPoint("LEFT", row.num, "RIGHT", 6, 0)
+        row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        row.label:SetPoint("LEFT", row.icon, "RIGHT", 8, 0)
+
+        -- Burger grip (three lines) on the right shows that the row can be dragged
+        row.grip = {}
+        for k = 1, 3 do
+            local line = row:CreateTexture(nil, "ARTWORK")
+            line:SetSize(14, 2)
+            line:SetPoint("RIGHT", row, "RIGHT", -6, (2 - k) * 5)
+            line:SetColorTexture(0.6, 0.6, 0.6, 1)
+            row.grip[k] = line
+        end
+        function row.SetGripColor(r, g, b)
+            for _, line in ipairs(row.grip) do line:SetColorTexture(r, g, b, 1) end
+        end
+
+        row:SetScript("OnEnter", function(self)
+            if drag then return end
+            self.bg:SetColorTexture(1, 1, 1, 0.06)
+            self.SetGripColor(1, 0.82, 0)
+        end)
+        row:SetScript("OnLeave", function(self)
+            if drag then return end
+            self.bg:SetColorTexture(1, 1, 1, 0)
+            self.SetGripColor(0.6, 0.6, 0.6)
+        end)
+        row:SetScript("OnMouseDown", function(_, btn)
+            if btn == "LeftButton" then StartOrderDrag(i) end
+        end)
+        row:SetScript("OnMouseUp", function(_, btn)
+            if btn == "LeftButton" then StopOrderDrag() end
+        end)
+
+        rows[i] = row
+        measures[#measures + 1] = function()
+            return INDENT + 4 + 16 + 6 + 22 + 8 + row.label:GetStringWidth() + 16 + 20
+        end
+        stretchers[#stretchers + 1] = function(w) row:SetWidth(w) end
+    end
+
+    RefreshOrder = function()
+        for i, entry in ipairs(Entries()) do
+            local row = rows[i]
+            row.entry = entry
+            -- The classes sit indented under their block
+            row.num:ClearAllPoints()
+            row.num:SetPoint("LEFT", entry.class and (4 + INDENT) or 4, 0)
+            row.num:SetText((entry.class or entry.top) .. ".")
+            if entry.class then
+                row.label:SetText(ClassName(entry.key))
+                row.icon:SetTexture("Interface\\Icons\\ClassIcon_" .. entry.key)
+            else
+                row.label:SetText(ORDER_INFO[entry.key].name())
+                row.icon:SetTexture(ORDER_INFO[entry.key].icon())
+            end
+            local dragged = drag and ((drag.kind == "class" and entry.class == drag.index)
+                or (drag.kind == "top" and not entry.class and entry.top == drag.index))
+            if dragged then
+                row.bg:SetColorTexture(1, 0.82, 0, 0.18)
+                row.SetGripColor(1, 0.82, 0)
+            elseif drag or not row:IsMouseOver() then
+                row.bg:SetColorTexture(1, 1, 1, 0)
+                row.SetGripColor(0.6, 0.6, 0.6)
+            end
+        end
+    end
+    refreshers[#refreshers + 1] = RefreshOrder
+    orderPage:SetScript("OnHide", StopOrderDrag)
+
+    -- Restores both orders
+    local reset = UI.AddButton(orderPage, "DEFAULT", function()
+        db.order = { unpack(D.DEFAULT_ORDER) }
+        db.classOrder = { unpack(D.CLASS_ORDER) }
+        RefreshOrder()
+        ns.Refresh()
+    end)
+    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
+    controls.orderDefault = reset
+end
+
 UI.CreateTabs()
