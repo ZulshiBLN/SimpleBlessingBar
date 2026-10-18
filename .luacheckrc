@@ -29,6 +29,7 @@ read_globals = {
     "UIParent", "UISpecialFrames", "tinsert",
     "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
+    "RegisterStateDriver", "UnregisterStateDriver", "ReloadUI", "ColorPickerFrame", "CreateColor", "PixelUtil",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }
@@ -45,7 +46,7 @@ files["tests/"] = {
     read_globals = {
         "io", "require", "loadfile",
         -- What tests/helpers/mock.lua provides to drive the mocked client
-        "FIRE", "CHAT", "RUNSCRIPT", "RUNCLICK", "RUNTIMERS", "TICK", "NEWOBJ", "UIParent",
+        "FIRE", "CHAT", "RUNSCRIPT", "RUNCLICK", "RUNTIMERS", "TICK", "NEWOBJ", "MENU", "UIParent",
     },
 }
 

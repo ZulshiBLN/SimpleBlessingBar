@@ -52,7 +52,36 @@ function Methods:GetPoint(i) local p = self.points[i or 1]; if p then return unp
 function Methods:SetSize(w, h) self.w, self.h = w, h end
 function Methods:SetWidth(w) self.w = w end
 function Methods:GetWidth() return self.w end
-function Methods:GetRect() return 100, 200, self.w or 0, self.h or 0 end
+-- The rectangle from the frame's first point, when it is anchored to UIParent - as the
+-- client reports where a frame really is. Otherwise a fixed place.
+local OFFSETS = { -- point -> left and bottom offset from the anchor, in widths and heights
+  LEFT = { 0, -0.5 }, RIGHT = { -1, -0.5 }, TOP = { -0.5, -1 }, BOTTOM = { -0.5, 0 },
+  CENTER = { -0.5, -0.5 }, BOTTOMLEFT = { 0, 0 }, TOPLEFT = { 0, -1 },
+}
+function Methods:GetRect()
+  local w, h = self.w or 0, self.h or 0
+  local p = self.points[1]
+  if p and p[2] == UIParent and OFFSETS[p[1]] then
+    local x, y = p[4] or 0, p[5] or 0
+    if p[3] == "CENTER" then x, y = x + 960, y + 540 end
+    local o = OFFSETS[p[1]]
+    return x + o[1] * w, y + o[2] * h, w, h
+  end
+  return 100, 200, w, h
+end
+-- Where a frame sits on screen: STATE.center, if a spec set one, else the lower left quarter
+function Methods:GetCenter()
+  local c = STATE.center
+  if c then return c[1], c[2] end
+  return 500, 300
+end
+function Methods:GetEffectiveScale() return 1 end
+function Methods:GetHeight() return self.h end
+function Methods:SetHeight(h) self.h = h end
+function Methods:SetScale(s) Guard(self, "SetScale"); self.scale = s end
+function Methods:GetScale() return rawget(self, "scale") or 1 end
+function Methods:SetRotation(r) self.rotation = r end
+function Methods:SetBackdropBorderColor(r, g, b, a) self.borderColor = { r, g, b, a } end
 function Methods:StartMoving() Guard(self, "StartMoving"); self.moving = true end
 function Methods:StopMovingOrSizing() Guard(self, "StopMovingOrSizing"); self.moving = false end
 function Methods:RegisterForClicks(...) self.clicks = { ... } end
@@ -106,6 +135,8 @@ function CreateFrame(kind, name, parent, template)
     -- rawget: a missing field reads as a method stub through the metatable
     while f do f.protected = true; f = rawget(f, "parent") end
   end
+  -- The client's menu dropdown shows its selection on a font string of its own
+  if kind == "DropdownButton" then o.Text = NEWOBJ("FontString") end
   if name then _G[name] = o end
   return o
 end
@@ -237,6 +268,47 @@ function RUNCLICK(frame, button, down)
   RUNSCRIPT(frame, "OnClick", button, down)
 end
 
+-- Widgets of the settings window
+function Methods:SetChecked(v) self.checked = v and true or false end
+function Methods:GetChecked() return rawget(self, "checked") == true end
+-- A slider runs OnValueChanged when its value changes, as the client's does
+function Methods:SetMinMaxValues(lo, hi) self.min, self.max = lo, hi end
+function Methods:SetValue(v)
+  local lo, hi = rawget(self, "min"), rawget(self, "max")
+  if lo then v = math.max(lo, math.min(hi, v)) end
+  if rawget(self, "value") == v then return end
+  self.value = v
+  RUNSCRIPT(self, "OnValueChanged", v)
+end
+function Methods:GetValue() return rawget(self, "value") end
+-- A menu dropdown keeps its generator; MENU reads the entries it builds
+function Methods:SetupMenu(gen) self.menuGen = gen end
+function Methods:GenerateMenu() self.generated = (rawget(self, "generated") or 0) + 1 end
+
+-- The entries of a menu dropdown: { text =, selected = bool, pick = function }
+function MENU(dd)
+  local entries, root = {}, {}
+  function root:CreateRadio(text, isSelected, select)
+    entries[#entries + 1] = { text = text, selected = isSelected() and true or false, pick = select }
+  end
+  dd.menuGen(dd, root)
+  return entries
+end
+
+-- The client's color picker: SetupColorPickerAndShow keeps the info; STATE.pickedColor is
+-- what the player has picked, { r, g, b, a }
+ColorPickerFrame = NEWOBJ("Frame")
+ColorPickerFrame.shown = false
+ColorPickerFrame.Content = { ColorPicker = NEWOBJ("Frame") }
+function ColorPickerFrame:SetupColorPickerAndShow(info)
+  self.info = info
+  self:Show()
+end
+function ColorPickerFrame:GetColorRGB() local c = STATE.pickedColor return c[1], c[2], c[3] end
+function ColorPickerFrame:GetColorAlpha() return STATE.pickedColor[4] end
+CreateColor = function(r, g, b, a) return { r = r, g = g, b = b, a = a } end
+PixelUtil = { SetSize = function(f, w, h) f:SetSize(w, h) end }
+
 GameTooltip = NEWOBJ("GameTooltip")
 function GameTooltip:SetOwner(owner) self.owner = owner end
 function GameTooltip:SetSpellByID(id) self.spell = id; self.shown = true end
@@ -262,7 +334,18 @@ function TICK()
 end
 
 UIParent = CreateFrame("Frame", "UIParent")
+UIParent:SetSize(1920, 1080)
 UISpecialFrames = {}
+-- Secure state drivers: STATE.drivers[frame][state] = the driver's text
+RegisterStateDriver = function(frame, state, text)
+  STATE.drivers = STATE.drivers or {}
+  STATE.drivers[frame] = STATE.drivers[frame] or {}
+  STATE.drivers[frame][state] = text
+end
+UnregisterStateDriver = function(frame, state)
+  if STATE.drivers and STATE.drivers[frame] then STATE.drivers[frame][state] = nil end
+end
+ReloadUI = function() STATE.reloaded = true end
 tinsert = table.insert
 CLASS_ICON_TCOORDS = {}
 for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do

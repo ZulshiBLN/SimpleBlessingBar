@@ -8,7 +8,7 @@ if not ns.enabled then return end
 
 local D, B = ns.D, ns.Blessings
 local SetAttr = ns.SetAttr
-local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
+local SIZE = D.SIZE
 
 local db
 ns.OnDBReady(function(d) db = d end)
@@ -53,9 +53,9 @@ local function AttachAnts(b)
     end
 end
 
-local function NewButton(name, x)
+-- Placed by the bar's layout (Bar.lua), which puts these two first
+local function NewButton(name)
     local b = ns.CreateSecureButton(name, ns.bar)
-    b:SetPoint("LEFT", ns.bar, "LEFT", x, 0)
     b:SetScript("OnEnter", ns.ShowSpellTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
     AttachAnts(b)
@@ -70,8 +70,8 @@ local function SetSpell(b, spell)
     b.icon:SetDesaturated(not spell)
 end
 
-local aura = NewButton("SimpleBlessingBarAura", PAD)
-local fury = NewButton("SimpleBlessingBarFury", PAD + SIZE + GAP)
+local aura = NewButton("SimpleBlessingBarAura")
+local fury = NewButton("SimpleBlessingBarFury")
 ns.auraButton, ns.furyButton = aura, fury
 fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
 

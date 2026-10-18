@@ -61,6 +61,15 @@ D.BORDER_COLOR = { r = 0.4, g = 0.4, b = 0.4, a = 0.8 }
 D.HANDLE_UNLOCKED = { r = 0.41, g = 0.8, b = 0.94, a = 0.6 }
 D.HANDLE_LOCKED   = { r = 0.9, g = 0.25, b = 0.2, a = 0.6 }
 
+-- Where a flyout opens, per direction, as in SimpleConjureBar: the flyout's anchor against its
+-- main button, the side its icons start from and their step, the arrow's anchor and rotation
+D.FLY_LAYOUT = {
+    UP    = { fly = { "BOTTOM", "TOP", 0, 6 },  child = "BOTTOM", dx = 0,  dy = 1,  arrow = { "BOTTOM", "TOP", 0, -6 }, rot = 0 },
+    DOWN  = { fly = { "TOP", "BOTTOM", 0, -6 }, child = "TOP",    dx = 0,  dy = -1, arrow = { "TOP", "BOTTOM", 0, 6 },  rot = math.pi },
+    RIGHT = { fly = { "LEFT", "RIGHT", 6, 0 },  child = "LEFT",   dx = 1,  dy = 0,  arrow = { "LEFT", "RIGHT", -6, 0 }, rot = -math.pi / 2 },
+    LEFT  = { fly = { "RIGHT", "LEFT", -6, 0 }, child = "RIGHT",  dx = -1, dy = 0,  arrow = { "RIGHT", "LEFT", 6, 0 },  rot = math.pi / 2 },
+}
+
 -- Seconds an open flyout stays once the mouse has left it and its button. Fixed until a
 -- settings window offers the switch and the time (Michel, 2026-10-18).
 D.FLYOUT_AUTOHIDE = 2

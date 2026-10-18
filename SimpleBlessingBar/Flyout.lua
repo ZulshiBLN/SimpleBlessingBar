@@ -134,7 +134,6 @@ local function Icon(fly, i)
     local icon = fly.icons[i]
     if icon then return icon end
     icon = ns.CreateSecureButton(fly:GetName() .. "Icon" .. i, fly)
-    icon:SetPoint("BOTTOM", fly, "BOTTOM", 0, PAD + (i - 1) * (SIZE + GAP))
     header:WrapScript(icon, "OnClick", CHOOSE_PRE, (CHOOSE_POST:gsub("KEY", fly.key)))
     icon:HookScript("OnClick", Save)
     icon:SetScript("OnEnter", IconTooltip)
@@ -145,9 +144,20 @@ end
 
 -- Writes a flyout's icons, out of combat (the refresh runs only there). entries: list of
 -- { family, spell, unit }; unit nil = nobody to cast on, the icon is greyed and inert.
+-- The flyout opens in the direction the bar computed (ns.flyDir), as in SimpleConjureBar.
 function ns.FillFlyout(fly, entries)
+    local lay = D.FLY_LAYOUT[ns.flyDir or "UP"]
+    local main = fly.main
+    fly:ClearAllPoints()
+    fly:SetPoint(lay.fly[1], main, lay.fly[2], lay.fly[3], lay.fly[4])
+    main.arrow:ClearAllPoints()
+    main.arrow:SetPoint(lay.arrow[1], main, lay.arrow[2], lay.arrow[3], lay.arrow[4])
+    main.arrow:SetRotation(lay.rot)
     for i, entry in ipairs(entries) do
         local icon = Icon(fly, i)
+        local off = PAD + (i - 1) * (SIZE + GAP)
+        icon:ClearAllPoints()
+        icon:SetPoint(lay.child, fly, lay.child, lay.dx * off, lay.dy * off)
         icon.family, icon.spell = entry.family, entry.spell
         local castable = entry.unit ~= nil
         SetAttr(icon, "sbbspell", castable and entry.spell or nil)
@@ -157,7 +167,8 @@ function ns.FillFlyout(fly, entries)
         icon:Show()
     end
     for i = #entries + 1, #fly.icons do fly.icons[i]:Hide() end
-    fly:SetHeight(math.max(1, #entries) * (SIZE + GAP) - GAP + 2 * PAD)
+    local long = math.max(1, #entries) * (SIZE + GAP) - GAP + 2 * PAD
+    if lay.dx ~= 0 then fly:SetSize(long, SIZE + 2 * PAD) else fly:SetSize(SIZE + 2 * PAD, long) end
 end
 
 ---------------------------------------------------------------------------

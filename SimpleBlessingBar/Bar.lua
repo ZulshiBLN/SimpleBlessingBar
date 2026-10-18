@@ -10,8 +10,6 @@ local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
 
 local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
--- The aura and Righteous Fury buttons (SelfBuffs.lua) take the first two places
-local FIRST_CLASS_X = PAD + 2 * (SIZE + GAP)
 local CLASS_ICONS = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
 
 local db
@@ -102,13 +100,69 @@ function ns.LoadPosition()
     bar:SetPoint(db.point or "CENTER", UIParent, db.rel or "CENTER", db.x or 0, db.y or -150)
 end
 
--- Anchors the bar at its left edge without moving it on screen, and saves the position
-local function SavePosition()
-    local l, b, _, h = bar:GetRect()
+-- The anchor point depends on orientation and growth: the bar grows away from it when
+-- buttons are added (right -> left edge, left -> right edge and so on), as in SimpleConjureBar.
+function ns.AnchorPoint()
+    if db.vertical then return db.growRev and "BOTTOM" or "TOP" end
+    return db.growRev and "RIGHT" or "LEFT"
+end
+
+-- Re-anchors the bar at its anchor point without moving it on screen, and saves the position
+function ns.ReAnchor()
+    if InCombatLockdown() then return end
+    local l, b, w, h = bar:GetRect()
     if not l then return end
+    local point = ns.AnchorPoint()
+    local x, y
+    if point == "LEFT" then x, y = l, b + h / 2
+    elseif point == "RIGHT" then x, y = l + w, b + h / 2
+    elseif point == "TOP" then x, y = l + w / 2, b + h
+    else x, y = l + w / 2, b end
     bar:ClearAllPoints()
-    bar:SetPoint("LEFT", UIParent, "BOTTOMLEFT", l, b + h / 2)
-    db.point, db.rel, db.x, db.y = "LEFT", "BOTTOMLEFT", l, b + h / 2
+    bar:SetPoint(point, UIParent, "BOTTOMLEFT", x, y)
+    db.point, db.rel, db.x, db.y = point, "BOTTOMLEFT", x, y
+end
+
+-- Scale 0.5 - 2.0, out of combat only. The bar stays at the same screen position: positions
+-- are stored in the scaled coordinate system and are converted.
+local scalePending = false
+function ns.ApplyScale()
+    if InCombatLockdown() then scalePending = true return end -- the bar is protected in combat
+    scalePending = false
+    local new, old = db.scale, bar:GetScale()
+    if math.abs(new - old) < 0.001 then return end
+    local cx, cy = bar:GetCenter()
+    bar:SetScale(new)
+    if cx and cy then
+        bar:ClearAllPoints()
+        bar:SetPoint("CENTER", UIParent, "BOTTOMLEFT", cx * old / new, cy * old / new)
+        ns.ReAnchor()
+    end
+end
+
+-- Hide in combat: a secure state driver, set or cleared out of combat only
+local combatPending = false
+function ns.ApplyCombatHide()
+    if InCombatLockdown() then combatPending = true return end
+    combatPending = false
+    if db.hideCombat then
+        RegisterStateDriver(bar, "visibility", "[combat] hide; show")
+    else
+        UnregisterStateDriver(bar, "visibility")
+        bar:Show()
+    end
+end
+
+-- Background and border of the bar and of every flyout. Neither is protected, so this works
+-- in combat too.
+function ns.ApplyLook()
+    local c, e = db.bg, D.BORDER_COLOR
+    local frames = { bar }
+    for _, fly in pairs(ns.flyouts or {}) do frames[#frames + 1] = fly end
+    for _, f in ipairs(frames) do
+        f:SetBackdropColor(c.r, c.g, c.b, c.a)
+        f:SetBackdropBorderColor(e.r, e.g, e.b, db.showBorder and e.a or 0)
+    end
 end
 
 -- Locked = red, unlocked = blue
@@ -142,7 +196,8 @@ local function StopDrag()
     handle.moving = false
     if InCombatLockdown() then return end
     bar:StopMovingOrSizing()
-    SavePosition()
+    ns.ReAnchor()
+    ns.Refresh() -- the flyout direction follows the screen half
     if not handle:IsMouseOver() then handle:SetAlpha(0) end
 end
 handle:SetScript("OnMouseUp", StopDrag)
@@ -199,6 +254,47 @@ end
 -- buttons, out of combat only.
 ns.onRefresh = {}
 
+-- Flyout direction, SimpleConjureBar's rule: a horizontal bar opens up in the lower half of
+-- the screen and down in the upper; a vertical bar opens right in the left half and left in
+-- the right.
+local function ComputeFlyDir()
+    local cx, cy = bar:GetCenter()
+    if not cx then return db.vertical and "RIGHT" or "UP" end
+    local s = bar:GetEffectiveScale() / UIParent:GetEffectiveScale()
+    cx, cy = cx * s, cy * s
+    if db.vertical then
+        return (cx > UIParent:GetWidth() / 2) and "LEFT" or "RIGHT"
+    end
+    return (cy > UIParent:GetHeight() / 2) and "DOWN" or "UP"
+end
+
+-- Places the shown buttons from the anchor point, sizes the bar, puts the handle on the
+-- anchor side.
+local function Arrange(shown)
+    local point = ns.AnchorPoint()
+    for i, b in ipairs(shown) do
+        local off = PAD + (i - 1) * (SIZE + GAP)
+        b:ClearAllPoints()
+        if point == "LEFT" then b:SetPoint("LEFT", bar, "LEFT", off, 0)
+        elseif point == "RIGHT" then b:SetPoint("RIGHT", bar, "RIGHT", -off, 0)
+        elseif point == "TOP" then b:SetPoint("TOP", bar, "TOP", 0, -off)
+        else b:SetPoint("BOTTOM", bar, "BOTTOM", 0, off) end
+    end
+    local long = math.max(1, #shown) * (SIZE + GAP) - GAP + 2 * PAD
+    if db.vertical then bar:SetSize(SIZE + 2 * PAD, long) else bar:SetSize(long, SIZE + 2 * PAD) end
+
+    handle:ClearAllPoints()
+    if point == "LEFT" then
+        handle:SetSize(10, SIZE); handle:SetPoint("RIGHT", bar, "LEFT", -1, 0)
+    elseif point == "RIGHT" then
+        handle:SetSize(10, SIZE); handle:SetPoint("LEFT", bar, "RIGHT", 1, 0)
+    elseif point == "TOP" then
+        handle:SetSize(SIZE, 10); handle:SetPoint("BOTTOM", bar, "TOP", 0, 1)
+    else
+        handle:SetSize(SIZE, 10); handle:SetPoint("TOP", bar, "BOTTOM", 0, -1)
+    end
+end
+
 -- Reads the group out of combat and writes everything to the buttons. In combat it does
 -- nothing: aura data is unreadable then and the buttons are protected.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
@@ -206,18 +302,17 @@ function ns.Refresh()
     if not db or InCombatLockdown() then return end
     ns.attrPending = false
 
+    -- The aura and Righteous Fury buttons first, then the classes in the group
+    local shown = { ns.auraButton, ns.furyButton }
     local present = {}
     for _, unit in ipairs(B.Members()) do
         local class = select(2, UnitClass(unit))
         if class then present[class] = true end
     end
-    local x = FIRST_CLASS_X
     for _, class in ipairs(D.CLASS_ORDER) do
         local b = buttons[class]
         if present[class] then
-            b:ClearAllPoints()
-            b:SetPoint("LEFT", bar, "LEFT", x, 0)
-            x = x + SIZE + GAP
+            shown[#shown + 1] = b
             b:Show()
             Update(b, db.assign[class])
         elseif b:IsShown() then
@@ -225,7 +320,10 @@ function ns.Refresh()
             b:Hide()
         end
     end
-    bar:SetWidth(x - GAP + PAD)
+    -- A drag in progress keeps its own anchor; it re-anchors when it ends
+    if not handle.moving then ns.ReAnchor() end
+    Arrange(shown)
+    ns.flyDir = ComputeFlyDir()
     for _, fn in ipairs(ns.onRefresh) do fn() end
 end
 
@@ -254,7 +352,13 @@ events:SetScript("OnEvent", function(_, event)
         ns.Refresh()
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Counts were frozen in combat and changes may wait: always refresh at its end
-        if ns.barPending then ns.InitBar() else ns.Refresh() end
+        if ns.barPending then
+            ns.InitBar()
+        else
+            if scalePending then ns.ApplyScale() end
+            if combatPending then ns.ApplyCombatHide() end
+            ns.Refresh()
+        end
     else
         Schedule()
     end
@@ -271,8 +375,11 @@ function ns.InitBar()
         return
     end
     ns.barPending = false
+    bar:SetScale(db.scale) -- before positioning: the position is stored in the scaled system
     ns.LoadPosition()
     ns.ApplyLock()
+    ns.ApplyCombatHide()
+    ns.ApplyLook()
     ns.Refresh()
     if not ticker then
         ticker = C_Timer.NewTicker(1, function()
