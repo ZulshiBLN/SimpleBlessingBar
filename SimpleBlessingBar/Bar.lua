@@ -72,6 +72,57 @@ function ns.HideTooltip()
     GameTooltip:Hide()
 end
 
+-- The highlight ("marching ants" like spell procs in the Retail client), as in
+-- SimpleConjureBar. It sits on its own frame above the button; the animation runs
+-- (OnUpdate) only while the highlight is visible. Color and speed are the button's own
+-- settings: colorKey and speedKey name them; without keys (the class buttons) they are
+-- SimpleConjureBar's defaults.
+function ns.AttachAnts(b, colorKey, speedKey)
+    local holder = CreateFrame("Frame", nil, b)
+    holder:SetAllPoints()
+    holder:SetFrameLevel(b:GetFrameLevel() + 2)
+
+    local ants = holder:CreateTexture(nil, "OVERLAY")
+    ants:SetTexture(D.ANTS_TEX)
+    ants:SetDesaturated(true)
+    ants:SetBlendMode("ADD")
+    local c = D.ANTS_COLOR
+    ants:SetVertexColor(c.r, c.g, c.b, c.a)
+    ants:SetPoint("CENTER")
+    ants:SetSize(SIZE * 1.42, SIZE * 1.42)
+    ants:Hide()
+
+    local frame, timer = 0, 0
+    local function SetFrame(i)
+        local col, row = i % D.ANTS_COLS, math.floor(i / D.ANTS_COLS)
+        ants:SetTexCoord(col * D.ANTS_CELL, (col + 1) * D.ANTS_CELL, row * D.ANTS_CELL, (row + 1) * D.ANTS_CELL)
+    end
+    SetFrame(0)
+
+    b.ants, b.antsHolder, b.antsColorKey = ants, holder, colorKey
+    b.antsUpdate = function(_, elapsed)
+        local step = D.ANTS_STEPS[speedKey and db[speedKey] or D.ANTS_SPEED_DEFAULT]
+        timer = timer + elapsed
+        if timer < step then return end
+        frame = (frame + math.floor(timer / step)) % D.ANTS_FRAMES
+        timer = timer % step
+        SetFrame(frame)
+    end
+end
+
+-- Shows or hides a button's highlight and starts or stops its animation
+function ns.SetAnts(b, shown)
+    if shown == b.antsShown then return end
+    b.antsShown = shown
+    if shown then
+        b.ants:Show()
+        b.antsHolder:SetScript("OnUpdate", b.antsUpdate)
+    else
+        b.ants:Hide()
+        b.antsHolder:SetScript("OnUpdate", nil)
+    end
+end
+
 ---------------------------------------------------------------------------
 -- Bar and handle
 ---------------------------------------------------------------------------
@@ -227,6 +278,7 @@ for _, class in ipairs(D.CLASS_ORDER) do
     b.blessIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     b:SetScript("OnEnter", ns.ShowSpellTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
+    ns.AttachAnts(b)
     b.class = class
     b:Hide()
     buttons[class] = b
@@ -251,7 +303,10 @@ local function Update(b, family)
     b.blessIcon:SetTexture(icon and C_Spell.GetSpellTexture(icon) or nil)
     b.classIcon:SetDesaturated(not state.castable)
     b.blessIcon:SetDesaturated(not state.castable)
-    b.count:SetText(state.castable and tostring(state.count) or "")
+    -- The count and the ants show only while members lack the blessing; a 0 shows nothing
+    local lacking = state.castable and state.count > 0
+    b.count:SetText(lacking and tostring(state.count) or "")
+    ns.SetAnts(b, lacking)
 end
 
 ---------------------------------------------------------------------------
@@ -339,6 +394,7 @@ function ns.Refresh()
             Update(b, db.assign[class])
         elseif b:IsShown() then
             SetAction(b, nil)
+            ns.SetAnts(b, false)
             b:Hide()
         end
     end

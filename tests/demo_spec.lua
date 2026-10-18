@@ -40,7 +40,9 @@ describe("demo mode", function()
         for _, class in ipairs(D.CLASS_ORDER) do
             local b = ns.classButtons[class]
             assert.is_true(b:IsShown(), class)
-            assert.are.equal(tostring(D.DEMO_COUNTS[class]), b.count:GetText(), class)
+            local n = D.DEMO_COUNTS[class]
+            assert.are.equal(n > 0 and tostring(n) or "", b.count:GetText(), class)
+            assert.are.equal(n > 0, b.ants:IsShown(), class)
         end
         assert.are.same({}, STATE.errors)
     end)
