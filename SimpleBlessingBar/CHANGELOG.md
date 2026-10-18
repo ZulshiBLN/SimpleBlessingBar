@@ -11,7 +11,16 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - A movable bar with one button per class in your group. A left click blesses the next member
   of that class who lacks your blessing, as a Greater Blessing when you know it and carry a
   Symbol of Kings. Each button shows how many lack it.
-- An aura button and a Righteous Fury button. Each glows while what it casts is missing.
+- An aura button and a Righteous Fury button. Each is highlighted while what it casts is
+  missing.
 - Flyouts: a right click on the aura button or a class button opens your auras or blessings
-  above it. A click on one casts it at once, also in combat, and the button keeps it.
-- `/sbb` with `help`, `lock` and `reset`.
+  beside it. A click on one selects it for the button without casting, also in combat. A
+  flyout closes 2 seconds after the mouse leaves it, and a left click on any button of the bar
+  closes every open flyout.
+- A settings window, opened with `/sbb`. General: language, hide in combat, scale, border,
+  background color, orientation and growth direction, demo mode, Reload UI. Tracking: show the
+  aura and Righteous Fury buttons, their highlight's color and speed, the count color, and the
+  flyouts' automatic closing and its time.
+- Demo mode shows every class with sample counts and casts nothing; the chat says what a click
+  would cast.
+- `/sbb help`, `/sbb lock` and `/sbb reset`.

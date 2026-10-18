@@ -20,16 +20,19 @@ The addon loads for paladins only.
 
 | Button | Left click | Right click |
 |---|---|---|
-| Aura | Cast the chosen aura, highest rank you know - glows while none of your auras is up | Open the aura flyout |
-| Righteous Fury | Cast Righteous Fury - glows while it is missing | – |
+| Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
+| Righteous Fury | Cast Righteous Fury - highlighted while it is missing | – |
 | One per class in your group | Bless the next member of that class who lacks your blessing | Open the blessing flyout |
-| Handle (left edge) | Drag to move | Lock or unlock |
+| Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
 
-**Flyouts.** A right click opens a row of icons above the button - your auras, or the
+**Flyouts.** A right click opens a row of icons beside the button - your auras, or the
 blessings you know - and closes any other flyout; a second right click closes it. A click on
-an icon casts it at once, **also in combat**, and the button keeps it from then on. Each
-blessing icon aims at the member of that class who lacks that blessing; a greyed icon has
-nobody in range and does nothing. Hover an icon for the game's own tooltip.
+an icon **selects** it for the button without casting, **also in combat**; the button's left
+click casts it. Each blessing icon aims at the member of that class who lacks that blessing; a
+greyed icon has nobody in range and does nothing. Hover an icon for the game's own tooltip.
+A flyout closes 2 seconds after the mouse leaves it (see the settings), and a left click on
+any button of the bar closes every open flyout. Flyouts open up or down, left or right,
+towards the middle of the screen.
 
 - A class button shows the class, the blessing chosen for it and how many members of the class
   lack your blessing. Dead and offline players are not counted.
@@ -38,22 +41,45 @@ nobody in range and does nothing. Hover an icon for the game's own tooltip.
   that runs out first.
 - A greyed class button has no blessing chosen, or one you have not learned. It does nothing.
 - **Salvation** goes only to members of your own party; Mass Salvation reaches the whole class.
-- **In combat** the game hides who has which buff. The counts and the glows keep their state
+- **In combat** the game hides who has which buff. The counts and the highlights keep their state
   from before the fight, and a click blesses the member chosen then - also after you pick
   another blessing from a flyout. Everything updates when combat ends.
 - Blessing of Sanctuary does not exist on WoW Forever.
+
+## Settings
+
+`/sbb` opens the settings window; Escape closes it. It closes when combat starts and opens again
+when combat ends. Every change takes effect at once.
+
+**General**
+- Language: automatic (the client's) or any of the eleven, switched without a reload.
+- Hide the bar in combat.
+- Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too).
+- Border on or off, and the background color with its opacity - for the bar and the flyouts.
+- Orientation (horizontal or vertical) and the direction the bar grows.
+- **Demo mode**: shows a button for every class with sample counts, and every aura and
+  blessing as if learned. Clicks cast nothing; the chat says what would be cast. Demo mode is
+  off after every login and cannot be switched in combat.
+- Reload UI.
+
+**Tracking**
+- Aura and Righteous Fury: show the button or not, the highlight's color and its speed.
+- Blessings: the color of the count on the class buttons.
+- Flyouts: close automatically or not, and after how many seconds (1 to 10).
 
 ## Chat commands
 
 | Command | Action |
 |---|---|
-| `/sbb` or `/sbb help` | List the commands |
+| `/sbb` | Open or close the settings window |
+| `/sbb help` | List the commands |
 | `/sbb lock` | Lock or unlock the bar |
 | `/sbb reset` | Move the bar back to its start position (not in combat) |
 
 ## Languages
 
-enUS, deDE, frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW. The language follows the client.
+enUS, deDE, frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW. The language follows the client
+unless you choose another in the settings.
 
 ## Code structure
 
@@ -61,11 +87,13 @@ enUS, deDE, frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW. The language f
 |---|---|
 | `Locales.lua` | All texts per language, locale switching |
 | `Data.lua` | Spell IDs by rank, class order, defaults, the settings' schema version |
-| `Core.lua` | Paladin check, chat output, secure attributes, saved variables |
+| `Core.lua` | Paladin check, chat output, language registry, secure attributes, saved variables, demo mode |
 | `Blessings.lua` | Known blessings, rank and Greater choice, group scan, who lacks a blessing, targets |
-| `Bar.lua` | Bar, handle, position and lock, class buttons, refresh |
-| `SelfBuffs.lua` | Aura and Righteous Fury buttons and their glow |
-| `Flyout.lua` | Secure header, the aura and class flyouts |
+| `Bar.lua` | Bar, handle, position and lock, layout, scale and look, class buttons, refresh |
+| `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
+| `Flyout.lua` | Secure header, the aura and class flyouts, demo mode's chat output |
+| `Settings.lua` | Settings window, tabs, widgets, color picker |
+| `SettingsPages.lua` | The General and Tracking pages |
 | `Main.lua` | Startup and chat commands |
 
 Modules share code through the addon namespace (`ns`). Each file is its own Lua chunk, which keeps
