@@ -40,6 +40,8 @@ screen, or in the direction chosen in the settings.
 - A class button shows the class, the blessing chosen for it and how many members of the class
   lack your blessing; with nobody lacking it, no number shows. Dead and offline players are
   not counted.
+- Once you know a Greater Blessing, the number in the middle of a class button is how many
+  Symbols of Kings you carry: orange at or below the warning threshold, red at 0.
 - The blessing is cast as a **Greater Blessing** when you know it and carry a Symbol of Kings,
   otherwise in the highest rank you know. With nobody lacking it, a click renews the blessing
   that runs out first.
@@ -52,12 +54,13 @@ screen, or in the direction chosen in the settings.
 
 ## Settings
 
-`/sbb` opens the settings window; Escape closes it. It closes when combat starts and opens again
-when combat ends. Every change takes effect at once.
+`/sbb`, a middle click on the handle, the minimap button, the AddOn menu next to the minimap,
+or the button in the game's Options > AddOns open the settings window; Escape closes it. It
+closes when combat starts and opens again when combat ends. Every change takes effect at once.
 
 **General**
 - Language: automatic (the client's) or any of the eleven, switched without a reload.
-- Hide the bar in combat.
+- Hide the bar in combat; hide the minimap button.
 - Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too).
 - Border on or off, and the background color with its opacity - for the bar and the flyouts.
 - Orientation (horizontal or vertical), the direction the bar grows, and the direction the
@@ -66,12 +69,33 @@ when combat ends. Every change takes effect at once.
 - **Demo mode**: shows a button for every class with sample counts, and every aura and
   blessing as if learned. Clicks cast nothing; the chat says what would be cast. Demo mode is
   off after every login and cannot be switched in combat.
-- Reload UI.
+- Report bug, and Reload UI.
 
 **Tracking**
 - Aura and Righteous Fury: show the button or not, the highlight's color and its speed.
 - Blessings: the class buttons' highlight color and speed, and the color of their count.
 - Flyouts: close automatically or not, and after how many seconds (1 to 5, 3 by default).
+
+**Supplies**
+- Symbol of Kings: the warning threshold (0 = no warning) and the warning and empty colors of
+  its count.
+- Auto-buy: at a vendor that sells them, Symbols of Kings are bought up to the amount you want
+  in your bags, never spending below the gold reserve. Only once you know a Greater Blessing.
+  The chat says what was bought and what it cost.
+
+**Order**
+- Drag the rows to reorder the bar: the aura, Righteous Fury and the class buttons, which move
+  as one block. Inside the block, indented, drag the classes into the order you like. "Default"
+  restores both.
+
+**Macros** - prepared; macros follow in a later version.
+
+**Minimap button** - left click opens the settings, right click locks or unlocks the bar, drag
+moves it around the minimap.
+
+**Bug report** - `/sbb bug` or "Report bug" builds a report with the addon version, client,
+language, settings and this addon's errors from BugSack, if installed. Copy it with Ctrl+C and
+paste it as a new issue on GitHub. It contains no character name or realm.
 
 ## Chat commands
 
@@ -81,6 +105,7 @@ when combat ends. Every change takes effect at once.
 | `/sbb help` | List the commands |
 | `/sbb lock` | Lock or unlock the bar |
 | `/sbb reset` | Move the bar back to its start position (not in combat) |
+| `/sbb bug` | Open the bug report |
 
 ## Languages
 
@@ -98,8 +123,11 @@ unless you choose another in the settings.
 | `Bar.lua` | Bar, handle, position and lock, layout, scale and look, class buttons, refresh |
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Flyout.lua` | Secure header, the aura and class flyouts, demo mode's chat output |
+| `Merchant.lua` | Symbol of Kings auto-buy |
+| `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
+| `Report.lua` | Bug report window |
 | `Settings.lua` | Settings window, tabs, widgets, color picker |
-| `SettingsPages.lua` | The General and Tracking pages |
+| `SettingsPages.lua` | The General, Tracking, Supplies, Order and Macros pages |
 | `Main.lua` | Startup and chat commands |
 
 Modules share code through the addon namespace (`ns`). Each file is its own Lua chunk, which keeps
@@ -110,6 +138,8 @@ every file far below Lua's limit of 200 local variables per chunk.
 - Saved settings are validated at login, so damaged files cannot break the addon.
 - No personal data is stored: only your choices and the bar's position.
 - No addon messages are sent yet.
+- The bug report is only shown to you, to copy; the addon sends nothing. It leaves out your
+  character's names and realm.
 
 ## License
 
