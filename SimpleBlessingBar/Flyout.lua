@@ -70,12 +70,11 @@ end
 local function Save(icon, mouseButton, down)
     if mouseButton ~= "LeftButton" or not icon:GetAttribute("type1") then return end
     if (down == true) ~= (GetCVarBool("ActionButtonUseKeyDown") == true) then return end
-    local fly = icon:GetParent()
-    fly.save(icon.family)
-    fly.main.icon:SetTexture(C_Spell.GetSpellTexture(icon:GetAttribute("spell1")))
+    icon:GetParent().save(icon.family, icon:GetAttribute("spell1"))
 end
 
--- One flyout above a main button. `save(family)` stores a choice.
+-- One flyout above a main button. `save(family, spell)` stores a choice and shows it on the
+-- main button; the counts follow at the next refresh.
 function ns.CreateFlyout(key, main, save)
     local fly = CreateFrame("Frame", "SimpleBlessingBarFlyout" .. key, main)
     fly:SetPoint("BOTTOM", main, "TOP", 0, GAP)
@@ -129,7 +128,11 @@ end
 ---------------------------------------------------------------------------
 -- Aura flyout
 ---------------------------------------------------------------------------
-local auraFly = ns.CreateFlyout("AURA", ns.auraButton, function(family) db.aura = family end)
+local auraFly = ns.CreateFlyout("AURA", ns.auraButton, function(family, spell)
+    db.aura = family
+    ns.auraButton.icon:SetTexture(C_Spell.GetSpellTexture(spell))
+    ns.auraButton.icon:SetDesaturated(false)
+end)
 
 table.insert(ns.onRefresh, function()
     local entries = {}
@@ -137,4 +140,34 @@ table.insert(ns.onRefresh, function()
         entries[#entries + 1] = { family = key, spell = B.Rank(D.AURAS[key]), unit = "player" }
     end
     ns.FillFlyout(auraFly, entries)
+end)
+
+---------------------------------------------------------------------------
+-- Class flyouts
+---------------------------------------------------------------------------
+-- Each icon carries its own target: the member lacking that very blessing, chosen out of
+-- combat - so a Salvation icon stays within the paladin's party.
+local classFlys = {}
+for _, class in ipairs(D.CLASS_ORDER) do
+    local button = ns.classButtons[class]
+    classFlys[class] = ns.CreateFlyout(class, button, function(family, spell)
+        db.assign[class] = family
+        button.blessIcon:SetTexture(C_Spell.GetSpellTexture(spell))
+        button.blessIcon:SetDesaturated(false)
+        button.classIcon:SetDesaturated(false)
+    end)
+end
+
+-- Only the classes in the group: each icon scans the group once a second
+table.insert(ns.onRefresh, function()
+    for _, class in ipairs(D.CLASS_ORDER) do
+        if ns.classButtons[class]:IsShown() then
+            local entries = {}
+            for _, family in ipairs(B.KnownFamilies()) do
+                local state = B.ClassState(class, family)
+                entries[#entries + 1] = { family = family, spell = state.spell, unit = state.target }
+            end
+            ns.FillFlyout(classFlys[class], entries)
+        end
+    end
 end)

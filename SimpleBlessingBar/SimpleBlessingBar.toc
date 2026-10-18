@@ -36,7 +36,6 @@ Data.lua
 Core.lua
 Blessings.lua
 Bar.lua
-Menu.lua
 SelfBuffs.lua
 Flyout.lua
 Main.lua

@@ -32,6 +32,16 @@ function B.CastSpell(familyKey)
     if normal then return normal, false end
 end
 
+-- The blessing families the paladin knows in any rank or form, in flyout order
+function B.KnownFamilies()
+    local list = {}
+    for _, family in ipairs(D.BLESSING_ORDER) do
+        local f = D.BLESSINGS[family]
+        if B.Rank(f.normal) or B.Rank(f.greater) then list[#list + 1] = family end
+    end
+    return list
+end
+
 -- The group's unit tokens: alone the player, in a party the player and party1-4, in a raid
 -- raid1-40. Pets are not members.
 function B.Members()
