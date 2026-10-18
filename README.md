@@ -22,20 +22,24 @@ The addon loads for paladins only.
 |---|---|---|
 | Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing | – |
-| One per class in your group | Bless the next member of that class who lacks your blessing | Open the blessing flyout |
+| One per class in your group | Bless the next member of that class who lacks your blessing - highlighted while someone lacks it | Open the blessing flyout |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
+
+A middle click on the handle opens or closes the settings; hover it for a tooltip with the
+lock state and its clicks.
 
 **Flyouts.** A right click opens a row of icons beside the button - your auras, or the
 blessings you know - and closes any other flyout; a second right click closes it. A click on
 an icon **selects** it for the button without casting, **also in combat**; the button's left
 click casts it. Each blessing icon aims at the member of that class who lacks that blessing; a
 greyed icon has nobody in range and does nothing. Hover an icon for the game's own tooltip.
-A flyout closes 2 seconds after the mouse leaves it (see the settings), and a left click on
-any button of the bar closes every open flyout. Flyouts open up or down, left or right,
-towards the middle of the screen.
+A flyout closes 3 seconds after the mouse leaves it (see the settings), and a left click on
+any button of the bar closes every open flyout. Flyouts open towards the middle of the
+screen, or in the direction chosen in the settings.
 
 - A class button shows the class, the blessing chosen for it and how many members of the class
-  lack your blessing. Dead and offline players are not counted.
+  lack your blessing; with nobody lacking it, no number shows. Dead and offline players are
+  not counted.
 - The blessing is cast as a **Greater Blessing** when you know it and carry a Symbol of Kings,
   otherwise in the highest rank you know. With nobody lacking it, a click renews the blessing
   that runs out first.
@@ -56,7 +60,9 @@ when combat ends. Every change takes effect at once.
 - Hide the bar in combat.
 - Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too).
 - Border on or off, and the background color with its opacity - for the bar and the flyouts.
-- Orientation (horizontal or vertical) and the direction the bar grows.
+- Orientation (horizontal or vertical), the direction the bar grows, and the direction the
+  flyouts open: automatic (towards the middle of the screen), or up or down for a horizontal
+  bar, right or left for a vertical one.
 - **Demo mode**: shows a button for every class with sample counts, and every aura and
   blessing as if learned. Clicks cast nothing; the chat says what would be cast. Demo mode is
   off after every login and cannot be switched in combat.
@@ -64,8 +70,8 @@ when combat ends. Every change takes effect at once.
 
 **Tracking**
 - Aura and Righteous Fury: show the button or not, the highlight's color and its speed.
-- Blessings: the color of the count on the class buttons.
-- Flyouts: close automatically or not, and after how many seconds (1 to 10).
+- Blessings: the class buttons' highlight color and speed, and the color of their count.
+- Flyouts: close automatically or not, and after how many seconds (1 to 5, 3 by default).
 
 ## Chat commands
 
