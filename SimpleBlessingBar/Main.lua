@@ -25,6 +25,7 @@ SLASH_SIMPLEBLESSINGBAR1 = "/sbb"
 
 -- In the order /sbb help lists them
 local COMMANDS = {
+    { cmd = "",      desc = "CMD_OPEN" },
     { cmd = "help",  desc = "CMD_HELP" },
     { cmd = "lock",  desc = "CMD_LOCK" },
     { cmd = "reset", desc = "CMD_RESET" },
@@ -33,7 +34,8 @@ local COMMANDS = {
 local function PrintHelp()
     ns.Print(L.HELP_HEADER)
     for _, c in ipairs(COMMANDS) do
-        print("   |cffffd100/sbb " .. c.cmd .. "|r - " .. L[c.desc])
+        local full = c.cmd == "" and "/sbb" or ("/sbb " .. c.cmd)
+        print("   |cffffd100" .. full .. "|r - " .. L[c.desc])
     end
 end
 
@@ -41,7 +43,9 @@ SlashCmdList.SIMPLEBLESSINGBAR = function(msg)
     local db = SimpleBlessingBarDB
     if type(db) ~= "table" then return end -- before PLAYER_LOGIN
     msg = (msg or ""):lower():match("^%s*(.-)%s*$")
-    if msg == "" or msg == "help" then
+    if msg == "" then
+        ns.ToggleSettings()
+    elseif msg == "help" then
         PrintHelp()
     elseif msg == "lock" then
         ns.ToggleLock()

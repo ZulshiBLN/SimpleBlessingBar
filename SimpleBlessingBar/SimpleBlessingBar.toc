@@ -38,4 +38,6 @@ Blessings.lua
 Bar.lua
 SelfBuffs.lua
 Flyout.lua
+Settings.lua
+SettingsPages.lua
 Main.lua

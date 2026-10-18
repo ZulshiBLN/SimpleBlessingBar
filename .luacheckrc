@@ -26,7 +26,7 @@ globals = {
 -- own entry may be written.
 read_globals = {
     "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CLASS_ICON_TCOORDS", "CreateFrame",
-    "UIParent",
+    "UIParent", "UISpecialFrames", "tinsert",
     "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",

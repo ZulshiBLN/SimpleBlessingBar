@@ -19,6 +19,10 @@ locales.enUS = {
     UNLOCKED = "Bar unlocked.",
     POS_RESET = "Bar position reset.",
     CMD_UNKNOWN = "Unknown command. Type %s for a list.",
+    TAB_GENERAL = "General",
+    TAB_TRACKING = "Tracking",
+    CMD_OPEN = "Open the settings window",
+    MENU_COMBAT = "The settings can't be opened in combat.",
 }
 
 locales.deDE = {
@@ -32,6 +36,10 @@ locales.deDE = {
     UNLOCKED = "Leiste entsperrt.",
     POS_RESET = "Position der Leiste zurückgesetzt.",
     CMD_UNKNOWN = "Unbekannter Befehl. %s zeigt alle Befehle.",
+    TAB_GENERAL = "Allgemein",
+    TAB_TRACKING = "Überwachung",
+    CMD_OPEN = "Einstellungsfenster öffnen",
+    MENU_COMBAT = "Das Menü kann im Kampf nicht geöffnet werden.",
 }
 
 locales.frFR = {
@@ -45,6 +53,10 @@ locales.frFR = {
     UNLOCKED = "Barre déverrouillée.",
     POS_RESET = "Position de la barre réinitialisée.",
     CMD_UNKNOWN = "Commande inconnue. Tapez %s pour la liste.",
+    TAB_GENERAL = "Général",
+    TAB_TRACKING = "Suivi",
+    CMD_OPEN = "Ouvrir la fenêtre d'options",
+    MENU_COMBAT = "Les options ne peuvent pas être ouvertes en combat.",
 }
 
 locales.esES = {
@@ -58,6 +70,10 @@ locales.esES = {
     UNLOCKED = "Barra desbloqueada.",
     POS_RESET = "Posición de la barra restablecida.",
     CMD_UNKNOWN = "Comando desconocido. Escribe %s para ver la lista.",
+    TAB_GENERAL = "General",
+    TAB_TRACKING = "Seguimiento",
+    CMD_OPEN = "Abrir la ventana de opciones",
+    MENU_COMBAT = "Las opciones no se pueden abrir en combate.",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -75,6 +91,10 @@ locales.itIT = {
     UNLOCKED = "Barra sbloccata.",
     POS_RESET = "Posizione della barra ripristinata.",
     CMD_UNKNOWN = "Comando sconosciuto. Digita %s per l'elenco.",
+    TAB_GENERAL = "Generale",
+    TAB_TRACKING = "Monitoraggio",
+    CMD_OPEN = "Apri la finestra delle impostazioni",
+    MENU_COMBAT = "Le opzioni non possono essere aperte in combattimento.",
 }
 
 locales.ptBR = {
@@ -88,6 +108,10 @@ locales.ptBR = {
     UNLOCKED = "Barra destravada.",
     POS_RESET = "Posição da barra redefinida.",
     CMD_UNKNOWN = "Comando desconhecido. Digite %s para ver a lista.",
+    TAB_GENERAL = "Geral",
+    TAB_TRACKING = "Monitoramento",
+    CMD_OPEN = "Abrir a janela de configurações",
+    MENU_COMBAT = "As opções não podem ser abertas em combate.",
 }
 
 locales.ruRU = {
@@ -101,6 +125,10 @@ locales.ruRU = {
     UNLOCKED = "Панель откреплена.",
     POS_RESET = "Положение панели сброшено.",
     CMD_UNKNOWN = "Неизвестная команда. Введите %s для списка.",
+    TAB_GENERAL = "Общие",
+    TAB_TRACKING = "Отслеживание",
+    CMD_OPEN = "Открыть окно настроек",
+    MENU_COMBAT = "Настройки нельзя открыть в бою.",
 }
 
 locales.koKR = {
@@ -114,6 +142,10 @@ locales.koKR = {
     UNLOCKED = "바 잠금이 해제되었습니다.",
     POS_RESET = "바 위치가 초기화되었습니다.",
     CMD_UNKNOWN = "알 수 없는 명령어입니다. 목록은 %s 를 입력하세요.",
+    TAB_GENERAL = "일반",
+    TAB_TRACKING = "추적",
+    CMD_OPEN = "설정 창 열기",
+    MENU_COMBAT = "전투 중에는 설정을 열 수 없습니다.",
 }
 
 locales.zhCN = {
@@ -127,6 +159,10 @@ locales.zhCN = {
     UNLOCKED = "动作条已解锁。",
     POS_RESET = "动作条位置已重置。",
     CMD_UNKNOWN = "未知命令。输入 %s 查看列表。",
+    TAB_GENERAL = "常规",
+    TAB_TRACKING = "追踪",
+    CMD_OPEN = "打开设置窗口",
+    MENU_COMBAT = "战斗中无法打开设置。",
 }
 
 locales.zhTW = {
@@ -140,6 +176,10 @@ locales.zhTW = {
     UNLOCKED = "動作條已解鎖。",
     POS_RESET = "動作條位置已重置。",
     CMD_UNKNOWN = "未知指令。輸入 %s 查看列表。",
+    TAB_GENERAL = "一般",
+    TAB_TRACKING = "追蹤",
+    CMD_OPEN = "開啟設定視窗",
+    MENU_COMBAT = "戰鬥中無法開啟設定。",
 }
 
 local client = GetLocale()

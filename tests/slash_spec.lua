@@ -22,17 +22,26 @@ local function printed(text, from)
 end
 
 describe("/sbb", function()
-    it("is the command, and help or nothing lists every command", function()
+    it("is the command, and help lists every command, the window's too", function()
         local ns = login()
         assert.are.equal("/sbb", SLASH_SIMPLEBLESSINGBAR1)
-        for _, msg in ipairs({ "help", "", "  HELP " }) do
+        for _, msg in ipairs({ "help", "  HELP " }) do
             local from = #CHAT + 1
             sbb(msg)
             assert.is_true(printed(ns.L.HELP_HEADER, from), msg)
             for _, cmd in ipairs({ "help", "lock", "reset" }) do
                 assert.is_true(printed("/sbb " .. cmd, from), msg .. ": " .. cmd)
             end
+            assert.is_true(printed(ns.L.CMD_OPEN, from), msg)
         end
+    end)
+
+    it("alone opens the settings window, and lists nothing", function()
+        local ns = login()
+        local from = #CHAT + 1
+        sbb("")
+        assert.is_true(ns.UI.window:IsShown())
+        assert.is_false(printed(ns.L.HELP_HEADER, from))
     end)
 
     it("lock toggles the lock and says which", function()

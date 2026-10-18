@@ -36,8 +36,15 @@ function Methods:GetScript(s) return self.scripts[s] end
 function Methods:HookScript(s, f) self.hooks[s] = self.hooks[s] or {}; table.insert(self.hooks[s], f) end
 function Methods:SetAttribute(k, v) Guard(self, "SetAttribute"); self.attrs[k] = v end
 function Methods:GetAttribute(k) return self.attrs[k] end
-function Methods:Show() Guard(self, "Show"); self.shown = true end
-function Methods:Hide() Guard(self, "Hide"); self.shown = false end
+-- Showing or hiding runs OnShow / OnHide, as in the client, but only on a real change
+function Methods:Show()
+  Guard(self, "Show")
+  if not self.shown then self.shown = true; RUNSCRIPT(self, "OnShow") end
+end
+function Methods:Hide()
+  Guard(self, "Hide")
+  if self.shown then self.shown = false; RUNSCRIPT(self, "OnHide") end
+end
 function Methods:IsShown() return self.shown end
 function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
 function Methods:ClearAllPoints() Guard(self, "ClearAllPoints"); self.points = {} end
@@ -55,8 +62,18 @@ function Methods:SetTexture(t) self.texture = t end
 function Methods:GetTexture() return self.texture end
 function Methods:SetDesaturated(v) self.desaturated = v end
 function Methods:IsDesaturated() return self.desaturated == true end
-function Methods:SetText(t) self.text = t end
+function Methods:SetText(t)
+  self.text = t
+  -- A button shows its text on its own font string, as the client's do
+  if self.kind == "Button" then self:GetFontString().text = t end
+end
 function Methods:GetText() return self.text end
+function Methods:GetFontString()
+  self.fontString = rawget(self, "fontString") or NEWOBJ("FontString")
+  return self.fontString
+end
+-- Text width as the mock measures it: 7 px per byte
+function Methods:GetStringWidth() return #tostring(rawget(self, "text") or "") * 7 end
 function Methods:IsMouseOver() return false end
 function Methods:GetName() return rawget(self, "name") end
 function Methods:GetPushedTexture() self.pushedTex = rawget(self, "pushedTex") or NEWOBJ("Texture"); return self.pushedTex end
@@ -245,6 +262,8 @@ function TICK()
 end
 
 UIParent = CreateFrame("Frame", "UIParent")
+UISpecialFrames = {}
+tinsert = table.insert
 CLASS_ICON_TCOORDS = {}
 for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
   CLASS_ICON_TCOORDS[class] = { 0, 0.25, 0, 0.25 }
