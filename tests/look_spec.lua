@@ -22,6 +22,14 @@ describe("the look", function()
         end
     end)
 
+    it("shows each class as a square icon, cut like the spell icons", function()
+        local ns = login()
+        local icon = ns.classButtons.MAGE.classIcon
+        assert.are.equal("Interface\\Icons\\ClassIcon_MAGE", icon:GetTexture())
+        assert.are.same({ 0.07, 0.93, 0.07, 0.93 }, icon.texCoord)
+        assert.are.same(ns.auraButton.icon.texCoord, icon.texCoord)
+    end)
+
     it("marks exactly the buttons with a flyout with an arrow", function()
         local ns = login()
         assert.is_truthy(rawget(ns.auraButton, "arrow"))

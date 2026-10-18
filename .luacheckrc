@@ -25,7 +25,7 @@ globals = {
 -- reported instead of trusted. SlashCmdList is shared by every addon; only our
 -- own entry may be written.
 read_globals = {
-    "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CLASS_ICON_TCOORDS", "CreateFrame",
+    "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CreateFrame",
     "UIParent", "UISpecialFrames", "tinsert",
     "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",

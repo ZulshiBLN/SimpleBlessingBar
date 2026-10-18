@@ -350,10 +350,6 @@ UnregisterStateDriver = function(frame, state)
 end
 ReloadUI = function() STATE.reloaded = true end
 tinsert = table.insert
-CLASS_ICON_TCOORDS = {}
-for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
-  CLASS_ICON_TCOORDS[class] = { 0, 0.25, 0, 0.25 }
-end
 
 -- Runs every OnEvent script registered for the event; an error is recorded
 -- in STATE.errors, as BugGrabber would, instead of stopping the spec.

@@ -10,7 +10,9 @@ local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
 
 local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
-local CLASS_ICONS = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
+-- Square class icons, cut like spell icons. The character creation sprite carries its own
+-- round frame and looked like a classic button beside the others (Michel, 2026-10-18).
+local CLASS_ICON = "Interface\\Icons\\ClassIcon_"
 
 local db
 ns.OnDBReady(function(d) db = d end)
@@ -219,8 +221,7 @@ ns.classButtons = buttons
 for _, class in ipairs(D.CLASS_ORDER) do
     local b = ns.CreateSecureButton("SimpleBlessingBarClass" .. class, bar)
     b.classIcon = b.icon
-    b.classIcon:SetTexture(CLASS_ICONS)
-    b.classIcon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+    b.classIcon:SetTexture(CLASS_ICON .. class)
     b.blessIcon = b:CreateTexture(nil, "ARTWORK")
     b.blessIcon:SetSize(SIZE / 2 - 2, SIZE / 2 - 2)
     b.blessIcon:SetPoint("TOPRIGHT", b, "TOPRIGHT", -1, -1)
