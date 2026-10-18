@@ -1,0 +1,35 @@
+## Interface: 16001
+## Title: SimpleBlessingBar
+## IconTexture: Interface\Icons\Spell_Holy_SealOfWisdom
+## Notes: Paladin blessing manager: assign, coordinate and cast blessings and auras
+## Notes-deDE: Segensverwaltung für Paladine: Segen und Auren zuweisen, abstimmen und wirken
+## Notes-frFR: Gestion des bénédictions de paladin : attribuer, coordonner et lancer bénédictions et auras
+## Notes-esES: Gestor de bendiciones de paladín: asignar, coordinar y lanzar bendiciones y auras
+## Notes-esMX: Gestor de bendiciones de paladín: asignar, coordinar y lanzar bendiciones y auras
+## Notes-itIT: Gestione delle benedizioni del paladino: assegna, coordina e lancia benedizioni e aure
+## Notes-ptBR: Gerenciador de bênçãos de paladino: atribuir, coordenar e lançar bênçãos e auras
+## Notes-ruRU: Менеджер благословений паладина: назначение, согласование и наложение благословений и аур
+## Notes-koKR: 성기사 축복 관리: 축복과 오라를 배정, 조율하고 시전
+## Notes-zhCN: 圣骑士祝福管理：分配、协调并施放祝福和光环
+## Notes-zhTW: 聖騎士祝福管理：分配、協調並施放祝福和光環
+## Author: ZulshiBLN
+## Version: 0.1.0
+## X-License: MIT
+## Category: Class
+## Category-deDE: Klasse
+## Category-frFR: Classe
+## Category-esES: Clase
+## Category-esMX: Clase
+## Category-itIT: Classe
+## Category-ptBR: Classe
+## Category-ruRU: Класс
+## Category-koKR: 직업
+## Category-zhCN: 职业
+## Category-zhTW: 職業
+## SavedVariables: SimpleBlessingBarGlobalDB
+## SavedVariablesPerCharacter: SimpleBlessingBarDB
+
+Locales.lua
+Data.lua
+Core.lua
+Main.lua
