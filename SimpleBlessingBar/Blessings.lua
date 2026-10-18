@@ -11,23 +11,28 @@ local D = ns.D
 local B = {}
 ns.Blessings = B
 
+-- The one test of a known spell; in demo mode every spell counts as known
+function B.Known(id)
+    return ns.IsDemo() or IsPlayerSpell(id)
+end
+
 -- The highest known entry of a list ordered by rank, or nil
 function B.Rank(list)
     local best
     for _, id in ipairs(list) do
-        if IsPlayerSpell(id) then best = id end
+        if B.Known(id) then best = id end
     end
     return best
 end
 
 -- The spell a class button casts for a blessing family: the Greater form when known and a
--- Symbol of Kings is in the bags, otherwise the highest known normal rank.
--- Returns the spell ID and whether it is a Greater Blessing, or nil when nothing is known.
+-- Symbol of Kings is in the bags (in demo mode: assumed), otherwise the highest known normal
+-- rank. Returns the spell ID and whether it is a Greater Blessing, or nil when nothing is known.
 function B.CastSpell(familyKey)
     local family = D.BLESSINGS[familyKey]
     if not family then return end
     local greater = B.Rank(family.greater)
-    if greater and C_Item.GetItemCount(D.SYMBOL_OF_KINGS) > 0 then return greater, true end
+    if greater and (ns.IsDemo() or C_Item.GetItemCount(D.SYMBOL_OF_KINGS) > 0) then return greater, true end
     local normal = B.Rank(family.normal)
     if normal then return normal, false end
 end
@@ -101,9 +106,14 @@ end
 -- The state of one class button: { castable, spell, greater, count, target }.
 -- count: eligible members of the class lacking the blessing. target: the first lacking
 -- member in range; else the member in range whose blessing ends first; else nil.
+-- In demo mode: the sample count of D.DEMO_COUNTS and the player as target, without reading
+-- auras or units.
 function B.ClassState(class, familyKey)
     local spell, greater = B.CastSpell(familyKey)
     if not spell then return { castable = false, count = 0 } end
+    if ns.IsDemo() then
+        return { castable = true, spell = spell, greater = greater, count = D.DEMO_COUNTS[class], target = "player" }
+    end
 
     local party = (D.BLESSINGS[familyKey].normalPartyOnly and not greater) and B.PartySet() or nil
     local state = { castable = true, spell = spell, greater = greater, count = 0 }

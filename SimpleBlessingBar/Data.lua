@@ -46,6 +46,11 @@ D.SYMBOL_OF_KINGS = 21177
 -- Class buttons appear in this order, each only while the class is in the group
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 
+-- Demo mode's sample counts per class; a 0 shows a class whose members all have the blessing
+D.DEMO_COUNTS = {
+    WARRIOR = 2, PALADIN = 0, HUNTER = 1, ROGUE = 3, PRIEST = 1, SHAMAN = 2, MAGE = 0, WARLOCK = 4, DRUID = 1,
+}
+
 ---------------------------------------------------------------------------
 -- Look: SimpleConjureBar's, so both addons read as one family
 ---------------------------------------------------------------------------

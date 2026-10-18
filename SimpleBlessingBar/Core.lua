@@ -154,3 +154,11 @@ function ns.InitDB()
 
     for _, fn in ipairs(dbCallbacks) do fn(db) end
 end
+
+-- Demo mode: everything counts as known and no click casts (ruleset plan
+-- 2026-10-18-settings-window, IMPLEMENTATION "Demo"). Never saved: off at every login.
+function ns.IsDemo() return db ~= nil and db.demo == true end
+
+function ns.DemoPrint(fmt, ...)
+    ns.Print("|cffff9933" .. ns.L.DEMO .. "|r: " .. fmt:format(...))
+end

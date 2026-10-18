@@ -63,9 +63,9 @@ local function NewButton(name, colorKey, speedKey)
     return b
 end
 
--- Left click only: right click stays free for the flyout
+-- Left click only: right click stays free for the flyout. No secure action in demo mode.
 local function SetSpell(b, spell)
-    SetAttr(b, "type1", spell and "spell" or nil)
+    SetAttr(b, "type1", (spell and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", spell)
     SetAttr(b, "unit1", spell and "player" or nil)
     b.icon:SetDesaturated(not spell)
@@ -124,7 +124,7 @@ local function Update()
     aura.icon:SetTexture(C_Spell.GetSpellTexture(spell or list[1]))
     SetAnts(aura, #ns.KnownAuras() > 0 and not OwnAuraUp())
 
-    local known = IsPlayerSpell(D.RIGHTEOUS_FURY)
+    local known = B.Known(D.RIGHTEOUS_FURY)
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
     SetAnts(fury, known and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
 end

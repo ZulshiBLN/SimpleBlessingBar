@@ -135,6 +135,19 @@ RefreshDirection, controls.direction = UI.AddDropdown("OPT_DIRECTION", {
     ns.Refresh()
 end)
 
+UI.AddSeparator()
+
+-- Demo mode changes the protected bar, so it is refused in combat
+controls.demo = UI.AddCheck("OPT_DEMO", "demo", function()
+    if InCombatLockdown() then
+        db.demo = not db.demo
+        controls.demo:SetChecked(db.demo)
+        ns.Print(L.NOT_IN_COMBAT)
+        return
+    end
+    ns.Refresh()
+end)
+
 -- Bottom row: "Reload UI" right (own translation, so it follows the language)
 do
     local reload = UI.AddButton(general, "RELOAD_UI", function() ReloadUI() end)

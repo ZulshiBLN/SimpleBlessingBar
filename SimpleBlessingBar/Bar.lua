@@ -232,9 +232,10 @@ for _, class in ipairs(D.CLASS_ORDER) do
     buttons[class] = b
 end
 
--- Left click only: right click stays free for the assignment menu
+-- Left click only: right click stays free for the flyout. In demo mode the button keeps its
+-- spell (tooltip, the demo print) but gets no secure action, so it casts nothing.
 local function SetAction(b, spell, unit)
-    SetAttr(b, "type1", spell and "spell" or nil)
+    SetAttr(b, "type1", (spell and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", spell)
     SetAttr(b, "unit1", spell and unit or nil)
 end
@@ -320,10 +321,15 @@ function ns.Refresh()
             b:Hide()
         end
     end
+    -- Demo mode shows every class, without reading the roster
     local present = {}
-    for _, unit in ipairs(B.Members()) do
-        local class = select(2, UnitClass(unit))
-        if class then present[class] = true end
+    if ns.IsDemo() then
+        for _, class in ipairs(D.CLASS_ORDER) do present[class] = true end
+    else
+        for _, unit in ipairs(B.Members()) do
+            local class = select(2, UnitClass(unit))
+            if class then present[class] = true end
+        end
     end
     for _, class in ipairs(D.CLASS_ORDER) do
         local b = buttons[class]

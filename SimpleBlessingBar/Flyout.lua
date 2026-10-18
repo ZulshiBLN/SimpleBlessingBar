@@ -78,10 +78,11 @@ local CHOOSE_PRE = [[
     return nil, "chosen"
 ]]
 
--- The main button takes the icon's spell and target; the flyout closes.
+-- The main button takes the icon's spell and target; the flyout closes. In demo mode (the
+-- header's "demo" attribute) it gets no secure action, so it still casts nothing.
 local CHOOSE_POST = [[
     local main = owner:GetFrameRef("main_KEY")
-    main:SetAttribute("type1", "spell")
+    if not owner:GetAttribute("demo") then main:SetAttribute("type1", "spell") end
     main:SetAttribute("spell1", self:GetAttribute("sbbspell"))
     main:SetAttribute("unit1", self:GetAttribute("sbbunit"))
     local fly = self:GetParent()
@@ -195,9 +196,10 @@ end)
 
 header:WrapScript(ns.furyButton, "OnClick", CLOSE)
 
--- The auto-close time reaches the open snippet as data, never in its text (code.md)
+-- The auto-close time and demo mode reach the snippets as data, never in their text (code.md)
 table.insert(ns.onRefresh, function()
     SetAttr(header, "autohide", db.flyoutAutoClose and db.flyoutAutoCloseTime or 0)
+    SetAttr(header, "demo", ns.IsDemo() or nil)
 end)
 
 ---------------------------------------------------------------------------
@@ -229,3 +231,32 @@ table.insert(ns.onRefresh, function()
         end
     end
 end)
+
+---------------------------------------------------------------------------
+-- Demo mode: a left click on a main button says what it would cast
+---------------------------------------------------------------------------
+-- Spell ID -> its name key, and whether it is a Greater Blessing (the keys name the normal form)
+local NAME_KEYS = { [D.RIGHTEOUS_FURY] = { key = "RIGHTEOUS_FURY" } }
+for family, f in pairs(D.BLESSINGS) do
+    for _, id in ipairs(f.normal) do NAME_KEYS[id] = { key = "BLESSING_" .. family } end
+    for _, id in ipairs(f.greater) do NAME_KEYS[id] = { key = "BLESSING_" .. family, greater = true } end
+end
+for family, list in pairs(D.AURAS) do
+    for _, id in ipairs(list) do NAME_KEYS[id] = { key = "AURA_" .. family } end
+end
+
+local function DemoClick(b, mouseButton, down)
+    if down or mouseButton ~= "LeftButton" or not ns.IsDemo() then return end
+    local spell = b:GetAttribute("spell1")
+    if not spell then return end
+    local n = NAME_KEYS[spell]
+    local client = C_Spell.GetSpellName(spell)
+    local name = ns.LocalName(client, n.key)
+    if n.greater and name ~= client then name = ns.L.DEMO_GREATER:format(name) end
+    ns.DemoPrint(ns.L.DEMO_CAST, name)
+end
+
+-- Set after every main button's wrap: wrapping replaces the click script, and a hook set
+-- earlier would be lost.
+for _, b in ipairs({ ns.auraButton, ns.furyButton }) do b:HookScript("OnClick", DemoClick) end
+for _, class in ipairs(D.CLASS_ORDER) do ns.classButtons[class]:HookScript("OnClick", DemoClick) end
