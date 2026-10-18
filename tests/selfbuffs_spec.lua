@@ -1,5 +1,6 @@
--- SelfBuffs.lua: the aura and Righteous Fury buttons (ruleset plan
--- 2026-10-18-class-blessing-bar, IMPLEMENTATION "Tests, by phase" 4).
+-- SelfBuffs.lua: the aura and Righteous Fury buttons (ruleset plans
+-- 2026-10-18-class-blessing-bar phase 4, and 2026-10-18-flyouts phase 2 for the aura glow;
+-- the aura flyout itself is in flyout_aura_spec).
 
 local addon = require("addon")
 
@@ -15,9 +16,9 @@ local function first(list, n)
     return set
 end
 
-local function rightClick(button)
-    RUNSCRIPT(button, "OnClick", "RightButton", true)
-    RUNSCRIPT(button, "OnClick", "RightButton", false)
+local function refresh()
+    FIRE("UNIT_AURA", "player")
+    RUNTIMERS()
 end
 
 describe("the aura button", function()
@@ -41,20 +42,39 @@ describe("the aura button", function()
         assert.is_true(ns.auraButton.icon:IsDesaturated())
     end)
 
-    it("offers the known auras on right click and keeps the choice", function()
-        local ns = addon.load("enUS")
-        local D = ns.D
+    it("glows while none of the paladin's own auras is up, whichever family", function()
+        local ns, D = login()
         STATE.known = first(D.AURAS.DEVOTION, 1)
-        STATE.known[D.AURAS.RETRIBUTION[1]] = true
-        FIRE("PLAYER_LOGIN")
-        rightClick(ns.auraButton)
-        assert.are.equal(ns.L.MENU_AURA, STATE.menu.title)
-        local texts = {}
-        for _, radio in ipairs(STATE.menu.radios) do texts[#texts + 1] = radio.text end
-        assert.are.same({ ns.AuraName("DEVOTION"), ns.AuraName("RETRIBUTION") }, texts)
-        STATE.menu.radios[2].select()
-        assert.are.equal("RETRIBUTION", SimpleBlessingBarDB.aura)
-        assert.are.equal(D.AURAS.RETRIBUTION[1], ns.auraButton:GetAttribute("spell1"))
+        STATE.known[D.AURAS.FIRE[1]] = true
+        refresh()
+        local glow = ns.auraButton.glow
+        assert.is_true(glow:IsShown())
+
+        STATE.units.player.auras = { { spellId = D.AURAS.FIRE[1], expirationTime = 0, mine = true } }
+        refresh()
+        assert.is_false(glow:IsShown())
+
+        -- another paladin's aura on him does not count
+        STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = false } }
+        refresh()
+        assert.is_true(glow:IsShown())
+    end)
+
+    it("does not glow while no aura is known, and keeps its glow in combat", function()
+        local ns, D = login()
+        assert.is_false(ns.auraButton.glow:IsShown())
+
+        STATE.known = first(D.AURAS.DEVOTION, 1)
+        refresh()
+        assert.is_true(ns.auraButton.glow:IsShown())
+        STATE.combat = true
+        STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = true } }
+        refresh()
+        TICK()
+        assert.is_true(ns.auraButton.glow:IsShown())
+        STATE.combat = false
+        FIRE("PLAYER_REGEN_ENABLED")
+        assert.is_false(ns.auraButton.glow:IsShown())
     end)
 end)
 

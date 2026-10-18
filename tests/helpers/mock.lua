@@ -58,6 +58,8 @@ function Methods:IsDesaturated() return self.desaturated == true end
 function Methods:SetText(t) self.text = t end
 function Methods:GetText() return self.text end
 function Methods:IsMouseOver() return false end
+function Methods:GetName() return rawget(self, "name") end
+function Methods:GetParent() return rawget(self, "parent") end
 
 function NEWOBJ(kind, name, parent)
   local o = { kind = kind, name = name, parent = parent, scripts = {}, hooks = {}, events = {},
