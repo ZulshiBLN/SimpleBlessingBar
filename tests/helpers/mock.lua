@@ -186,6 +186,27 @@ C_UnitAuras = {
 C_Spell = {
   IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
   GetSpellTexture = function(id) return "icon" .. id end,
+  GetSpellName = function(id) return "Spell" .. id end,
+}
+
+-- The client's context menu. STATE.menu holds the last menu opened: its owner,
+-- title and radio entries { text, selected(), select() }.
+MenuUtil = {
+  CreateContextMenu = function(owner, generator)
+    local menu = { owner = owner, radios = {} }
+    local root = {
+      CreateTitle = function(_, text) menu.title = text end,
+      CreateRadio = function(_, text, isSelected, setSelected, data)
+        menu.radios[#menu.radios + 1] = {
+          text = text,
+          selected = function() return isSelected(data) end,
+          select = function() return setSelected(data) end,
+        }
+      end,
+    }
+    generator(owner, root)
+    STATE.menu = menu
+  end,
 }
 C_Item = { GetItemCount = function(id) return STATE.bags[id] or 0 end }
 IsPlayerSpell = function(id) return STATE.known[id] == true end
