@@ -141,6 +141,14 @@ local function Handle(frame)
     local refs = rawget(frame, "refs")
     return Handle(refs and refs[name])
   end
+  -- In combat the client refuses a handle to a frame that is not protected: any call
+  -- through it raises "Invalid frame handle" and stops the snippet.
+  for name, fn in pairs(h) do
+    h[name] = function(...)
+      if STATE.combat and not rawget(frame, "protected") then error("Invalid frame handle") end
+      return fn(...)
+    end
+  end
   handles[frame] = h
   return h
 end

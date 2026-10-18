@@ -106,6 +106,19 @@ describe("a wrapped secure click in the mock", function()
         assert.is_truthy(STATE.errors[1] and STATE.errors[1]:find("before RegisterAutoHide", 1, true))
     end)
 
+    it("refuses a handle to an unprotected frame in combat, as the client does", function()
+        local header, button = setup([[
+            owner:GetFrameRef("plain"):IsShown()
+            return false
+        ]])
+        header:SetFrameRef("plain", CreateFrame("Frame", "MockPlain2", UIParent))
+        RUNCLICK(button, "RightButton", false)
+        assert.are.same({}, STATE.errors)
+        STATE.combat = true
+        RUNCLICK(button, "RightButton", false)
+        assert.is_truthy(STATE.errors[1] and STATE.errors[1]:find("Invalid frame handle", 1, true))
+    end)
+
     it("runs insecure hooks after the secure action", function()
         local _, button = setup([[ return nil, "go" ]])
         local seen

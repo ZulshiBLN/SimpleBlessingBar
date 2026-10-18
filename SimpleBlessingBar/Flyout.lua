@@ -96,7 +96,10 @@ function ns.CreateFlyout(key, main, save)
     arrow:SetPoint("BOTTOM", main, "TOP", 0, -6)
     main.arrow = arrow
 
-    local fly = CreateFrame("Frame", "SimpleBlessingBarFlyout" .. key, main, "BackdropTemplate")
+    -- Protected in its own right (SecureFrameTemplate), not only through its secure icons:
+    -- the open snippet touches every flyout in combat, and a flyout without icons - a class
+    -- not in the group - would otherwise be an invalid handle there and stop the snippet.
+    local fly = CreateFrame("Frame", "SimpleBlessingBarFlyout" .. key, main, "SecureFrameTemplate, BackdropTemplate")
     fly:SetPoint("BOTTOM", main, "TOP", 0, 6)
     fly:SetSize(SIZE + 2 * PAD, SIZE + 2 * PAD)
     ns.ApplyBackdrop(fly)
