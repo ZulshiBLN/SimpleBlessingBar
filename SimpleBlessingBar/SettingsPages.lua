@@ -35,7 +35,10 @@ do
         ns.ApplyLanguage(v == "auto" and ns.clientLocale or v)
     end))
 end
-controls.hideCombat = UI.AddCheck("OPT_HIDE_COMBAT", "hideCombat", function() ns.ApplyCombatHide() end)
+controls.hideCombat, controls.hideMinimap = UI.AddCheckRow({
+    { label = "OPT_HIDE_COMBAT",  key = "hideCombat",  onChange = function() ns.ApplyCombatHide() end },
+    { label = "OPT_HIDE_MINIMAP", key = "hideMinimap", onChange = function() ns.ApplyMinimapButton() end },
+})
 UI.AddSeparator()
 
 -- Scale: slider in 0.1 steps or number input (0.05 steps)

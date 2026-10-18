@@ -4,6 +4,19 @@
 local ADDON_NAME, ns = ...
 local D = ns.D
 
+-- The AddOn compartment: the TOC names these three functions for every class, so they exist
+-- before the paladin check below. For a paladin Minimap.lua sets what they call; for any other
+-- class a click does nothing.
+function SimpleBlessingBar_OnCompartmentClick(...)
+    if ns.CompartmentClick then ns.CompartmentClick(...) end
+end
+function SimpleBlessingBar_OnCompartmentEnter(...)
+    if ns.CompartmentEnter then ns.CompartmentEnter(...) end
+end
+function SimpleBlessingBar_OnCompartmentLeave(...)
+    if ns.CompartmentLeave then ns.CompartmentLeave(...) end
+end
+
 -- The addon is paladin-only. Every later module checks this flag and stops loading otherwise.
 local _, playerClass = UnitClass("player")
 ns.enabled = (playerClass == "PALADIN")

@@ -114,6 +114,8 @@ function Methods:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a 
 function Methods:SetTexCoord(...) self.texCoord = { ... } end
 function Methods:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
 function Methods:SetVertexColor(r, g, b, a) self.vertexColor = { r, g, b, a } end
+function Methods:SetFrameStrata(s) self.strata = s end
+function Methods:GetFrameStrata() return rawget(self, "strata") or "MEDIUM" end
 function Methods:SetAlpha(a) self.alpha = a end
 function Methods:GetAlpha() return rawget(self, "alpha") or 1 end
 function Methods:GetFrameLevel() return rawget(self, "level") or 1 end
@@ -463,6 +465,17 @@ BuyMerchantItem = function(i, quantity)
   STATE.bags[w.id] = (STATE.bags[w.id] or 0) + quantity
   STATE.money = STATE.money - quantity * w.price / w.stack
 end
+-- The minimap: 140 px wide, centred where Methods:GetCenter puts frames (STATE.center)
+Minimap = CreateFrame("Frame", "Minimap", UIParent)
+Minimap:SetSize(140, 140)
+-- The client's options: the registered panel and category, in STATE.options
+Settings = {
+  RegisterCanvasLayoutCategory = function(panel, name)
+    STATE.options = { panel = panel, category = { name = name } }
+    return STATE.options.category
+  end,
+  RegisterAddOnCategory = function(category) STATE.options.registered = category end,
+}
 -- The cursor at STATE.cursor = { x, y }; IsMouseButtonDown answers STATE.mouseDown
 GetCursorPosition = function() local c = STATE.cursor or { 0, 0 } return c[1], c[2] end
 IsMouseButtonDown = function() return STATE.mouseDown == true end

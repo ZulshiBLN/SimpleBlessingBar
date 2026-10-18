@@ -136,10 +136,11 @@ function UI.AddCheckRow(items)
     local row = CreateFrame("Frame", nil, page)
     row:SetHeight(ROW)
     row:SetPoint("TOPLEFT", INSET - 3, Place(ROW, 2))
-    local parts = {}
+    local parts, checks = {}, {}
     for _, it in ipairs(items) do
         local cb, text = CreateCheck(row, it.label, it.key, it.onChange)
         parts[#parts + 1] = { cb = cb, text = text }
+        checks[#checks + 1] = cb
     end
     local function Arrange()
         local x = 0
@@ -153,6 +154,7 @@ function UI.AddCheckRow(items)
     refreshers[#refreshers + 1] = Arrange
     measures[#measures + 1] = function() return row.needW or 0 end
     stretchers[#stretchers + 1] = function(w) row:SetWidth(w + 3) end
+    return unpack(checks)
 end
 
 -- Section header in Blizzard gold. labelKey: locale key or a function (see ns.SetL).
@@ -656,6 +658,18 @@ end)
 function ns.ToggleSettings()
     if settings:IsShown() then settings:Hide() else settings:Show() end
 end
+
+function ns.CloseSettings()
+    settings:Hide()
+end
+
+-- Opens, never closes: from the client's options it is raised above them. The client's options
+-- window is not touched - closing it from addon code risks taint.
+function ns.OpenSettings(aboveClient)
+    if aboveClient then settings:SetFrameStrata("FULLSCREEN_DIALOG") end
+    if settings:IsShown() then settings:Raise() else settings:Show() end
+end
+settings:HookScript("OnHide", function() settings:SetFrameStrata("DIALOG") end)
 
 -- Combat start: close the window, and reopen it afterwards if combat closed it
 do

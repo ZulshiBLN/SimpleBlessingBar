@@ -17,6 +17,9 @@
 ## X-License: MIT
 ## X-Curse-Project-ID: 1751962
 ## X-Wago-ID: ZKxO5o6k
+## AddonCompartmentFunc: SimpleBlessingBar_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: SimpleBlessingBar_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: SimpleBlessingBar_OnCompartmentLeave
 ## Category: Class
 ## Category-deDE: Klasse
 ## Category-frFR: Classe
@@ -39,6 +42,7 @@ Bar.lua
 SelfBuffs.lua
 Flyout.lua
 Merchant.lua
+Minimap.lua
 Settings.lua
 SettingsPages.lua
 Main.lua

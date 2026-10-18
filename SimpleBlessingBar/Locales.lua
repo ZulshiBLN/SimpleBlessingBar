@@ -106,6 +106,12 @@ locales.enUS = {
     ORDER_HINT = "Drag rows to reorder. Top = start of the bar (anchor side)",
     TAB_MACROS = "Macros",
     MACROS_LATER = "Macros will follow in a later version.",
+    OPT_HIDE_MINIMAP = "Hide minimap button",
+    DRAG = "Drag",
+    VERSION = "Version %s",
+    HELP_HINT = "List all chat commands with %s",
+    ACCESS_OPTIONS = "Access options with %s",
+    OPEN_SETTINGS = "Open Settings",
 }
 
 locales.deDE = {
@@ -206,6 +212,12 @@ locales.deDE = {
     ORDER_HINT = "Zeilen ziehen zum Sortieren. Oben = Anfang der Leiste (Ankerseite)",
     TAB_MACROS = "Makros",
     MACROS_LATER = "Makros folgen in einer späteren Version.",
+    OPT_HIDE_MINIMAP = "Minimap-Button ausblenden",
+    DRAG = "Ziehen",
+    VERSION = "Version %s",
+    HELP_HINT = "Alle Chatbefehle anzeigen mit %s",
+    ACCESS_OPTIONS = "Optionen erreichst du mit %s",
+    OPEN_SETTINGS = "Einstellungen öffnen",
 }
 
 locales.frFR = {
@@ -306,6 +318,12 @@ locales.frFR = {
     ORDER_HINT = "Faites glisser les lignes pour trier. En haut = début de la barre (côté ancre)",
     TAB_MACROS = "Macros",
     MACROS_LATER = "Les macros arriveront dans une version ultérieure.",
+    OPT_HIDE_MINIMAP = "Masquer le bouton de la minicarte",
+    DRAG = "Glisser",
+    VERSION = "Version %s",
+    HELP_HINT = "Liste des commandes avec %s",
+    ACCESS_OPTIONS = "Accédez aux options avec %s",
+    OPEN_SETTINGS = "Ouvrir les options",
 }
 
 locales.esES = {
@@ -406,6 +424,12 @@ locales.esES = {
     ORDER_HINT = "Arrastra las filas para ordenar. Arriba = inicio de la barra (lado del ancla)",
     TAB_MACROS = "Macros",
     MACROS_LATER = "Las macros llegarán en una versión posterior.",
+    OPT_HIDE_MINIMAP = "Ocultar botón del minimapa",
+    DRAG = "Arrastrar",
+    VERSION = "Versión %s",
+    HELP_HINT = "Lista de comandos con %s",
+    ACCESS_OPTIONS = "Accede a las opciones con %s",
+    OPEN_SETTINGS = "Abrir opciones",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -510,6 +534,12 @@ locales.itIT = {
     ORDER_HINT = "Trascina le righe per ordinare. In alto = inizio della barra (lato dell'ancora)",
     TAB_MACROS = "Macro",
     MACROS_LATER = "Le macro arriveranno in una versione successiva.",
+    OPT_HIDE_MINIMAP = "Nascondi pulsante minimappa",
+    DRAG = "Trascina",
+    VERSION = "Versione %s",
+    HELP_HINT = "Elenco dei comandi con %s",
+    ACCESS_OPTIONS = "Accedi alle opzioni con %s",
+    OPEN_SETTINGS = "Apri impostazioni",
 }
 
 locales.ptBR = {
@@ -610,6 +640,12 @@ locales.ptBR = {
     ORDER_HINT = "Arraste as linhas para ordenar. Topo = início da barra (lado da âncora)",
     TAB_MACROS = "Macros",
     MACROS_LATER = "As macros virão em uma versão posterior.",
+    OPT_HIDE_MINIMAP = "Ocultar botão do minimapa",
+    DRAG = "Arrastar",
+    VERSION = "Versão %s",
+    HELP_HINT = "Lista de comandos com %s",
+    ACCESS_OPTIONS = "Acesse as opções com %s",
+    OPEN_SETTINGS = "Abrir configurações",
 }
 
 locales.ruRU = {
@@ -710,6 +746,12 @@ locales.ruRU = {
     ORDER_HINT = "Перетаскивайте строки для сортировки. Вверху = начало панели",
     TAB_MACROS = "Макросы",
     MACROS_LATER = "Макросы появятся в одной из следующих версий.",
+    OPT_HIDE_MINIMAP = "Скрыть кнопку у миникарты",
+    DRAG = "Перетащить",
+    VERSION = "Версия %s",
+    HELP_HINT = "Список команд: %s",
+    ACCESS_OPTIONS = "Настройки доступны по команде %s",
+    OPEN_SETTINGS = "Открыть настройки",
 }
 
 locales.koKR = {
@@ -810,6 +852,12 @@ locales.koKR = {
     ORDER_HINT = "줄을 끌어서 정렬하세요. 위 = 바의 시작 (고정점 쪽)",
     TAB_MACROS = "매크로",
     MACROS_LATER = "매크로는 이후 버전에서 추가됩니다.",
+    OPT_HIDE_MINIMAP = "미니맵 버튼 숨기기",
+    DRAG = "끌기",
+    VERSION = "버전 %s",
+    HELP_HINT = "%s 로 모든 채팅 명령어 보기",
+    ACCESS_OPTIONS = "%s 명령으로 설정을 열 수 있습니다",
+    OPEN_SETTINGS = "설정 열기",
 }
 
 locales.zhCN = {
@@ -910,6 +958,12 @@ locales.zhCN = {
     ORDER_HINT = "拖动行以排序。上方 = 动作条起点（锚点一侧）",
     TAB_MACROS = "宏",
     MACROS_LATER = "宏将在以后的版本中提供。",
+    OPT_HIDE_MINIMAP = "隐藏小地图按钮",
+    DRAG = "拖动",
+    VERSION = "版本 %s",
+    HELP_HINT = "输入 %s 查看所有聊天命令",
+    ACCESS_OPTIONS = "使用 %s 打开选项",
+    OPEN_SETTINGS = "打开设置",
 }
 
 locales.zhTW = {
@@ -1010,6 +1064,12 @@ locales.zhTW = {
     ORDER_HINT = "拖曳列以排序。上方 = 動作條起點（錨點一側）",
     TAB_MACROS = "巨集",
     MACROS_LATER = "巨集將在之後的版本中提供。",
+    OPT_HIDE_MINIMAP = "隱藏小地圖按鈕",
+    DRAG = "拖曳",
+    VERSION = "版本 %s",
+    HELP_HINT = "輸入 %s 查看所有聊天指令",
+    ACCESS_OPTIONS = "使用 %s 開啟選項",
+    OPEN_SETTINGS = "開啟設定",
 }
 
 local client = GetLocale()

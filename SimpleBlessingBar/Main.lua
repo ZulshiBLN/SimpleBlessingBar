@@ -15,6 +15,8 @@ events:SetScript("OnEvent", function()
     if lang then ns.ApplyLanguage(lang) end
 
     ns.InitBar()
+    ns.ApplyMinimapButton()
+    ns.RegisterOptionsPanel()
     ns.Print(L.LOADED:format(ns.VERSION))
 end)
 

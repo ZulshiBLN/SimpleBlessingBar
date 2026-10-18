@@ -118,7 +118,7 @@ D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
     showAura = true, showFury = true, flyoutAutoClose = true,
-    autoBuy = false,
+    autoBuy = false, hideMinimap = false,
 }
 D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
@@ -139,4 +139,5 @@ D.NUMBER_DEFAULTS = {
     symbolWarn          = { default = 5, min = 0, max = 20, integer = true },   -- 0 = no warning
     symbolAmount        = { default = 20, min = 0, max = 100, integer = true }, -- target in the bags
     goldReserve         = { default = 1, min = 0, max = 1000, integer = true }, -- gold never spent
+    minimapAngle        = { default = 225, min = 0, max = 360 },                -- 225 = bottom left
 }
