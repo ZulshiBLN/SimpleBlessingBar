@@ -37,4 +37,5 @@ Core.lua
 Blessings.lua
 Bar.lua
 Menu.lua
+SelfBuffs.lua
 Main.lua

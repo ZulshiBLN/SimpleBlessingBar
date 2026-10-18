@@ -10,6 +10,9 @@ local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
 
 local SIZE, GAP = 36, 2
+ns.BUTTON_SIZE, ns.BUTTON_GAP = SIZE, GAP
+-- The aura and Righteous Fury buttons (SelfBuffs.lua) take the first two places
+local FIRST_CLASS_X = 2 * (SIZE + GAP)
 local CLASS_ICONS = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
 
 local db
@@ -134,6 +137,10 @@ end
 ---------------------------------------------------------------------------
 -- Refresh
 ---------------------------------------------------------------------------
+-- Other buttons on the bar refresh with it: functions added here run after the class
+-- buttons, out of combat only.
+ns.onRefresh = {}
+
 -- Reads the group out of combat and writes everything to the buttons. In combat it does
 -- nothing: aura data is unreadable then and the buttons are protected.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
@@ -146,7 +153,7 @@ function ns.Refresh()
         local class = select(2, UnitClass(unit))
         if class then present[class] = true end
     end
-    local x = 0
+    local x = FIRST_CLASS_X
     for _, class in ipairs(D.CLASS_ORDER) do
         local b = buttons[class]
         if present[class] then
@@ -160,7 +167,8 @@ function ns.Refresh()
             b:Hide()
         end
     end
-    bar:SetWidth(math.max(SIZE, x - GAP))
+    bar:SetWidth(x - GAP)
+    for _, fn in ipairs(ns.onRefresh) do fn() end
 end
 
 -- Several events arrive together (a raid's UNIT_AURA); they share one refresh.

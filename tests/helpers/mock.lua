@@ -171,6 +171,11 @@ end
 
 -- "HELPFUL|PLAYER" returns only the auras the player cast (mine = true).
 C_UnitAuras = {
+  GetPlayerAuraBySpellID = function(id)
+    for _, a in ipairs(STATE.units.player.auras or {}) do
+      if a.spellId == id then return { spellId = a.spellId, expirationTime = a.expirationTime } end
+    end
+  end,
   GetAuraDataByIndex = function(u, i, filter)
     local r = U(u)
     if not r then return end
