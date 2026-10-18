@@ -16,6 +16,8 @@ STATE = {
   known = {},       -- spell ID -> true for IsPlayerSpell
   bags = {},        -- item ID -> count
   combat = false,
+  keyDown = true,   -- ActionButtonUseKeyDown: secure buttons act on key down
+  casts = {},       -- spells cast by secure clicks (RUNCLICK)
 }
 CHAT = {}
 
@@ -85,6 +87,108 @@ function RUNSCRIPT(frame, script, ...)
     if not ok then table.insert(STATE.errors, script .. ": " .. tostring(err)) end
   end
 end
+
+---------------------------------------------------------------------------
+-- Secure snippets. A SecureHandler header wraps a frame's OnClick with a pre
+-- and a post body, as WrapScript does. The bodies run in an emulated
+-- restricted environment and see frames only through handles, which may
+-- change protected frames in combat - the one thing addon code may not.
+-- Bodies are compiled with their arguments as locals, like the client's.
+---------------------------------------------------------------------------
+local handles = setmetatable({}, { __mode = "k" })
+local function Handle(frame)
+  if not frame then return nil end
+  if handles[frame] then return handles[frame] end
+  local h = {}
+  function h:GetAttribute(k) return frame.attrs[k] end
+  function h:SetAttribute(k, v) frame.attrs[k] = v end
+  function h:Show() frame.shown = true end
+  function h:Hide() frame.shown = false end
+  function h:IsShown() return frame.shown end
+  function h:GetParent() return Handle(rawget(frame, "parent")) end
+  function h:GetName() return frame.name end
+  function h:GetFrameRef(name)
+    local refs = rawget(frame, "refs")
+    return Handle(refs and refs[name])
+  end
+  handles[frame] = h
+  return h
+end
+
+local restricted = {
+  PlayerInCombat = function() return STATE.combat end,
+  newtable = function(...) return { ... } end,
+  pairs = pairs, ipairs = ipairs, tostring = tostring, type = type,
+}
+local function Compile(body, args)
+  local chunk = assert(loadstring("local " .. args .. " = ...\n" .. body))
+  setfenv(chunk, setmetatable({}, { __index = restricted }))
+  return chunk
+end
+
+-- rawget throughout: a missing field reads as a method stub through the metatable
+local function Wraps(frame, script)
+  local wraps = rawget(frame, "wraps")
+  return wraps and wraps[script] or {}
+end
+function Methods:SetFrameRef(name, frame)
+  self.refs = rawget(self, "refs") or {}
+  self.refs[name] = frame
+end
+function Methods:WrapScript(frame, script, pre, post)
+  frame.wraps = rawget(frame, "wraps") or {}
+  frame.wraps[script] = frame.wraps[script] or {}
+  table.insert(frame.wraps[script], {
+    owner = self,
+    pre = pre and Compile(pre, "self, button, down, owner"),
+    post = post and Compile(post, "self, message, button, down, owner"),
+  })
+end
+
+-- A click as the client delivers it to a secure button: the wrappers' pre
+-- bodies (false cancels the action and every post body), the secure action
+-- (on key down while STATE.keyDown, else on key up), the post bodies of the
+-- wrappers that returned a message, then the insecure hooks. A spell cast
+-- is appended to STATE.casts as { spell = id, unit = token }.
+local function Attr(frame, name, button)
+  local suffix = button == "LeftButton" and "1" or button == "RightButton" and "2" or ""
+  local v = frame.attrs[name .. suffix]
+  if v == nil then v = frame.attrs[name] end
+  return v
+end
+function RUNCLICK(frame, button, down)
+  local cancelled, messages = false, {}
+  for i, w in ipairs(Wraps(frame, "OnClick")) do
+    if w.pre then
+      local ok, result, message = pcall(w.pre, Handle(frame), button, down, Handle(w.owner))
+      if not ok then table.insert(STATE.errors, "snippet: " .. tostring(result)) end
+      if result == false then cancelled = true break end
+      messages[i] = message
+    end
+  end
+  if not cancelled then
+    local template = rawget(frame, "template")
+    if template and template:find("SecureActionButtonTemplate")
+       and (down == true) == (STATE.keyDown == true) and Attr(frame, "type", button) == "spell" then
+      STATE.casts[#STATE.casts + 1] = { spell = Attr(frame, "spell", button), unit = Attr(frame, "unit", button) }
+    end
+    for i, w in ipairs(Wraps(frame, "OnClick")) do
+      if w.post and messages[i] ~= nil then
+        local ok, err = pcall(w.post, Handle(frame), messages[i], button, down, Handle(w.owner))
+        if not ok then table.insert(STATE.errors, "snippet: " .. tostring(err)) end
+      end
+    end
+  end
+  RUNSCRIPT(frame, "OnClick", button, down)
+end
+
+GetCVarBool = function(name)
+  if name == "ActionButtonUseKeyDown" then return STATE.keyDown == true end
+end
+
+GameTooltip = NEWOBJ("GameTooltip")
+function GameTooltip:SetOwner(owner) self.owner = owner end
+function GameTooltip:SetSpellByID(id) self.spell = id; self.shown = true end
 
 -- Timers: C_Timer.After queues until RUNTIMERS; tickers run on TICK.
 local timers, tickers = {}, {}

@@ -46,7 +46,7 @@ files["tests/"] = {
     read_globals = {
         "io", "require", "loadfile",
         -- What tests/helpers/mock.lua provides to drive the mocked client
-        "FIRE", "CHAT", "RUNSCRIPT", "RUNTIMERS", "TICK", "NEWOBJ", "UIParent",
+        "FIRE", "CHAT", "RUNSCRIPT", "RUNCLICK", "RUNTIMERS", "TICK", "NEWOBJ", "UIParent",
     },
 }
 
