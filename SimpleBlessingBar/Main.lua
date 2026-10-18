@@ -12,7 +12,7 @@ events:SetScript("OnEvent", function()
     -- Saved language choice (account-wide), otherwise the client language. Applied before any
     -- chat output, so every message already uses the chosen language.
     local lang = SimpleBlessingBarGlobalDB.language
-    if lang then ns.SetLocale(lang) end
+    if lang then ns.ApplyLanguage(lang) end
 
     ns.InitBar()
     ns.Print(L.LOADED:format(ns.VERSION))

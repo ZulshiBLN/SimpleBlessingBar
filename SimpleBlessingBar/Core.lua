@@ -20,6 +20,42 @@ function ns.Print(msg)
 end
 
 ---------------------------------------------------------------------------
+-- Runtime language switch, as in SimpleConjureBar
+-- Every localized text is registered with its key (and format arguments), so a language
+-- change re-renders exactly these texts. No text is ever matched by its content.
+---------------------------------------------------------------------------
+local registry = setmetatable({}, { __mode = "k" }) -- object -> key | function | { key, args... }
+local languageCallbacks = {}
+
+local function Resolve(entry)
+    local kind = type(entry)
+    if kind == "function" then return entry() end
+    if kind == "table" then return ns.L[entry[1]]:format(unpack(entry, 2)) end
+    return ns.L[entry]
+end
+
+-- Sets a localized text on a FontString or Button and keeps it current on language changes.
+-- key: locale key, or a function returning the text. Extra arguments are format arguments.
+function ns.SetL(obj, key, ...)
+    local entry = key
+    if select("#", ...) > 0 then entry = { key, ... } end
+    registry[obj] = entry
+    obj:SetText(Resolve(entry))
+end
+
+-- fn runs after every language change (layout updates that depend on text widths)
+function ns.OnLanguageChanged(fn)
+    languageCallbacks[#languageCallbacks + 1] = fn
+end
+
+function ns.ApplyLanguage(code)
+    if code == ns.GetLocaleCode() then return end
+    ns.SetLocale(code)
+    for obj, entry in pairs(registry) do obj:SetText(Resolve(entry)) end
+    for _, fn in ipairs(languageCallbacks) do fn() end
+end
+
+---------------------------------------------------------------------------
 -- Secure attributes
 ---------------------------------------------------------------------------
 -- The only way the addon writes a secure attribute. In combat the client refuses the
@@ -47,6 +83,22 @@ function ns.OnDBReady(fn)
     if db then fn(db) end
 end
 
+-- x ~= x is true only for NaN; math.huge passes the type check but is no number to use
+local function finite(v) return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge end
+
+-- A number from saved data, clamped to [lo, hi]; a wrong type, NaN or infinity becomes the
+-- default.
+local function Num(v, lo, hi, default, integer)
+    v = tonumber(v)
+    if not finite(v) then v = default end
+    v = math.max(lo, math.min(hi, v))
+    if integer then v = math.floor(v + 0.5) end
+    return v
+end
+
+local function CopyColor(c) return { r = c.r, g = c.g, b = c.b, a = c.a } end
+ns.CopyColor = CopyColor
+
 -- Saved variables are plain files that can be edited or damaged, so every value is checked
 -- before anything reads it.
 function ns.InitDB()
@@ -70,11 +122,26 @@ function ns.InitDB()
     end
     if not D.AURAS[db.aura] then db.aura = D.DEFAULT_AURA end
     if type(db.locked) ~= "boolean" then db.locked = false end
-    -- x ~= x is true only for NaN; math.huge passes the type check but is no position
-    local function finite(v) return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge end
     if type(db.point) ~= "string" or type(db.rel) ~= "string" or not finite(db.x) or not finite(db.y) then
         db.point, db.rel, db.x, db.y = nil, nil, nil, nil
     end
+
+    -- Version 3 adds the look, layout and highlight settings; the same checks create them.
+    for key, default in pairs(D.BOOL_DEFAULTS) do
+        if type(db[key]) ~= "boolean" then db[key] = default end
+    end
+    for key, n in pairs(D.NUMBER_DEFAULTS) do
+        db[key] = Num(db[key], n.min, n.max, n.default, n.integer)
+    end
+    for key, color in pairs(D.COLOR_DEFAULTS) do
+        local c = db[key]
+        if type(c) ~= "table" then
+            db[key] = CopyColor(color)
+        else
+            for _, part in ipairs({ "r", "g", "b", "a" }) do c[part] = Num(c[part], 0, 1, color[part]) end
+        end
+    end
+    db.demo = false -- demo mode always starts switched off
 
     db.dbVersion = D.DB_VERSION
 

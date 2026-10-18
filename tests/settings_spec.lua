@@ -65,3 +65,54 @@ describe("settings", function()
         assert.are.same({ "TOP", "TOP", 12, -40 }, { db.point, db.rel, db.x, db.y })
     end)
 end)
+
+-- Version 3 (ruleset plan 2026-10-18-settings-window, IMPLEMENTATION "Settings, version 3").
+-- Every default and range is read from Data.lua.
+describe("settings version 3", function()
+    it("start with every default, from a version 2 file, and a second run changes nothing", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 2, assign = { WARRIOR = "MIGHT" } } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        for key, default in pairs(D.BOOL_DEFAULTS) do assert.are.equal(default, db[key], key) end
+        for key, n in pairs(D.NUMBER_DEFAULTS) do assert.are.equal(n.default, db[key], key) end
+        for key, color in pairs(D.COLOR_DEFAULTS) do assert.are.same(color, db[key], key) end
+        assert.are.same({ WARRIOR = "MIGHT" }, db.assign)
+        local once = copy(db)
+        ns.InitDB()
+        assert.are.same(once, SimpleBlessingBarDB)
+    end)
+
+    it("copy the color defaults instead of sharing them", function()
+        local ns = addon.load("enUS")
+        ns.InitDB()
+        local before = copy(ns.D.BG_COLOR)
+        SimpleBlessingBarDB.bg.r = 0.5
+        assert.are.same(before, ns.D.BG_COLOR)
+    end)
+
+    it("clamp numbers, repair colors and booleans, and replace what is unusable", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 3,
+            scale = 9, auraAntsSpeed = 0, furyAntsSpeed = 2.6, flyoutAutoCloseTime = 0 / 0,
+            showBorder = "yes", vertical = true,
+            bg = "x", countColor = { r = 5, g = -1, b = "z", a = 0.5 },
+        } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.equal(D.SCALE_MAX, db.scale)
+        assert.are.equal(D.ANTS_SPEED_MIN, db.auraAntsSpeed)
+        assert.are.equal(3, db.furyAntsSpeed) -- whole steps: 2.6 rounds to 3
+        assert.are.equal(D.NUMBER_DEFAULTS.flyoutAutoCloseTime.default, db.flyoutAutoCloseTime)
+        assert.are.equal(D.BOOL_DEFAULTS.showBorder, db.showBorder)
+        assert.is_true(db.vertical)
+        assert.are.same(D.COLOR_DEFAULTS.bg, db.bg)
+        assert.are.same({ r = 1, g = 0, b = D.COLOR_DEFAULTS.countColor.b, a = 0.5 }, db.countColor)
+    end)
+
+    it("never keep demo mode across a login", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 3, demo = true } })
+        ns.InitDB()
+        assert.is_false(SimpleBlessingBarDB.demo)
+    end)
+end)

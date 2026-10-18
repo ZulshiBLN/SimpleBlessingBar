@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 2
+D.DB_VERSION = 3
 
 ---------------------------------------------------------------------------
 -- Spells, lowest rank first. IDs do not rise with rank (Devotion Aura rank 2 is 10290,
@@ -78,3 +78,25 @@ D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's defaul
 -- Defaults
 ---------------------------------------------------------------------------
 D.DEFAULT_AURA = "DEVOTION"
+
+-- Settings of version 3 with their defaults; numbers carry their range. Colors are copied into
+-- the settings, never referenced, so nothing written to the settings changes these tables.
+D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
+D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
+D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 10
+D.BOOL_DEFAULTS = {
+    showBorder = true, vertical = false, growRev = false, hideCombat = false,
+    showAura = true, showFury = true, flyoutAutoClose = true,
+}
+D.COLOR_DEFAULTS = {
+    bg            = D.BG_COLOR,
+    auraAntsColor = D.ANTS_COLOR,
+    furyAntsColor = D.ANTS_COLOR,
+    countColor    = { r = 1, g = 1, b = 1, a = 1 },
+}
+D.NUMBER_DEFAULTS = {
+    scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
+    auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
+}
