@@ -462,4 +462,10 @@ do
     controls.orderDefault = reset
 end
 
+---------------------------------------------------------------------------
+-- Macros: prepared only; which macros are worth it Michel decides in a later plan
+---------------------------------------------------------------------------
+UI.NewPage("TAB_MACROS")
+controls.macrosNote = UI.AddNote("MACROS_LATER", 10)
+
 UI.CreateTabs()

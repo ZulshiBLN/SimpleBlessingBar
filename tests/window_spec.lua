@@ -32,11 +32,21 @@ describe("the settings window", function()
         sbb("")
         local names = {}
         for i, tab in ipairs(UI.tabs) do names[i] = tab:GetText() end
-        assert.are.same({ ns.L.TAB_GENERAL, ns.L.TAB_TRACKING, ns.L.TAB_SUPPLIES, ns.L.TAB_ORDER }, names)
+        assert.are.same({ ns.L.TAB_GENERAL, ns.L.TAB_TRACKING, ns.L.TAB_SUPPLIES, ns.L.TAB_ORDER, ns.L.TAB_MACROS },
+            names)
         assert.is_true(UI.pages[1]:IsShown())
         RUNSCRIPT(UI.tabs[2], "OnClick")
         assert.is_false(UI.pages[1]:IsShown())
         assert.is_true(UI.pages[2]:IsShown())
+    end)
+
+    it("prepares a Macros tab that says macros come later", function()
+        local ns, UI = login()
+        sbb("")
+        RUNSCRIPT(UI.tabs[5], "OnClick")
+        assert.is_true(UI.pages[5]:IsShown())
+        assert.are.equal(ns.L.MACROS_LATER, UI.controls.macrosNote:GetText())
+        assert.are.same({}, STATE.errors)
     end)
 
     it("closes when combat starts, and opens again only if combat closed it", function()

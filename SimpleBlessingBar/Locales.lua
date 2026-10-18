@@ -104,6 +104,8 @@ locales.enUS = {
     ORDER_CLASSES = "Classes",
     TAB_ORDER = "Order",
     ORDER_HINT = "Drag rows to reorder. Top = start of the bar (anchor side)",
+    TAB_MACROS = "Macros",
+    MACROS_LATER = "Macros will follow in a later version.",
 }
 
 locales.deDE = {
@@ -202,6 +204,8 @@ locales.deDE = {
     ORDER_CLASSES = "Klassen",
     TAB_ORDER = "Reihenfolge",
     ORDER_HINT = "Zeilen ziehen zum Sortieren. Oben = Anfang der Leiste (Ankerseite)",
+    TAB_MACROS = "Makros",
+    MACROS_LATER = "Makros folgen in einer späteren Version.",
 }
 
 locales.frFR = {
@@ -300,6 +304,8 @@ locales.frFR = {
     ORDER_CLASSES = "Classes",
     TAB_ORDER = "Ordre",
     ORDER_HINT = "Faites glisser les lignes pour trier. En haut = début de la barre (côté ancre)",
+    TAB_MACROS = "Macros",
+    MACROS_LATER = "Les macros arriveront dans une version ultérieure.",
 }
 
 locales.esES = {
@@ -398,6 +404,8 @@ locales.esES = {
     ORDER_CLASSES = "Clases",
     TAB_ORDER = "Orden",
     ORDER_HINT = "Arrastra las filas para ordenar. Arriba = inicio de la barra (lado del ancla)",
+    TAB_MACROS = "Macros",
+    MACROS_LATER = "Las macros llegarán en una versión posterior.",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -500,6 +508,8 @@ locales.itIT = {
     ORDER_CLASSES = "Classi",
     TAB_ORDER = "Ordine",
     ORDER_HINT = "Trascina le righe per ordinare. In alto = inizio della barra (lato dell'ancora)",
+    TAB_MACROS = "Macro",
+    MACROS_LATER = "Le macro arriveranno in una versione successiva.",
 }
 
 locales.ptBR = {
@@ -598,6 +608,8 @@ locales.ptBR = {
     ORDER_CLASSES = "Classes",
     TAB_ORDER = "Ordem",
     ORDER_HINT = "Arraste as linhas para ordenar. Topo = início da barra (lado da âncora)",
+    TAB_MACROS = "Macros",
+    MACROS_LATER = "As macros virão em uma versão posterior.",
 }
 
 locales.ruRU = {
@@ -696,6 +708,8 @@ locales.ruRU = {
     ORDER_CLASSES = "Классы",
     TAB_ORDER = "Порядок",
     ORDER_HINT = "Перетаскивайте строки для сортировки. Вверху = начало панели",
+    TAB_MACROS = "Макросы",
+    MACROS_LATER = "Макросы появятся в одной из следующих версий.",
 }
 
 locales.koKR = {
@@ -794,6 +808,8 @@ locales.koKR = {
     ORDER_CLASSES = "직업",
     TAB_ORDER = "순서",
     ORDER_HINT = "줄을 끌어서 정렬하세요. 위 = 바의 시작 (고정점 쪽)",
+    TAB_MACROS = "매크로",
+    MACROS_LATER = "매크로는 이후 버전에서 추가됩니다.",
 }
 
 locales.zhCN = {
@@ -892,6 +908,8 @@ locales.zhCN = {
     ORDER_CLASSES = "职业",
     TAB_ORDER = "顺序",
     ORDER_HINT = "拖动行以排序。上方 = 动作条起点（锚点一侧）",
+    TAB_MACROS = "宏",
+    MACROS_LATER = "宏将在以后的版本中提供。",
 }
 
 locales.zhTW = {
@@ -990,6 +1008,8 @@ locales.zhTW = {
     ORDER_CLASSES = "職業",
     TAB_ORDER = "順序",
     ORDER_HINT = "拖曳列以排序。上方 = 動作條起點（錨點一側）",
+    TAB_MACROS = "巨集",
+    MACROS_LATER = "巨集將在之後的版本中提供。",
 }
 
 local client = GetLocale()
