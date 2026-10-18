@@ -14,5 +14,6 @@ events:SetScript("OnEvent", function()
     local lang = SimpleBlessingBarGlobalDB.language
     if lang then ns.SetLocale(lang) end
 
+    ns.InitBar()
     ns.Print(L.LOADED:format(ns.VERSION))
 end)

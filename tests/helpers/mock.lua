@@ -19,16 +19,97 @@ STATE = {
 }
 CHAT = {}
 
+-- Frames. A frame made from a Secure template is protected, and so is every
+-- frame above it, as in the client. In combat a protected frame refuses
+-- attribute, position and visibility changes with an error, as the client
+-- does - so a spec sees a write the addon must not make.
 local Methods = {}
+local function Guard(self, what)
+  if STATE.combat and self.protected then error("protected " .. what .. " in combat", 3) end
+end
 function Methods:RegisterEvent(e) self.events[e] = true; eventFrames[self] = true end
 function Methods:UnregisterEvent(e) self.events[e] = nil end
 function Methods:SetScript(s, f) self.scripts[s] = f end
+function Methods:GetScript(s) return self.scripts[s] end
+function Methods:HookScript(s, f) self.hooks[s] = self.hooks[s] or {}; table.insert(self.hooks[s], f) end
+function Methods:SetAttribute(k, v) Guard(self, "SetAttribute"); self.attrs[k] = v end
+function Methods:GetAttribute(k) return self.attrs[k] end
+function Methods:Show() Guard(self, "Show"); self.shown = true end
+function Methods:Hide() Guard(self, "Hide"); self.shown = false end
+function Methods:IsShown() return self.shown end
+function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
+function Methods:ClearAllPoints() Guard(self, "ClearAllPoints"); self.points = {} end
+function Methods:GetPoint(i) local p = self.points[i or 1]; if p then return unpack(p) end end
+function Methods:SetSize(w, h) self.w, self.h = w, h end
+function Methods:SetWidth(w) self.w = w end
+function Methods:GetWidth() return self.w end
+function Methods:GetRect() return 100, 200, self.w or 0, self.h or 0 end
+function Methods:StartMoving() Guard(self, "StartMoving"); self.moving = true end
+function Methods:StopMovingOrSizing() Guard(self, "StopMovingOrSizing"); self.moving = false end
+function Methods:RegisterForClicks(...) self.clicks = { ... } end
+function Methods:CreateTexture() return NEWOBJ("Texture") end
+function Methods:CreateFontString() return NEWOBJ("FontString") end
+function Methods:SetTexture(t) self.texture = t end
+function Methods:GetTexture() return self.texture end
+function Methods:SetDesaturated(v) self.desaturated = v end
+function Methods:IsDesaturated() return self.desaturated == true end
+function Methods:SetText(t) self.text = t end
+function Methods:GetText() return self.text end
+function Methods:IsMouseOver() return false end
 
-function CreateFrame(kind, name)
-  local o = { kind = kind, name = name, scripts = {}, events = {} }
+function NEWOBJ(kind, name, parent)
+  local o = { kind = kind, name = name, parent = parent, scripts = {}, hooks = {}, events = {},
+              attrs = {}, points = {}, shown = true }
   setmetatable(o, { __index = function(_, k) return Methods[k] or noop end })
+  return o
+end
+
+function CreateFrame(kind, name, parent, template)
+  local o = NEWOBJ(kind, name, parent)
+  o.template = template
+  if template and template:find("Secure") then
+    local f = o
+    -- rawget: a missing field reads as a method stub through the metatable
+    while f do f.protected = true; f = rawget(f, "parent") end
+  end
   if name then _G[name] = o end
   return o
+end
+
+-- Runs a frame's script and its hooks, recording errors like FIRE does.
+function RUNSCRIPT(frame, script, ...)
+  local fns = { frame.scripts[script] }
+  for _, h in ipairs(frame.hooks[script] or {}) do fns[#fns + 1] = h end
+  for _, fn in ipairs(fns) do
+    local ok, err = pcall(fn, frame, ...)
+    if not ok then table.insert(STATE.errors, script .. ": " .. tostring(err)) end
+  end
+end
+
+-- Timers: C_Timer.After queues until RUNTIMERS; tickers run on TICK.
+local timers, tickers = {}, {}
+C_Timer = {
+  After = function(_, fn) timers[#timers + 1] = fn end,
+  NewTicker = function(_, fn) local t = { fn = fn }; tickers[#tickers + 1] = t; return t end,
+}
+function RUNTIMERS()
+  local list = timers; timers = {}
+  for _, fn in ipairs(list) do
+    local ok, err = pcall(fn)
+    if not ok then table.insert(STATE.errors, "timer: " .. tostring(err)) end
+  end
+end
+function TICK()
+  for _, t in ipairs(tickers) do
+    local ok, err = pcall(t.fn)
+    if not ok then table.insert(STATE.errors, "ticker: " .. tostring(err)) end
+  end
+end
+
+UIParent = CreateFrame("Frame", "UIParent")
+CLASS_ICON_TCOORDS = {}
+for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
+  CLASS_ICON_TCOORDS[class] = { 0, 0.25, 0, 0.25 }
 end
 
 -- Runs every OnEvent script registered for the event; an error is recorded
@@ -104,6 +185,7 @@ C_UnitAuras = {
 }
 C_Spell = {
   IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
+  GetSpellTexture = function(id) return "icon" .. id end,
 }
 C_Item = { GetItemCount = function(id) return STATE.bags[id] or 0 end }
 IsPlayerSpell = function(id) return STATE.known[id] == true end

@@ -20,6 +20,22 @@ function ns.Print(msg)
 end
 
 ---------------------------------------------------------------------------
+-- Secure attributes
+---------------------------------------------------------------------------
+-- The only way the addon writes a secure attribute. In combat the client refuses the
+-- write; it is skipped and ns.attrPending tells the caller to redo its work on
+-- PLAYER_REGEN_ENABLED. Unchanged values are not written: every SetAttribute fires
+-- OnAttributeChanged on the button.
+ns.attrPending = false
+function ns.SetAttr(button, key, value)
+    if InCombatLockdown() then
+        ns.attrPending = true
+        return
+    end
+    if button:GetAttribute(key) ~= value then button:SetAttribute(key, value) end
+end
+
+---------------------------------------------------------------------------
 -- Saved variables
 ---------------------------------------------------------------------------
 local db

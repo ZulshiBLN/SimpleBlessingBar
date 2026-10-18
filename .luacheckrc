@@ -25,7 +25,8 @@ globals = {
 -- reported instead of trusted. SlashCmdList is shared by every addon; only our
 -- own entry may be written.
 read_globals = {
-    "C_AddOns", "C_Item", "C_Spell", "C_UnitAuras", "CreateFrame",
+    "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CLASS_ICON_TCOORDS", "CreateFrame",
+    "UIParent",
     "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
@@ -34,12 +35,17 @@ read_globals = {
 
 -- Specs run in plain Lua 5.1 under busted, where file access is how they read
 -- the addon's sources.
+-- Checked together with the mock (as `luacheck .` and CI do), the mock's top-level
+-- definitions count as defined here too; these lists keep a spec clean when it is
+-- checked alone.
 files["tests/"] = {
     std = "lua51+busted",
+    -- Specs build the mocked world by changing STATE's fields
+    globals = { "STATE" },
     read_globals = {
         "io", "require", "loadfile",
         -- What tests/helpers/mock.lua provides to drive the mocked client
-        "FIRE", "STATE", "CHAT",
+        "FIRE", "CHAT", "RUNSCRIPT", "RUNTIMERS", "TICK", "NEWOBJ", "UIParent",
     },
 }
 
