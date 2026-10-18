@@ -111,10 +111,25 @@ end
 -- Bodies are compiled with their arguments as locals, like the client's.
 ---------------------------------------------------------------------------
 local handles = setmetatable({}, { __mode = "k" })
+local framesOf = setmetatable({}, { __mode = "k" })
 local function Handle(frame)
   if not frame then return nil end
   if handles[frame] then return handles[frame] end
   local h = {}
+  framesOf[h] = frame
+  -- The client's secure auto-hide: recorded here, as the frame's autoHide seconds and the
+  -- frames that keep it open (autoHideWith). Like the client it works only on a protected
+  -- frame, and a frame joins a registration only after it was made.
+  function h:RegisterAutoHide(seconds)
+    if not rawget(frame, "protected") then error("RegisterAutoHide on an unprotected frame") end
+    frame.autoHide = seconds
+    frame.autoHideWith = {}
+  end
+  function h:AddToAutoHide(other)
+    if not rawget(frame, "autoHide") then error("AddToAutoHide before RegisterAutoHide") end
+    table.insert(frame.autoHideWith, framesOf[other])
+  end
+  function h:UnregisterAutoHide() frame.autoHide = nil; frame.autoHideWith = nil end
   function h:GetAttribute(k) return frame.attrs[k] end
   function h:SetAttribute(k, v) frame.attrs[k] = v end
   function h:Show() frame.shown = true end
@@ -195,10 +210,6 @@ function RUNCLICK(frame, button, down)
     end
   end
   RUNSCRIPT(frame, "OnClick", button, down)
-end
-
-GetCVarBool = function(name)
-  if name == "ActionButtonUseKeyDown" then return STATE.keyDown == true end
 end
 
 GameTooltip = NEWOBJ("GameTooltip")

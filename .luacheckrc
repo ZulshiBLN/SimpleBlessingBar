@@ -27,7 +27,7 @@ globals = {
 read_globals = {
     "C_AddOns", "C_Item", "C_Spell", "C_Timer", "C_UnitAuras", "CLASS_ICON_TCOORDS", "CreateFrame",
     "UIParent",
-    "GameTooltip", "GetCVarBool", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
+    "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },

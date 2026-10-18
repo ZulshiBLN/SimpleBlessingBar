@@ -61,6 +61,10 @@ D.BORDER_COLOR = { r = 0.4, g = 0.4, b = 0.4, a = 0.8 }
 D.HANDLE_UNLOCKED = { r = 0.41, g = 0.8, b = 0.94, a = 0.6 }
 D.HANDLE_LOCKED   = { r = 0.9, g = 0.25, b = 0.2, a = 0.6 }
 
+-- Seconds an open flyout stays once the mouse has left it and its button. Fixed until a
+-- settings window offers the switch and the time (Michel, 2026-10-18).
+D.FLYOUT_AUTOHIDE = 2
+
 -- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
 -- 48 px in a 256 px texture, desaturated and tinted
 D.ANTS_TEX    = "Interface\\SpellActivationOverlay\\IconAlertAnts"

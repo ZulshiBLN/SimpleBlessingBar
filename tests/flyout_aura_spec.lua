@@ -1,5 +1,5 @@
--- Flyout.lua with the aura button: open and close, the icons, choosing in and out of
--- combat (ruleset plan 2026-10-18-flyouts, IMPLEMENTATION "Tests, by phase" 2).
+-- Flyout.lua with the aura button: open, close and auto-hide, the icons, selecting in and
+-- out of combat (ruleset plan 2026-10-18-flyouts, IMPLEMENTATION "Tests, by phase" 2).
 -- Clicks go through RUNCLICK, which runs the secure snippets as the client does.
 
 local addon = require("addon")
@@ -37,6 +37,16 @@ describe("the aura flyout", function()
         assert.are.equal(0, #STATE.casts)
     end)
 
+    it("registers the auto-hide with its button when it opens, and drops it when it closes", function()
+        local ns, D, fly = login()
+        click(ns.auraButton, "RightButton")
+        assert.are.equal(D.FLYOUT_AUTOHIDE, fly.autoHide)
+        assert.are.same({ ns.auraButton }, fly.autoHideWith)
+        click(ns.auraButton, "RightButton")
+        assert.is_nil(fly.autoHide)
+        assert.are.same({}, STATE.errors)
+    end)
+
     it("stays closed on a left click, which casts the chosen aura", function()
         local ns, D, fly = login()
         click(ns.auraButton, "LeftButton")
@@ -44,28 +54,31 @@ describe("the aura flyout", function()
         assert.are.same({ { spell = D.AURAS.DEVOTION[2], unit = "player" } }, STATE.casts)
     end)
 
-    it("shows the known auras at their highest rank, in order, with the client's tooltip", function()
+    it("offers the known auras at their highest rank, in order, with the client's tooltip", function()
         local _, D, fly = login()
         local icons = shownIcons(fly)
         assert.are.equal(2, #icons)
-        assert.are.equal(D.AURAS.DEVOTION[2], icons[1]:GetAttribute("spell1"))
-        assert.are.equal(D.AURAS.RETRIBUTION[1], icons[2]:GetAttribute("spell1"))
+        assert.are.equal(D.AURAS.DEVOTION[2], icons[1]:GetAttribute("sbbspell"))
+        assert.are.equal(D.AURAS.RETRIBUTION[1], icons[2]:GetAttribute("sbbspell"))
+        -- an icon selects; it has no secure action of its own
+        assert.is_nil(icons[1]:GetAttribute("type1"))
         assert.is_nil(icons[1]:GetAttribute("type"))
         RUNSCRIPT(icons[2], "OnEnter")
         assert.are.equal(D.AURAS.RETRIBUTION[1], GameTooltip.spell)
     end)
 
-    it("casts a chosen aura at once in combat, and the aura button keeps it", function()
+    it("selects an aura in combat without casting it, and the aura button casts it then", function()
         local ns, D, fly = login()
         STATE.combat = true
         click(ns.auraButton, "RightButton")
         click(shownIcons(fly)[2], "LeftButton")
-        local ret = D.AURAS.RETRIBUTION[1]
-        assert.are.same({ { spell = ret, unit = "player" } }, STATE.casts)
+        assert.are.equal(0, #STATE.casts)
         assert.is_false(fly:IsShown())
+        assert.is_nil(fly.autoHide)
         assert.are.equal("RETRIBUTION", SimpleBlessingBarDB.aura)
+        local ret = D.AURAS.RETRIBUTION[1]
         click(ns.auraButton, "LeftButton")
-        assert.are.equal(ret, STATE.casts[2].spell)
+        assert.are.same({ { spell = ret, unit = "player" } }, STATE.casts)
         assert.are.same({}, STATE.errors)
 
         STATE.combat = false
@@ -82,16 +95,15 @@ describe("the aura flyout", function()
         assert.is_true(fly:IsShown())
     end)
 
-    it("saves the choice on the click that casts: key up while ActionButtonUseKeyDown is off", function()
-        local ns, _, fly = login()
-        STATE.keyDown = false
+    it("selects nothing on a press that is never released on the icon", function()
+        local ns, D, fly = login()
         click(ns.auraButton, "RightButton")
         local icon = shownIcons(fly)[2]
         RUNCLICK(icon, "LeftButton", true)
         assert.are.equal("DEVOTION", SimpleBlessingBarDB.aura)
-        assert.are.equal(0, #STATE.casts)
+        assert.are.equal(D.AURAS.DEVOTION[2], ns.auraButton:GetAttribute("spell1"))
+        assert.is_true(fly:IsShown())
         RUNCLICK(icon, "LeftButton", false)
         assert.are.equal("RETRIBUTION", SimpleBlessingBarDB.aura)
-        assert.are.equal(1, #STATE.casts)
     end)
 end)

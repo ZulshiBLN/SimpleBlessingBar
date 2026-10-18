@@ -84,6 +84,28 @@ describe("a wrapped secure click in the mock", function()
         assert.are.equal(300, STATE.casts[1].spell)
     end)
 
+    it("allows the auto-hide only on a protected frame, and adds frames only after registering", function()
+        local header, button = setup([[
+            local plain = owner:GetFrameRef("plain")
+            plain:RegisterAutoHide(2)
+            return false
+        ]])
+        header:SetFrameRef("plain", CreateFrame("Frame", "MockPlain", UIParent))
+        RUNCLICK(button, "RightButton", false)
+        assert.is_truthy(STATE.errors[1] and STATE.errors[1]:find("unprotected", 1, true))
+
+        local header2, button2 = setup([[
+            local fly = owner:GetFrameRef("fly")
+            fly:AddToAutoHide(self)
+            return false
+        ]])
+        local fly = CreateFrame("Frame", "MockFly", UIParent)
+        CreateFrame("Button", "MockFlyChild", fly, "SecureActionButtonTemplate")
+        header2:SetFrameRef("fly", fly)
+        RUNCLICK(button2, "RightButton", false)
+        assert.is_truthy(STATE.errors[1] and STATE.errors[1]:find("before RegisterAutoHide", 1, true))
+    end)
+
     it("runs insecure hooks after the secure action", function()
         local _, button = setup([[ return nil, "go" ]])
         local seen
