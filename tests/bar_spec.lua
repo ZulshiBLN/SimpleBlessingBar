@@ -73,6 +73,63 @@ describe("a class button's ants", function()
     end)
 end)
 
+-- The handle as SimpleConjureBar's (ruleset plan 2026-10-18-bar-polish, IMPLEMENTATION
+-- "Tests, by phase" 3)
+describe("the handle", function()
+    local function lines()
+        local out = {}
+        for _, l in ipairs(GameTooltip.lines) do out[#out + 1] = l[2] and (l[1] .. "|" .. l[2]) or l[1] end
+        return out
+    end
+
+    it("names the lock state and its three clicks in a tooltip", function()
+        local ns = login()
+        local L = ns.L
+        RUNSCRIPT(ns.handle, "OnEnter")
+        assert.are.equal(ns.handle, GameTooltip.owner)
+        assert.are.equal("ANCHOR_LEFT", GameTooltip.anchor)
+        assert.are.equal("SimpleBlessingBar", GameTooltip:GetText())
+        assert.are.same({ L.TIP_UNLOCKED, " ", L.LEFTCLICK .. "|" .. L.MOVE, L.RIGHTCLICK .. "|" .. L.LOCK,
+                          L.MIDDLECLICK .. "|" .. L.SETTINGS }, lines())
+        assert.are.same({ 0.4, 0.8, 1 }, { unpack(GameTooltip.lines[1], 3, 5) })
+        RUNSCRIPT(ns.handle, "OnLeave")
+        assert.is_false(GameTooltip:IsShown())
+    end)
+
+    it("shows the new state at once after a right click", function()
+        local ns = login()
+        local L = ns.L
+        RUNSCRIPT(ns.handle, "OnEnter")
+        RUNSCRIPT(ns.handle, "OnMouseDown", "RightButton")
+        assert.is_true(SimpleBlessingBarDB.locked)
+        assert.are.equal(L.TIP_LOCKED, GameTooltip.lines[1][1])
+        assert.are.same({ 1, 0.3, 0.3 }, { unpack(GameTooltip.lines[1], 3, 5) })
+        assert.are.equal(L.RIGHTCLICK .. "|" .. L.UNLOCK, lines()[4])
+    end)
+
+    it("opens and closes the settings on a middle click, locked too", function()
+        local ns = login()
+        local window = ns.UI.window
+        RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
+        assert.is_true(window:IsShown())
+        RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
+        assert.is_false(window:IsShown())
+        SimpleBlessingBarDB.locked = true
+        RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
+        assert.is_true(window:IsShown())
+        assert.is_false(ns.handle.moving == true)
+    end)
+
+    it("opens nothing on a middle click in combat, and says why", function()
+        local ns = login()
+        STATE.combat = true
+        RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
+        assert.is_false(ns.UI.window:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.MENU_COMBAT, 1, true))
+        assert.are.same({}, STATE.errors)
+    end)
+end)
+
 describe("a class button", function()
     it("casts with the left button only, registered for key down and up", function()
         local _, D, buttons = login({ known = known(19740) }, { PALADIN = "MIGHT" })

@@ -69,6 +69,15 @@ locales.enUS = {
     DEMO_GREATER = "%s (Greater)",
     OPT_FLYDIR = "Flyout direction",
     FLYDIR_AUTO = "Automatic",
+    LEFTCLICK = "Left-click",
+    RIGHTCLICK = "Right-click",
+    MIDDLECLICK = "Middle-click",
+    MOVE = "Move",
+    LOCK = "Lock",
+    UNLOCK = "Unlock",
+    SETTINGS = "Settings",
+    TIP_LOCKED = "Locked",
+    TIP_UNLOCKED = "Unlocked",
 }
 
 locales.deDE = {
@@ -132,6 +141,15 @@ locales.deDE = {
     DEMO_GREATER = "%s (Groß)",
     OPT_FLYDIR = "Flyout-Richtung",
     FLYDIR_AUTO = "Automatisch",
+    LEFTCLICK = "Linksklick",
+    RIGHTCLICK = "Rechtsklick",
+    MIDDLECLICK = "Mittelklick",
+    MOVE = "Bewegen",
+    LOCK = "Sperren",
+    UNLOCK = "Entsperren",
+    SETTINGS = "Einstellungen",
+    TIP_LOCKED = "Gesperrt",
+    TIP_UNLOCKED = "Entsperrt",
 }
 
 locales.frFR = {
@@ -195,6 +213,15 @@ locales.frFR = {
     DEMO_GREATER = "%s (supérieure)",
     OPT_FLYDIR = "Direction des menus volants",
     FLYDIR_AUTO = "Automatique",
+    LEFTCLICK = "Clic gauche",
+    RIGHTCLICK = "Clic droit",
+    MIDDLECLICK = "Clic milieu",
+    MOVE = "Déplacer",
+    LOCK = "Verrouiller",
+    UNLOCK = "Déverrouiller",
+    SETTINGS = "Options",
+    TIP_LOCKED = "Verrouillée",
+    TIP_UNLOCKED = "Déverrouillée",
 }
 
 locales.esES = {
@@ -258,6 +285,15 @@ locales.esES = {
     DEMO_GREATER = "%s (superior)",
     OPT_FLYDIR = "Dirección de los menús",
     FLYDIR_AUTO = "Automática",
+    LEFTCLICK = "Clic izquierdo",
+    RIGHTCLICK = "Clic derecho",
+    MIDDLECLICK = "Clic central",
+    MOVE = "Mover",
+    LOCK = "Bloquear",
+    UNLOCK = "Desbloquear",
+    SETTINGS = "Opciones",
+    TIP_LOCKED = "Bloqueada",
+    TIP_UNLOCKED = "Desbloqueada",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -325,6 +361,15 @@ locales.itIT = {
     DEMO_GREATER = "%s (superiore)",
     OPT_FLYDIR = "Direzione dei menu",
     FLYDIR_AUTO = "Automatica",
+    LEFTCLICK = "Clic sinistro",
+    RIGHTCLICK = "Clic destro",
+    MIDDLECLICK = "Clic centrale",
+    MOVE = "Sposta",
+    LOCK = "Blocca",
+    UNLOCK = "Sblocca",
+    SETTINGS = "Impostazioni",
+    TIP_LOCKED = "Bloccata",
+    TIP_UNLOCKED = "Sbloccata",
 }
 
 locales.ptBR = {
@@ -388,6 +433,15 @@ locales.ptBR = {
     DEMO_GREATER = "%s (maior)",
     OPT_FLYDIR = "Direção dos menus",
     FLYDIR_AUTO = "Automática",
+    LEFTCLICK = "Clique esquerdo",
+    RIGHTCLICK = "Clique direito",
+    MIDDLECLICK = "Clique do meio",
+    MOVE = "Mover",
+    LOCK = "Travar",
+    UNLOCK = "Destravar",
+    SETTINGS = "Configurações",
+    TIP_LOCKED = "Travada",
+    TIP_UNLOCKED = "Destravada",
 }
 
 locales.ruRU = {
@@ -451,6 +505,15 @@ locales.ruRU = {
     DEMO_GREATER = "%s (великое)",
     OPT_FLYDIR = "Направление панелей",
     FLYDIR_AUTO = "Автоматически",
+    LEFTCLICK = "ЛКМ",
+    RIGHTCLICK = "ПКМ",
+    MIDDLECLICK = "СКМ",
+    MOVE = "Переместить",
+    LOCK = "Закрепить",
+    UNLOCK = "Открепить",
+    SETTINGS = "Настройки",
+    TIP_LOCKED = "Закреплена",
+    TIP_UNLOCKED = "Не закреплена",
 }
 
 locales.koKR = {
@@ -514,6 +577,15 @@ locales.koKR = {
     DEMO_GREATER = "%s (상급)",
     OPT_FLYDIR = "플라이아웃 방향",
     FLYDIR_AUTO = "자동",
+    LEFTCLICK = "왼쪽 클릭",
+    RIGHTCLICK = "오른쪽 클릭",
+    MIDDLECLICK = "가운데 클릭",
+    MOVE = "이동",
+    LOCK = "잠금",
+    UNLOCK = "잠금 해제",
+    SETTINGS = "설정",
+    TIP_LOCKED = "잠김",
+    TIP_UNLOCKED = "잠금 해제됨",
 }
 
 locales.zhCN = {
@@ -577,6 +649,15 @@ locales.zhCN = {
     DEMO_GREATER = "%s（强效）",
     OPT_FLYDIR = "弹出方向",
     FLYDIR_AUTO = "自动",
+    LEFTCLICK = "左键",
+    RIGHTCLICK = "右键",
+    MIDDLECLICK = "中键",
+    MOVE = "移动",
+    LOCK = "锁定",
+    UNLOCK = "解锁",
+    SETTINGS = "设置",
+    TIP_LOCKED = "已锁定",
+    TIP_UNLOCKED = "已解锁",
 }
 
 locales.zhTW = {
@@ -640,6 +721,15 @@ locales.zhTW = {
     DEMO_GREATER = "%s（強效）",
     OPT_FLYDIR = "彈出方向",
     FLYDIR_AUTO = "自動",
+    LEFTCLICK = "左鍵",
+    RIGHTCLICK = "右鍵",
+    MIDDLECLICK = "中鍵",
+    MOVE = "移動",
+    LOCK = "鎖定",
+    UNLOCK = "解鎖",
+    SETTINGS = "設定",
+    TIP_LOCKED = "已鎖定",
+    TIP_UNLOCKED = "已解鎖",
 }
 
 local client = GetLocale()

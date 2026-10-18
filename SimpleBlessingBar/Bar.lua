@@ -144,8 +144,29 @@ handle:EnableMouse(true)
 handle:SetAlpha(0)
 local handleTex = handle:CreateTexture(nil, "BACKGROUND")
 handleTex:SetAllPoints()
-handle:SetScript("OnEnter", function(self) self:SetAlpha(1) end)
-handle:SetScript("OnLeave", function(self) if not self.moving then self:SetAlpha(0) end end)
+-- SimpleConjureBar's handle tooltip: the lock state and what each click does
+local function ShowHandleTooltip(self)
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:SetText("SimpleBlessingBar")
+    if db.locked then
+        GameTooltip:AddLine(L.TIP_LOCKED, 1, 0.3, 0.3)
+    else
+        GameTooltip:AddLine(L.TIP_UNLOCKED, 0.4, 0.8, 1)
+    end
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddDoubleLine(L.LEFTCLICK, L.MOVE, 0, 1, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
+    GameTooltip:Show()
+end
+handle:SetScript("OnEnter", function(self)
+    self:SetAlpha(1)
+    ShowHandleTooltip(self)
+end)
+handle:SetScript("OnLeave", function(self)
+    if not self.moving then self:SetAlpha(0) end
+    GameTooltip:Hide()
+end)
 
 function ns.LoadPosition()
     bar:ClearAllPoints()
@@ -245,6 +266,9 @@ handle:SetScript("OnMouseDown", function(self, button)
         end
     elseif button == "RightButton" then
         ns.ToggleLock()
+        ShowHandleTooltip(self) -- the tooltip shows the new state
+    elseif button == "MiddleButton" then
+        ns.ToggleSettings() -- refuses to open in combat itself
     end
 end)
 

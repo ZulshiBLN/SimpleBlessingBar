@@ -312,8 +312,11 @@ function ColorPickerFrame:GetColorAlpha() return STATE.pickedColor[4] end
 CreateColor = function(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 PixelUtil = { SetSize = function(f, w, h) f:SetSize(w, h) end }
 
+-- The tooltip records its lines: { left, right or nil, r, g, b } per AddLine / AddDoubleLine
 GameTooltip = NEWOBJ("GameTooltip")
-function GameTooltip:SetOwner(owner) self.owner = owner end
+function GameTooltip:SetOwner(owner, anchor) self.owner, self.anchor, self.lines = owner, anchor, {} end
+function GameTooltip:AddLine(text, r, g, b) table.insert(self.lines, { text, nil, r, g, b }) end
+function GameTooltip:AddDoubleLine(left, right, r, g, b) table.insert(self.lines, { left, right, r, g, b }) end
 function GameTooltip:SetSpellByID(id) self.spell = id; self.shown = true end
 
 -- Timers: C_Timer.After queues until RUNTIMERS; tickers run on TICK.
