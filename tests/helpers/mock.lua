@@ -435,5 +435,33 @@ C_Spell = {
   GetSpellTexture = function(id) return "icon" .. id end,
   GetSpellName = function(id) return "spell" .. id end,
 }
-C_Item = { GetItemCount = function(id) return STATE.bags[id] or 0 end }
+C_Item = {
+  GetItemCount = function(id) return STATE.bags[id] or 0 end,
+  GetItemNameByID = function(id) return "item" .. id end,
+}
+
+-- A vendor: STATE.merchant = list of { id =, price =, stack =, maxStack = } (nil = no vendor
+-- open); STATE.money in copper; STATE.now for GetTime. BuyMerchantItem puts the items in the
+-- bags, pays per item from the stack price - as Forever does (ruleset decisions,
+-- 2026-10-18) - and records every call in STATE.bought as { index, quantity }.
+local function Ware(i) return STATE.merchant and STATE.merchant[i] end
+GetMerchantNumItems = function() return STATE.merchant and #STATE.merchant or 0 end
+GetMerchantItemID = function(i) local w = Ware(i) return w and w.id end
+GetMerchantItemMaxStack = function(i) local w = Ware(i) return w and w.maxStack end
+C_MerchantFrame = {
+  GetItemInfo = function(i)
+    local w = Ware(i)
+    if w then return { price = w.price, stackCount = w.stack } end
+  end,
+}
+BuyMerchantItem = function(i, quantity)
+  local w = Ware(i)
+  STATE.bought = STATE.bought or {}
+  table.insert(STATE.bought, { i, quantity })
+  STATE.bags[w.id] = (STATE.bags[w.id] or 0) + quantity
+  STATE.money = STATE.money - quantity * w.price / w.stack
+end
+GetMoney = function() return STATE.money or 0 end
+GetTime = function() return STATE.now or 0 end
+C_CurrencyInfo = { GetCoinTextureString = function(copper) return copper .. "c" end }
 IsPlayerSpell = function(id) return STATE.known[id] == true end

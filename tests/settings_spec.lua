@@ -117,6 +117,42 @@ describe("settings version 3", function()
     end)
 end)
 
+-- Version 5 (ruleset plan 2026-10-18-settings-more, IMPLEMENTATION "Settings, version 5")
+describe("settings version 5", function()
+    it("migrate a version 4 file to the supply defaults, twice without change", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = "FIRST" } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.equal(D.DB_VERSION, db.dbVersion)
+        assert.is_false(db.autoBuy)
+        for _, key in ipairs({ "symbolWarn", "symbolAmount", "goldReserve" }) do
+            assert.are.equal(D.NUMBER_DEFAULTS[key].default, db[key], key)
+        end
+        assert.are.same(D.COLOR_DEFAULTS.symbolWarnColor, db.symbolWarnColor)
+        assert.are_not.equal(D.COLOR_DEFAULTS.symbolWarnColor, db.symbolWarnColor)
+        assert.are.equal("FIRST", db.flyoutDir)
+        local once = copy(db)
+        ns.InitDB()
+        assert.are.same(once, SimpleBlessingBarDB)
+    end)
+
+    it("clamp and repair damaged supply values", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 5,
+            symbolWarn = "x", symbolAmount = 500, goldReserve = -3, autoBuy = 1,
+            symbolZeroColor = { r = 2, g = 0, b = 0, a = 1 },
+        } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.equal(D.NUMBER_DEFAULTS.symbolWarn.default, db.symbolWarn)
+        assert.are.equal(D.NUMBER_DEFAULTS.symbolAmount.max, db.symbolAmount)
+        assert.are.equal(0, db.goldReserve)
+        assert.is_false(db.autoBuy)
+        assert.are.same({ r = 1, g = 0, b = 0, a = 1 }, db.symbolZeroColor)
+    end)
+end)
+
 -- Version 4 (ruleset plan 2026-10-18-bar-polish, IMPLEMENTATION "Settings, version 4")
 describe("settings version 4", function()
     it("migrate a version 3 file: automatic flyouts, the time narrowed, twice without change", function()

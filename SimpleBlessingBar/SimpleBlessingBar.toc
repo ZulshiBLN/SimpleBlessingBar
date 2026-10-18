@@ -38,6 +38,7 @@ Blessings.lua
 Bar.lua
 SelfBuffs.lua
 Flyout.lua
+Merchant.lua
 Settings.lua
 SettingsPages.lua
 Main.lua

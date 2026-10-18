@@ -37,6 +37,14 @@ function B.CastSpell(familyKey)
     if normal then return normal, false end
 end
 
+-- Whether any Greater Blessing is known - only then is a Symbol of Kings of use
+function B.AnyGreaterKnown()
+    for _, family in ipairs(D.BLESSING_ORDER) do
+        if B.Rank(D.BLESSINGS[family].greater) then return true end
+    end
+    return false
+end
+
 -- The blessing families the paladin knows in any rank or form, in flyout order
 function B.KnownFamilies()
     local list = {}

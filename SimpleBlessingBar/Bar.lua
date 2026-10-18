@@ -303,6 +303,9 @@ for _, class in ipairs(D.CLASS_ORDER) do
     b:SetScript("OnEnter", ns.ShowSpellTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
     ns.AttachAnts(b, "classAntsColor", "classAntsSpeed")
+    -- The Symbols of Kings in the bags, centred above the icons (Michel, 2026-10-18)
+    b.symbols = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    b.symbols:SetPoint("CENTER", 0, 0)
     b.class = class
     b:Hide()
     buttons[class] = b
@@ -314,6 +317,21 @@ local function SetAction(b, spell, unit)
     SetAttr(b, "type1", (spell and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", spell)
     SetAttr(b, "unit1", spell and unit or nil)
+end
+
+-- The Symbol count: white, the warning color at or below the threshold, the empty color at 0
+local WHITE = { r = 1, g = 1, b = 1, a = 1 }
+local function UpdateSymbols(b, shown)
+    if not shown then
+        b.symbols:SetText("")
+        return
+    end
+    local n = ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
+    local c = WHITE
+    if n == 0 then c = db.symbolZeroColor
+    elseif db.symbolWarn > 0 and n <= db.symbolWarn then c = db.symbolWarnColor end
+    b.symbols:SetText(tostring(n))
+    b.symbols:SetTextColor(c.r, c.g, c.b, c.a)
 end
 
 local function Update(b, family)
@@ -331,6 +349,7 @@ local function Update(b, family)
     local lacking = state.castable and state.count > 0
     b.count:SetText(lacking and tostring(state.count) or "")
     ns.SetAnts(b, lacking)
+    UpdateSymbols(b, state.castable and B.Rank(D.BLESSINGS[family].greater) ~= nil)
 end
 
 ---------------------------------------------------------------------------

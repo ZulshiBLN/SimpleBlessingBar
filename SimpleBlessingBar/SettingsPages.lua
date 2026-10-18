@@ -221,4 +221,41 @@ controls.autoCloseTime, autoCloseRow = UI.AddIntSlider("OPT_AUTOCLOSE_TIME", "fl
 controls.autoCloseRow = autoCloseRow
 refreshers[#refreshers + 1] = ApplyAutoCloseState
 
+---------------------------------------------------------------------------
+-- Supplies: the Symbol of Kings count and the auto-buy
+---------------------------------------------------------------------------
+UI.NewPage("TAB_SUPPLIES")
+
+-- An item name: the client names it (localization.md)
+UI.AddHeader(function()
+    return ns.LocalName(C_Item.GetItemNameByID(D.SYMBOL_OF_KINGS), "SYMBOL_OF_KINGS")
+end, 6)
+controls.symbolWarn, controls.symbolWarnBox = UI.AddNumberSlider({
+    label = "OPT_SYMBOL_WARN", key = "symbolWarn", gap = 6, onChange = Refresh,
+})
+do
+    local swatches = select(2, UI.AddToggleColorRow(nil, nil, nil, {
+        { label = "LBL_WARNING", key = "symbolWarnColor" },
+        { label = "LBL_EMPTY",   key = "symbolZeroColor" },
+    }))
+    controls.symbolWarnColor, controls.symbolZeroColor = swatches[1], swatches[2]
+end
+UI.AddSeparator()
+
+-- Auto-buy: the amounts are dimmed while it is off
+UI.AddHeader("AUTOBUY_HEADER", 6)
+local amountRows = {}
+local function ApplyAutoBuyState()
+    for _, row in ipairs(amountRows) do row:SetAlpha(db.autoBuy and 1 or 0.4) end
+end
+controls.autoBuy = UI.AddCheck("OPT_AUTOBUY", "autoBuy", ApplyAutoBuyState)
+refreshers[#refreshers + 1] = ApplyAutoBuyState
+controls.symbolAmount = UI.AddNumberSlider({
+    label = "OPT_SYMBOL_AMOUNT", key = "symbolAmount", gap = 6, rows = amountRows,
+})
+controls.goldReserve = UI.AddNumberSlider({
+    label = "OPT_GOLD_RESERVE", key = "goldReserve", gap = 6, rows = amountRows,
+})
+controls.amountRows = amountRows
+
 UI.CreateTabs()

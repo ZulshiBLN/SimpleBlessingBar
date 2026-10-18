@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 4
+D.DB_VERSION = 5
 
 ---------------------------------------------------------------------------
 -- Spells, lowest rank first. IDs do not rise with rank (Devotion Aura rank 2 is 10290,
@@ -42,6 +42,12 @@ D.RIGHTEOUS_FURY = 25780
 
 -- Reagent of every Greater Blessing
 D.SYMBOL_OF_KINGS = 21177
+
+-- Demo mode's Symbol count on the class buttons; the auto-buy still reads the real bags
+D.DEMO_SYMBOLS = 3
+-- Seconds after a purchase in which no new one starts: the bag count lags behind it by more
+-- than one second on Forever (ruleset decisions, 2026-10-18)
+D.BUY_LOCK = 3
 
 -- Class buttons appear in this order, each only while the class is in the group
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
@@ -100,7 +106,7 @@ D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's defaul
 ---------------------------------------------------------------------------
 D.DEFAULT_AURA = "DEVOTION"
 
--- Settings of version 3 with their defaults; numbers carry their range. Colors are copied into
+-- Settings with their defaults; numbers carry their range. Colors are copied into
 -- the settings, never referenced, so nothing written to the settings changes these tables.
 D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
@@ -108,6 +114,7 @@ D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
     showAura = true, showFury = true, flyoutAutoClose = true,
+    autoBuy = false,
 }
 D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
@@ -115,6 +122,9 @@ D.COLOR_DEFAULTS = {
     furyAntsColor = D.ANTS_COLOR,
     classAntsColor = D.ANTS_COLOR,
     countColor    = { r = 1, g = 1, b = 1, a = 1 },
+    -- The Symbol count at or below the warning threshold, and at 0: SimpleConjureBar's
+    symbolWarnColor = { r = 1, g = 0.6, b = 0.1, a = 1 },
+    symbolZeroColor = { r = 1, g = 0.15, b = 0.15, a = 1 },
 }
 D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
@@ -122,4 +132,7 @@ D.NUMBER_DEFAULTS = {
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     classAntsSpeed      = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
+    symbolWarn          = { default = 5, min = 0, max = 20, integer = true },   -- 0 = no warning
+    symbolAmount        = { default = 20, min = 0, max = 100, integer = true }, -- target in the bags
+    goldReserve         = { default = 1, min = 0, max = 1000, integer = true }, -- gold never spent
 }

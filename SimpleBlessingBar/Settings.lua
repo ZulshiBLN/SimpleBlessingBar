@@ -241,6 +241,75 @@ function UI.AddIntSlider(labelKey, key, minV, maxV, fmt, onChange, gap)
     return slider, row, value
 end
 
+-- Whole-number slider with an input box on the right, bound to a number setting with its
+-- range from D.NUMBER_DEFAULTS. o = { label, key, gap, rows (collects the row frames),
+-- onChange }. Returns the slider and the box.
+function UI.AddNumberSlider(o)
+    local range = D.NUMBER_DEFAULTS[o.key]
+    local ROW = 42
+    local row = CreateFrame("Frame", nil, page)
+    row:SetHeight(ROW)
+    row:SetPoint("TOPLEFT", INSET, Place(ROW, o.gap or 6))
+    if o.rows then o.rows[#o.rows + 1] = row end
+
+    local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    label:SetPoint("TOPLEFT", 0, -4)
+    SetL(label, o.label)
+
+    local box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+    box:SetSize(40, 20)
+    box:SetPoint("TOPRIGHT", 0, 0)
+    box:SetAutoFocus(false)
+    box:SetNumeric(true)
+    box:SetMaxLetters(#tostring(range.max))
+    box:SetJustifyH("CENTER")
+
+    local slider = UI.MakeSlider(row)
+    slider:SetPoint("TOPLEFT", row, "TOPLEFT", 2, -28)
+    slider:SetMinMaxValues(range.min, range.max)
+    slider:SetValueStep(1)
+    slider:SetObeyStepOnDrag(true)
+
+    local updating = false
+    local function SetValue(v)
+        v = math.max(range.min, math.min(range.max, math.floor(v + 0.5)))
+        db[o.key] = v
+        updating = true
+        slider:SetValue(v)
+        updating = false
+        box:SetText(tostring(v))
+        if o.onChange then o.onChange() end
+    end
+    slider:SetScript("OnValueChanged", function(_, v)
+        if not updating then SetValue(v) end
+    end)
+    slider:SetScript("OnMouseWheel", function(_, delta) SetValue(db[o.key] + delta) end)
+
+    box:SetScript("OnEnterPressed", function(self)
+        local v = tonumber(self:GetText())
+        if v then SetValue(v) else self:SetText(tostring(db[o.key])) end
+        self:ClearFocus()
+    end)
+    box:SetScript("OnEscapePressed", function(self)
+        self:SetText(tostring(db[o.key]))
+        self:ClearFocus()
+    end)
+    box:SetScript("OnEditFocusLost", function(self) self:SetText(tostring(db[o.key])) end)
+
+    refreshers[#refreshers + 1] = function()
+        updating = true
+        slider:SetValue(db[o.key])
+        updating = false
+        box:SetText(tostring(db[o.key]))
+    end
+    measures[#measures + 1] = function() return label:GetStringWidth() + 16 + 40 end
+    stretchers[#stretchers + 1] = function(w)
+        row:SetWidth(w)
+        slider:SetWidth(w - 4)
+    end
+    return slider, box
+end
+
 -- Highlight speed: 5 steps, 3 = default
 function UI.AddSpeedSlider(key)
     return UI.AddIntSlider("OPT_ANTS_SPEED", key, D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX, function(v)
@@ -350,9 +419,11 @@ end
 ---------------------------------------------------------------------------
 -- Color picker (the client's ColorPickerFrame)
 ---------------------------------------------------------------------------
--- After a color changes: the look, and whatever the caller adds
+-- After a color changes: the look, the counts colored by the refresh (the Symbols), and
+-- whatever the caller adds
 local function ColorChanged(onChange)
     ns.ApplyLook()
+    ns.Refresh()
     if onChange then onChange() end
 end
 

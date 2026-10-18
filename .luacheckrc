@@ -30,6 +30,8 @@ read_globals = {
     "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
     "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "RegisterStateDriver", "UnregisterStateDriver", "ReloadUI", "ColorPickerFrame", "CreateColor", "PixelUtil",
+    "C_CurrencyInfo", "C_MerchantFrame", "GetMerchantNumItems", "GetMerchantItemID", "GetMerchantItemMaxStack",
+    "BuyMerchantItem", "GetMoney", "GetTime",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }

@@ -27,12 +27,12 @@ describe("the settings window", function()
         assert.is_true(escape)
     end)
 
-    it("has the tabs General and Tracking, and a tab shows its page alone", function()
+    it("has its tabs in order, and a tab shows its page alone", function()
         local ns, UI = login()
         sbb("")
-        assert.are.equal(2, #UI.tabs)
-        assert.are.equal(ns.L.TAB_GENERAL, UI.tabs[1]:GetText())
-        assert.are.equal(ns.L.TAB_TRACKING, UI.tabs[2]:GetText())
+        local names = {}
+        for i, tab in ipairs(UI.tabs) do names[i] = tab:GetText() end
+        assert.are.same({ ns.L.TAB_GENERAL, ns.L.TAB_TRACKING, ns.L.TAB_SUPPLIES }, names)
         assert.is_true(UI.pages[1]:IsShown())
         RUNSCRIPT(UI.tabs[2], "OnClick")
         assert.is_false(UI.pages[1]:IsShown())
