@@ -194,11 +194,16 @@ do
 end
 UI.AddSeparator()
 
--- The count on the class buttons
+-- The class buttons: their ants and their count, as SimpleConjureBar's Intellect button
 UI.AddHeader("TRACK_BLESSINGS", 6)
-controls.countColor = select(2, UI.AddToggleColorRow(nil, nil, nil, {
-    { label = "LBL_TEXT", key = "countColor" },
-}))
+do
+    local swatches = select(2, UI.AddToggleColorRow(nil, nil, nil, {
+        { label = "LBL_HIGHLIGHT", key = "classAntsColor" },
+        { label = "LBL_TEXT",      key = "countColor" },
+    }))
+    controls.classColor, controls.countColor = { swatches[1] }, { swatches[2] }
+end
+controls.classSpeed = UI.AddSpeedSlider("classAntsSpeed")
 UI.AddSeparator()
 
 -- Flyout auto-close: the time slider is dimmed while it is off

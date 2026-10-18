@@ -75,6 +75,36 @@ describe("the Tracking page", function()
         assert.are.same({ 0, 1, 0, 1 }, ns.auraButton.ants.vertexColor)
     end)
 
+    it("colors the class buttons' ants apart from the aura and Righteous Fury buttons", function()
+        local ns, c = open()
+        pickColor(c.classColor[1], { 0, 1, 0, 1 })
+        for _, class in ipairs(ns.D.CLASS_ORDER) do
+            assert.are.same({ 0, 1, 0, 1 }, ns.classButtons[class].ants.vertexColor, class)
+        end
+        local gold = ns.D.ANTS_COLOR
+        assert.are.same({ gold.r, gold.g, gold.b, gold.a }, ns.auraButton.ants.vertexColor)
+        assert.are.same({ gold.r, gold.g, gold.b, gold.a }, ns.furyButton.ants.vertexColor)
+        pickColor(c.auraColor[1], { 1, 0, 0, 1 })
+        assert.are.same({ 0, 1, 0, 1 }, ns.classButtons.MAGE.ants.vertexColor)
+    end)
+
+    it("runs the class buttons' ants at their own speed", function()
+        local ns, c, db, D = open()
+        local mage = ns.classButtons.MAGE
+        db.assign.MAGE = "MIGHT" -- the party's mage lacks it
+        ns.Refresh()
+        assert.is_true(mage.ants:IsShown())
+        c.classSpeed:SetValue(5)
+        assert.are.equal(5, db.classAntsSpeed)
+        RUNSCRIPT(mage.antsHolder, "OnUpdate", 2 * D.ANTS_STEPS[5])
+        assert.are.equal(2, mage.ants.texCoord[1] / D.ANTS_CELL)
+        -- the aura button keeps the default speed: the same time is one frame there
+        RUNSCRIPT(ns.auraButton.antsHolder, "OnUpdate", D.ANTS_STEPS[3])
+        assert.are.equal(1, ns.auraButton.ants.texCoord[1] / D.ANTS_CELL)
+        c.auraSpeed:SetValue(1)
+        assert.are.equal(5, db.classAntsSpeed)
+    end)
+
     it("runs the ants at the speed set for the button", function()
         local ns, c, db, D = open()
         local holder = ns.auraButton.antsHolder

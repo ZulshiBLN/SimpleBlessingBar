@@ -74,6 +74,56 @@ function ns.HideTooltip()
     GameTooltip:Hide()
 end
 
+-- The highlight ("marching ants" like spell procs in the Retail client), as in
+-- SimpleConjureBar, shared by the aura, Righteous Fury and class buttons. It sits on its own
+-- frame above the button; the animation runs (OnUpdate) only while the highlight is visible.
+-- Color and speed are settings: colorKey and speedKey name them. ns.ApplyLook colors them.
+local antsButtons = {}
+function ns.AttachAnts(b, colorKey, speedKey)
+    local holder = CreateFrame("Frame", nil, b)
+    holder:SetAllPoints()
+    holder:SetFrameLevel(b:GetFrameLevel() + 2)
+
+    local ants = holder:CreateTexture(nil, "OVERLAY")
+    ants:SetTexture(D.ANTS_TEX)
+    ants:SetDesaturated(true)
+    ants:SetBlendMode("ADD")
+    ants:SetPoint("CENTER")
+    ants:SetSize(SIZE * 1.42, SIZE * 1.42)
+    ants:Hide()
+
+    local frame, timer = 0, 0
+    local function SetFrame(i)
+        local col, row = i % D.ANTS_COLS, math.floor(i / D.ANTS_COLS)
+        ants:SetTexCoord(col * D.ANTS_CELL, (col + 1) * D.ANTS_CELL, row * D.ANTS_CELL, (row + 1) * D.ANTS_CELL)
+    end
+    SetFrame(0)
+
+    b.ants, b.antsHolder, b.antsColorKey = ants, holder, colorKey
+    b.antsUpdate = function(_, elapsed)
+        local step = D.ANTS_STEPS[db[speedKey]]
+        timer = timer + elapsed
+        if timer < step then return end
+        frame = (frame + math.floor(timer / step)) % D.ANTS_FRAMES
+        timer = timer % step
+        SetFrame(frame)
+    end
+    antsButtons[#antsButtons + 1] = b
+end
+
+-- Shows or hides a button's highlight and starts or stops its animation
+function ns.SetAnts(b, shown)
+    if shown == b.antsShown then return end
+    b.antsShown = shown
+    if shown then
+        b.ants:Show()
+        b.antsHolder:SetScript("OnUpdate", b.antsUpdate)
+    else
+        b.ants:Hide()
+        b.antsHolder:SetScript("OnUpdate", nil)
+    end
+end
+
 ---------------------------------------------------------------------------
 -- Bar and handle
 ---------------------------------------------------------------------------
@@ -155,11 +205,8 @@ function ns.ApplyCombatHide()
     end
 end
 
--- Other colors of the bar's buttons: functions added here run with ns.ApplyLook
-ns.onLook = {}
-
--- Background and border of the bar and of every flyout, the class buttons' count color, and
--- what ns.onLook adds. None of it is protected, so this works in combat too.
+-- Background and border of the bar and of every flyout, the class buttons' count color and
+-- every button's ants. None of it is protected, so this works in combat too.
 function ns.ApplyLook()
     local c, e = db.bg, D.BORDER_COLOR
     local frames = { bar }
@@ -170,7 +217,10 @@ function ns.ApplyLook()
     end
     local n = db.countColor
     for _, b in pairs(ns.classButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
-    for _, fn in ipairs(ns.onLook) do fn() end
+    for _, b in ipairs(antsButtons) do
+        local a = db[b.antsColorKey]
+        b.ants:SetVertexColor(a.r, a.g, a.b, a.a)
+    end
 end
 
 -- Locked = red, unlocked = blue
@@ -228,6 +278,7 @@ for _, class in ipairs(D.CLASS_ORDER) do
     b.blessIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     b:SetScript("OnEnter", ns.ShowSpellTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
+    ns.AttachAnts(b, "classAntsColor", "classAntsSpeed")
     b.class = class
     b:Hide()
     buttons[class] = b
@@ -252,8 +303,10 @@ local function Update(b, family)
     b.blessIcon:SetTexture(icon and C_Spell.GetSpellTexture(icon) or nil)
     b.classIcon:SetDesaturated(not state.castable)
     b.blessIcon:SetDesaturated(not state.castable)
-    -- A 0 shows nothing: nobody lacks the blessing
-    b.count:SetText((state.castable and state.count > 0) and tostring(state.count) or "")
+    -- The count and the ants show only while members lack the blessing; a 0 shows nothing
+    local lacking = state.castable and state.count > 0
+    b.count:SetText(lacking and tostring(state.count) or "")
+    ns.SetAnts(b, lacking)
 end
 
 ---------------------------------------------------------------------------
@@ -343,6 +396,7 @@ function ns.Refresh()
             Update(b, db.assign[class])
         elseif b:IsShown() then
             SetAction(b, nil)
+            ns.SetAnts(b, false)
             b:Hide()
         end
     end

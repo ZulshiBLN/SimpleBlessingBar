@@ -42,6 +42,7 @@ describe("demo mode", function()
             assert.is_true(b:IsShown(), class)
             local n = D.DEMO_COUNTS[class]
             assert.are.equal(n > 0 and tostring(n) or "", b.count:GetText(), class)
+            assert.are.equal(n > 0, b.ants:IsShown(), class)
         end
         assert.are.same({}, STATE.errors)
     end)

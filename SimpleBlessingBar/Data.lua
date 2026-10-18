@@ -113,11 +113,13 @@ D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
     auraAntsColor = D.ANTS_COLOR,
     furyAntsColor = D.ANTS_COLOR,
+    classAntsColor = D.ANTS_COLOR,
     countColor    = { r = 1, g = 1, b = 1, a = 1 },
 }
 D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
     auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    classAntsSpeed      = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
 }

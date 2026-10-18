@@ -20,6 +20,59 @@ local function login(world, assign)
     return ns, ns.D, ns.classButtons
 end
 
+-- Ants on class buttons (ruleset plan 2026-10-18-bar-polish, IMPLEMENTATION "Tests, by phase" 2)
+describe("a class button's ants", function()
+    local function mine(D) return { { spellId = D.BLESSINGS.MIGHT.normal[1], expirationTime = 3600, mine = true } } end
+
+    it("show while members lack the blessing, and stop at 0", function()
+        local _, D, buttons = login({ known = known(19740) }, { PALADIN = "MIGHT" })
+        local b = buttons.PALADIN
+        assert.is_true(b.ants:IsShown())
+        assert.is_truthy(b.antsHolder:GetScript("OnUpdate"))
+        STATE.units.player.auras = mine(D)
+        TICK()
+        assert.are.equal("", b.count:GetText())
+        assert.is_false(b.ants:IsShown())
+        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
+    end)
+
+    it("do not show on a greyed button", function()
+        local _, _, buttons = login({ known = known(19740) }, { PALADIN = "WISDOM" }) -- not learned
+        assert.is_false(buttons.PALADIN.ants:IsShown())
+        local _, _, none = login({ known = known(19740) }) -- nothing assigned
+        assert.is_false(none.PALADIN.ants:IsShown())
+    end)
+
+    it("stop when the class leaves the group", function()
+        local _, _, buttons = login({ known = known(19740), group = "party", units = { party1 = { class = "WARRIOR" } } },
+            { WARRIOR = "MIGHT" })
+        assert.is_true(buttons.WARRIOR.ants:IsShown())
+        STATE.group, STATE.units.party1 = nil, nil
+        TICK()
+        assert.is_false(buttons.WARRIOR:IsShown())
+        assert.is_nil(buttons.WARRIOR.antsHolder:GetScript("OnUpdate"))
+    end)
+
+    it("keep their state through combat and follow at its end", function()
+        local _, D, buttons = login({ known = known(19740) }, { PALADIN = "MIGHT" })
+        STATE.units.player.auras = mine(D)
+        TICK()
+        local b = buttons.PALADIN
+        assert.is_false(b.ants:IsShown())
+        STATE.combat = true
+        FIRE("PLAYER_REGEN_DISABLED")
+        STATE.units.player.auras = {} -- the blessing runs out in combat
+        FIRE("UNIT_AURA", "player")
+        RUNTIMERS()
+        TICK()
+        assert.is_false(b.ants:IsShown())
+        STATE.combat = false
+        FIRE("PLAYER_REGEN_ENABLED")
+        assert.is_true(b.ants:IsShown())
+        assert.are.same({}, STATE.errors)
+    end)
+end)
+
 describe("a class button", function()
     it("casts with the left button only, registered for key down and up", function()
         local _, D, buttons = login({ known = known(19740) }, { PALADIN = "MIGHT" })
