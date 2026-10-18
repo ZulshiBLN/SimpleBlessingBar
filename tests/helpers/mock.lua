@@ -465,6 +465,17 @@ BuyMerchantItem = function(i, quantity)
   STATE.bags[w.id] = (STATE.bags[w.id] or 0) + quantity
   STATE.money = STATE.money - quantity * w.price / w.stack
 end
+-- Who the player is, as Forever answers: a first and a second name, the second where a realm
+-- used to be. STATE.secretName makes the name a secret value.
+UnitFullName = function() return "Zulshe", "Keshmar" end
+GetRealmName = function() return "Forever" end
+UnitLevel = function() return 25 end
+GetBuildInfo = function() return "1.60.1", "70450", "Oct 1 2026", 16001 end
+date = function() return "2026-10-18 12:00" end
+issecretvalue = function(v) return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar") end
+-- BugGrabber: its errors are STATE.bugs; addon.load removes it for world.bugGrabber == false
+BugGrabber = { GetDB = function() return STATE.bugs or {} end }
+
 -- The minimap: 140 px wide, centred where Methods:GetCenter puts frames (STATE.center)
 Minimap = CreateFrame("Frame", "Minimap", UIParent)
 Minimap:SetSize(140, 140)

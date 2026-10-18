@@ -31,6 +31,7 @@ local COMMANDS = {
     { cmd = "help",  desc = "CMD_HELP" },
     { cmd = "lock",  desc = "CMD_LOCK" },
     { cmd = "reset", desc = "CMD_RESET" },
+    { cmd = "bug",   desc = "CMD_BUG" },
 }
 
 local function PrintHelp()
@@ -58,6 +59,8 @@ SlashCmdList.SIMPLEBLESSINGBAR = function(msg)
         db.point, db.rel, db.x, db.y = nil, nil, nil, nil
         ns.LoadPosition()
         ns.Print(L.POS_RESET)
+    elseif msg == "bug" then
+        ns.OpenBugReport()
     else
         ns.Print(L.CMD_UNKNOWN:format("|cffffd100/sbb help|r"))
     end

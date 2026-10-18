@@ -32,7 +32,8 @@ read_globals = {
     "RegisterStateDriver", "UnregisterStateDriver", "ReloadUI", "ColorPickerFrame", "CreateColor", "PixelUtil",
     "C_CurrencyInfo", "C_MerchantFrame", "GetMerchantNumItems", "GetMerchantItemID", "GetMerchantItemMaxStack",
     "BuyMerchantItem", "GetMoney", "GetTime", "GetCursorPosition", "IsMouseButtonDown", "LOCALIZED_CLASS_NAMES_MALE",
-    "Minimap", "Settings",
+    "Minimap", "Settings", "UnitFullName", "GetRealmName", "UnitLevel", "GetBuildInfo", "date", "issecretvalue",
+    "BugGrabber",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }

@@ -43,6 +43,7 @@ SelfBuffs.lua
 Flyout.lua
 Merchant.lua
 Minimap.lua
+Report.lua
 Settings.lua
 SettingsPages.lua
 Main.lua

@@ -56,6 +56,9 @@ D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "
 -- block; the order inside the block defaults to D.CLASS_ORDER (Michel, 2026-10-18)
 D.DEFAULT_ORDER = { "AURA", "FURY", "CLASSES" }
 
+-- Where the bug report tells players to paste it
+D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SimpleBlessingBar/issues"
+
 -- Demo mode's sample counts per class; a 0 shows a class whose members all have the blessing
 D.DEMO_COUNTS = {
     WARRIOR = 2, PALADIN = 0, HUNTER = 1, ROGUE = 3, PRIEST = 1, SHAMAN = 2, MAGE = 0, WARLOCK = 4, DRUID = 1,

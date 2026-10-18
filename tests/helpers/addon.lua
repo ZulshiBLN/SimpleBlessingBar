@@ -40,6 +40,7 @@ function M.load(locale, world)
     for _, key in ipairs({ "units", "group", "known", "bags", "combat" }) do
         if world[key] ~= nil then STATE[key] = world[key] end
     end
+    if world.bugGrabber == false then BugGrabber = nil end
     STATE.units.player = STATE.units.player or {}
     STATE.units.player.class = STATE.units.player.class or STATE.class
     SimpleBlessingBarDB, SimpleBlessingBarGlobalDB = world.db, world.globalDB

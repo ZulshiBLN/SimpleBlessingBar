@@ -161,12 +161,15 @@ controls.demo = UI.AddCheck("OPT_DEMO", "demo", function()
     ns.Refresh()
 end)
 
--- Bottom row: "Reload UI" right (own translation, so it follows the language)
+-- Bottom row: "Report bug" left, "Reload UI" right (own translations, so they follow the language)
 do
     local reload = UI.AddButton(general, "RELOAD_UI", function() ReloadUI() end)
     reload:SetPoint("BOTTOMRIGHT", general, "BOTTOMRIGHT", -INSET, INSET - 4)
     controls.reload = reload
-    measures[#measures + 1] = function() return reload:GetWidth() end
+    local bug = UI.AddButton(general, "BTN_REPORT_BUG", function() ns.OpenBugReport() end)
+    bug:SetPoint("BOTTOMLEFT", general, "BOTTOMLEFT", INSET, INSET - 4)
+    controls.reportBug = bug
+    measures[#measures + 1] = function() return bug:GetWidth() + 12 + reload:GetWidth() end
     -- Reserve the space, so the button never overlaps the last element
     Place(22, 8)
 end

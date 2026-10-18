@@ -112,6 +112,13 @@ locales.enUS = {
     HELP_HINT = "List all chat commands with %s",
     ACCESS_OPTIONS = "Access options with %s",
     OPEN_SETTINGS = "Open Settings",
+    BTN_REPORT_BUG = "Report bug",
+    REPORT_TITLE = "Report a bug",
+    REPORT_STEP1 = "1. What happened? (optional)",
+    REPORT_STEP2 = "2. Copy the report with Ctrl+C (already selected)",
+    REPORT_STEP3 = "3. Paste it as a new issue on GitHub:",
+    CLOSE = "Close",
+    CMD_BUG = "Open the bug report window",
 }
 
 locales.deDE = {
@@ -218,6 +225,13 @@ locales.deDE = {
     HELP_HINT = "Alle Chatbefehle anzeigen mit %s",
     ACCESS_OPTIONS = "Optionen erreichst du mit %s",
     OPEN_SETTINGS = "Einstellungen öffnen",
+    BTN_REPORT_BUG = "Fehler melden",
+    REPORT_TITLE = "Fehler melden",
+    REPORT_STEP1 = "1. Was ist passiert? (optional)",
+    REPORT_STEP2 = "2. Bericht mit Strg+C kopieren (bereits markiert)",
+    REPORT_STEP3 = "3. Als neues Issue auf GitHub einfügen:",
+    CLOSE = "Schließen",
+    CMD_BUG = "Fenster für Fehlerberichte öffnen",
 }
 
 locales.frFR = {
@@ -324,6 +338,13 @@ locales.frFR = {
     HELP_HINT = "Liste des commandes avec %s",
     ACCESS_OPTIONS = "Accédez aux options avec %s",
     OPEN_SETTINGS = "Ouvrir les options",
+    BTN_REPORT_BUG = "Signaler un bug",
+    REPORT_TITLE = "Signaler un bug",
+    REPORT_STEP1 = "1. Que s'est-il passé ? (facultatif)",
+    REPORT_STEP2 = "2. Copiez le rapport avec Ctrl+C (déjà sélectionné)",
+    REPORT_STEP3 = "3. Collez-le dans un nouveau ticket sur GitHub :",
+    CLOSE = "Fermer",
+    CMD_BUG = "Ouvrir la fenêtre de rapport de bug",
 }
 
 locales.esES = {
@@ -430,6 +451,13 @@ locales.esES = {
     HELP_HINT = "Lista de comandos con %s",
     ACCESS_OPTIONS = "Accede a las opciones con %s",
     OPEN_SETTINGS = "Abrir opciones",
+    BTN_REPORT_BUG = "Informar de error",
+    REPORT_TITLE = "Informar de un error",
+    REPORT_STEP1 = "1. ¿Qué ha pasado? (opcional)",
+    REPORT_STEP2 = "2. Copia el informe con Ctrl+C (ya seleccionado)",
+    REPORT_STEP3 = "3. Pégalo como nuevo issue en GitHub:",
+    CLOSE = "Cerrar",
+    CMD_BUG = "Abrir la ventana de informe de errores",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -540,6 +568,13 @@ locales.itIT = {
     HELP_HINT = "Elenco dei comandi con %s",
     ACCESS_OPTIONS = "Accedi alle opzioni con %s",
     OPEN_SETTINGS = "Apri impostazioni",
+    BTN_REPORT_BUG = "Segnala bug",
+    REPORT_TITLE = "Segnala un bug",
+    REPORT_STEP1 = "1. Cosa è successo? (facoltativo)",
+    REPORT_STEP2 = "2. Copia il rapporto con Ctrl+C (già selezionato)",
+    REPORT_STEP3 = "3. Incollalo come nuova issue su GitHub:",
+    CLOSE = "Chiudi",
+    CMD_BUG = "Apri la finestra di segnalazione bug",
 }
 
 locales.ptBR = {
@@ -646,6 +681,13 @@ locales.ptBR = {
     HELP_HINT = "Lista de comandos com %s",
     ACCESS_OPTIONS = "Acesse as opções com %s",
     OPEN_SETTINGS = "Abrir configurações",
+    BTN_REPORT_BUG = "Relatar bug",
+    REPORT_TITLE = "Relatar um bug",
+    REPORT_STEP1 = "1. O que aconteceu? (opcional)",
+    REPORT_STEP2 = "2. Copie o relatório com Ctrl+C (já selecionado)",
+    REPORT_STEP3 = "3. Cole como nova issue no GitHub:",
+    CLOSE = "Fechar",
+    CMD_BUG = "Abrir a janela de relatório de bugs",
 }
 
 locales.ruRU = {
@@ -752,6 +794,13 @@ locales.ruRU = {
     HELP_HINT = "Список команд: %s",
     ACCESS_OPTIONS = "Настройки доступны по команде %s",
     OPEN_SETTINGS = "Открыть настройки",
+    BTN_REPORT_BUG = "Сообщить об ошибке",
+    REPORT_TITLE = "Сообщить об ошибке",
+    REPORT_STEP1 = "1. Что произошло? (необязательно)",
+    REPORT_STEP2 = "2. Скопируйте отчёт с помощью Ctrl+C (уже выделен)",
+    REPORT_STEP3 = "3. Вставьте его как новый issue на GitHub:",
+    CLOSE = "Закрыть",
+    CMD_BUG = "Открыть окно отчёта об ошибке",
 }
 
 locales.koKR = {
@@ -858,6 +907,13 @@ locales.koKR = {
     HELP_HINT = "%s 로 모든 채팅 명령어 보기",
     ACCESS_OPTIONS = "%s 명령으로 설정을 열 수 있습니다",
     OPEN_SETTINGS = "설정 열기",
+    BTN_REPORT_BUG = "버그 신고",
+    REPORT_TITLE = "버그 신고",
+    REPORT_STEP1 = "1. 무슨 일이 있었나요? (선택)",
+    REPORT_STEP2 = "2. Ctrl+C로 보고서를 복사하세요 (이미 선택됨)",
+    REPORT_STEP3 = "3. GitHub에 새 이슈로 붙여넣으세요:",
+    CLOSE = "닫기",
+    CMD_BUG = "버그 신고 창 열기",
 }
 
 locales.zhCN = {
@@ -964,6 +1020,13 @@ locales.zhCN = {
     HELP_HINT = "输入 %s 查看所有聊天命令",
     ACCESS_OPTIONS = "使用 %s 打开选项",
     OPEN_SETTINGS = "打开设置",
+    BTN_REPORT_BUG = "报告错误",
+    REPORT_TITLE = "报告错误",
+    REPORT_STEP1 = "1. 发生了什么？（可选）",
+    REPORT_STEP2 = "2. 按 Ctrl+C 复制报告（已选中）",
+    REPORT_STEP3 = "3. 在 GitHub 上粘贴为新的 issue：",
+    CLOSE = "关闭",
+    CMD_BUG = "打开错误报告窗口",
 }
 
 locales.zhTW = {
@@ -1070,6 +1133,13 @@ locales.zhTW = {
     HELP_HINT = "輸入 %s 查看所有聊天指令",
     ACCESS_OPTIONS = "使用 %s 開啟選項",
     OPEN_SETTINGS = "開啟設定",
+    BTN_REPORT_BUG = "回報錯誤",
+    REPORT_TITLE = "回報錯誤",
+    REPORT_STEP1 = "1. 發生了什麼事？（選填）",
+    REPORT_STEP2 = "2. 按 Ctrl+C 複製報告（已選取）",
+    REPORT_STEP3 = "3. 在 GitHub 上貼成新的 issue：",
+    CLOSE = "關閉",
+    CMD_BUG = "開啟錯誤回報視窗",
 }
 
 local client = GetLocale()
