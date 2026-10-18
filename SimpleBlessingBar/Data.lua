@@ -98,7 +98,6 @@ D.DEFAULT_AURA = "DEVOTION"
 -- the settings, never referenced, so nothing written to the settings changes these tables.
 D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
-D.ANTS_SPEED_DEFAULT = 3
 D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 10
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
@@ -112,7 +111,7 @@ D.COLOR_DEFAULTS = {
 }
 D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
-    auraAntsSpeed       = { default = D.ANTS_SPEED_DEFAULT, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
-    furyAntsSpeed       = { default = D.ANTS_SPEED_DEFAULT, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
 }

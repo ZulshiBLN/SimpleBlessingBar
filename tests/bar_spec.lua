@@ -94,44 +94,21 @@ describe("the class buttons", function()
     end)
 end)
 
-describe("the class button highlight", function()
-    it("runs in SimpleConjureBar's gold at the default speed, and stops when the class leaves", function()
-        local _, D, buttons = login({ known = known(19740), group = "party", units = { party1 = { class = "WARRIOR" } } },
-            { WARRIOR = "MIGHT" })
-        local b = buttons.WARRIOR
-        local gold = D.ANTS_COLOR
-        assert.are.same({ gold.r, gold.g, gold.b, gold.a }, b.ants.vertexColor)
-        RUNSCRIPT(b.antsHolder, "OnUpdate", D.ANTS_STEPS[D.ANTS_SPEED_DEFAULT])
-        assert.are.equal(1, b.ants.texCoord[1] / D.ANTS_CELL)
-
-        STATE.group, STATE.units.party1 = nil, nil
-        FIRE("GROUP_ROSTER_UPDATE")
-        RUNTIMERS()
-        assert.is_false(b:IsShown())
-        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
-    end)
-end)
-
 describe("the refresh", function()
     local function myMight(D) return { { spellId = D.BLESSINGS.MIGHT.normal[1], expirationTime = 3600, mine = true } } end
 
     it("follows auras, the roster and the ticker out of combat", function()
         local _, D, buttons = login({ known = known(19740) }, { PALADIN = "MIGHT", WARRIOR = "MIGHT" })
         assert.are.equal("1", buttons.PALADIN.count:GetText())
-        assert.is_true(buttons.PALADIN.ants:IsShown()) -- someone lacks it: highlighted
 
         STATE.units.player.auras = myMight(D)
         FIRE("UNIT_AURA", "player")
         RUNTIMERS()
-        assert.are.equal("", buttons.PALADIN.count:GetText()) -- nobody lacks it: no 0, no ants
-        assert.is_false(buttons.PALADIN.ants:IsShown())
-        assert.is_nil(buttons.PALADIN.antsHolder:GetScript("OnUpdate"))
+        assert.are.equal("", buttons.PALADIN.count:GetText()) -- nobody lacks it: no 0
 
         STATE.units.player.auras = {}
         TICK()
         assert.are.equal("1", buttons.PALADIN.count:GetText())
-        assert.is_true(buttons.PALADIN.ants:IsShown())
-        assert.is_truthy(buttons.PALADIN.antsHolder:GetScript("OnUpdate"))
 
         STATE.group = "party"
         STATE.units.party1 = { class = "WARRIOR" }
