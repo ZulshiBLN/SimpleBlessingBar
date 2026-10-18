@@ -25,6 +25,14 @@ locales.enUS = {
     AURA_FIRE = "Fire Resistance Aura",
     AURA_SANCTITY = "Sanctity Aura",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Chat commands:",
+    CMD_HELP = "Show this list",
+    CMD_LOCK = "Lock or unlock the bar",
+    CMD_RESET = "Move the bar back to its start position",
+    LOCKED = "Bar locked.",
+    UNLOCKED = "Bar unlocked.",
+    POS_RESET = "Bar position reset.",
+    CMD_UNKNOWN = "Unknown command. Type %s for a list.",
 }
 
 locales.deDE = {
@@ -44,6 +52,14 @@ locales.deDE = {
     AURA_FIRE = "Aura des Feuerwiderstands",
     AURA_SANCTITY = "Aura der Heiligkeit",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Chat-Befehle:",
+    CMD_HELP = "Diese Liste anzeigen",
+    CMD_LOCK = "Leiste sperren oder entsperren",
+    CMD_RESET = "Leiste an die Startposition zurücksetzen",
+    LOCKED = "Leiste gesperrt.",
+    UNLOCKED = "Leiste entsperrt.",
+    POS_RESET = "Position der Leiste zurückgesetzt.",
+    CMD_UNKNOWN = "Unbekannter Befehl. %s zeigt alle Befehle.",
 }
 
 locales.frFR = {
@@ -63,6 +79,14 @@ locales.frFR = {
     AURA_FIRE = "Aura de résistance au Feu",
     AURA_SANCTITY = "Aura de sainteté",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Commandes de discussion :",
+    CMD_HELP = "Afficher cette liste",
+    CMD_LOCK = "Verrouiller ou déverrouiller la barre",
+    CMD_RESET = "Remettre la barre à sa position de départ",
+    LOCKED = "Barre verrouillée.",
+    UNLOCKED = "Barre déverrouillée.",
+    POS_RESET = "Position de la barre réinitialisée.",
+    CMD_UNKNOWN = "Commande inconnue. Tapez %s pour la liste.",
 }
 
 locales.esES = {
@@ -82,6 +106,14 @@ locales.esES = {
     AURA_FIRE = "Aura de Resistencia al Fuego",
     AURA_SANCTITY = "Aura de santidad",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Comandos de chat:",
+    CMD_HELP = "Mostrar esta lista",
+    CMD_LOCK = "Bloquear o desbloquear la barra",
+    CMD_RESET = "Devolver la barra a su posición inicial",
+    LOCKED = "Barra bloqueada.",
+    UNLOCKED = "Barra desbloqueada.",
+    POS_RESET = "Posición de la barra restablecida.",
+    CMD_UNKNOWN = "Comando desconocido. Escribe %s para ver la lista.",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -105,6 +137,14 @@ locales.itIT = {
     AURA_FIRE = "Aura di Resistenza al Fuoco",
     AURA_SANCTITY = "Aura di Santità",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Comandi chat:",
+    CMD_HELP = "Mostra questo elenco",
+    CMD_LOCK = "Blocca o sblocca la barra",
+    CMD_RESET = "Riporta la barra alla posizione iniziale",
+    LOCKED = "Barra bloccata.",
+    UNLOCKED = "Barra sbloccata.",
+    POS_RESET = "Posizione della barra ripristinata.",
+    CMD_UNKNOWN = "Comando sconosciuto. Digita %s per l'elenco.",
 }
 
 locales.ptBR = {
@@ -124,6 +164,14 @@ locales.ptBR = {
     AURA_FIRE = "Aura de Resistência ao Fogo",
     AURA_SANCTITY = "Aura de Santidade",
     MENU_AURA = "Aura",
+    HELP_HEADER = "Comandos de chat:",
+    CMD_HELP = "Mostrar esta lista",
+    CMD_LOCK = "Travar ou destravar a barra",
+    CMD_RESET = "Voltar a barra à posição inicial",
+    LOCKED = "Barra travada.",
+    UNLOCKED = "Barra destravada.",
+    POS_RESET = "Posição da barra redefinida.",
+    CMD_UNKNOWN = "Comando desconhecido. Digite %s para ver a lista.",
 }
 
 locales.ruRU = {
@@ -143,6 +191,14 @@ locales.ruRU = {
     AURA_FIRE = "Аура сопротивления огню",
     AURA_SANCTITY = "Аура святости",
     MENU_AURA = "Аура",
+    HELP_HEADER = "Команды чата:",
+    CMD_HELP = "Показать этот список",
+    CMD_LOCK = "Закрепить или открепить панель",
+    CMD_RESET = "Вернуть панель в начальное положение",
+    LOCKED = "Панель закреплена.",
+    UNLOCKED = "Панель откреплена.",
+    POS_RESET = "Положение панели сброшено.",
+    CMD_UNKNOWN = "Неизвестная команда. Введите %s для списка.",
 }
 
 locales.koKR = {
@@ -162,6 +218,14 @@ locales.koKR = {
     AURA_FIRE = "화염 저항의 오라",
     AURA_SANCTITY = "고결의 오라",
     MENU_AURA = "오라",
+    HELP_HEADER = "채팅 명령어:",
+    CMD_HELP = "이 목록 표시",
+    CMD_LOCK = "바 잠금 또는 잠금 해제",
+    CMD_RESET = "바를 시작 위치로 되돌리기",
+    LOCKED = "바가 잠겼습니다.",
+    UNLOCKED = "바 잠금이 해제되었습니다.",
+    POS_RESET = "바 위치가 초기화되었습니다.",
+    CMD_UNKNOWN = "알 수 없는 명령어입니다. 목록은 %s 를 입력하세요.",
 }
 
 locales.zhCN = {
@@ -181,6 +245,14 @@ locales.zhCN = {
     AURA_FIRE = "火焰抗性光环",
     AURA_SANCTITY = "圣洁光环",
     MENU_AURA = "光环",
+    HELP_HEADER = "聊天命令：",
+    CMD_HELP = "显示此列表",
+    CMD_LOCK = "锁定或解锁动作条",
+    CMD_RESET = "将动作条移回初始位置",
+    LOCKED = "动作条已锁定。",
+    UNLOCKED = "动作条已解锁。",
+    POS_RESET = "动作条位置已重置。",
+    CMD_UNKNOWN = "未知命令。输入 %s 查看列表。",
 }
 
 locales.zhTW = {
@@ -200,6 +272,14 @@ locales.zhTW = {
     AURA_FIRE = "火焰抗性光環",
     AURA_SANCTITY = "聖潔光環",
     MENU_AURA = "光環",
+    HELP_HEADER = "聊天指令：",
+    CMD_HELP = "顯示此列表",
+    CMD_LOCK = "鎖定或解鎖動作條",
+    CMD_RESET = "將動作條移回初始位置",
+    LOCKED = "動作條已鎖定。",
+    UNLOCKED = "動作條已解鎖。",
+    POS_RESET = "動作條位置已重置。",
+    CMD_UNKNOWN = "未知指令。輸入 %s 查看列表。",
 }
 
 local client = GetLocale()
