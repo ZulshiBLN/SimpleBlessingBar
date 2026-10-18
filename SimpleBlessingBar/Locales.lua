@@ -40,6 +40,17 @@ locales.enUS = {
     DIR_UP = "Up",
     RELOAD_UI = "Reload UI",
     DEFAULT = "Default",
+    OPT_SHOW_BUTTON = "Show button",
+    LBL_HIGHLIGHT = "Highlight",
+    LBL_TEXT = "Text",
+    OPT_ANTS_SPEED = "Highlight speed",
+    RIGHTEOUS_FURY = "Righteous Fury",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Blessings",
+    TRACK_FLYOUTS = "Flyouts",
+    OPT_AUTOCLOSE = "Close automatically",
+    OPT_AUTOCLOSE_TIME = "Close after",
+    SECONDS = "%d s",
 }
 
 locales.deDE = {
@@ -74,6 +85,17 @@ locales.deDE = {
     DIR_UP = "Nach oben",
     RELOAD_UI = "UI neu laden",
     DEFAULT = "Standard",
+    OPT_SHOW_BUTTON = "Button anzeigen",
+    LBL_HIGHLIGHT = "Markierung",
+    LBL_TEXT = "Text",
+    OPT_ANTS_SPEED = "Geschwindigkeit der Markierung",
+    RIGHTEOUS_FURY = "Zorn der Gerechtigkeit",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Segen",
+    TRACK_FLYOUTS = "Flyouts",
+    OPT_AUTOCLOSE = "Automatisch schließen",
+    OPT_AUTOCLOSE_TIME = "Schließen nach",
+    SECONDS = "%d s",
 }
 
 locales.frFR = {
@@ -108,6 +130,17 @@ locales.frFR = {
     DIR_UP = "Vers le haut",
     RELOAD_UI = "Recharger l'interface",
     DEFAULT = "Par défaut",
+    OPT_SHOW_BUTTON = "Afficher le bouton",
+    LBL_HIGHLIGHT = "Surbrillance",
+    LBL_TEXT = "Texte",
+    OPT_ANTS_SPEED = "Vitesse de la surbrillance",
+    RIGHTEOUS_FURY = "Fureur vertueuse",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Bénédictions",
+    TRACK_FLYOUTS = "Menus volants",
+    OPT_AUTOCLOSE = "Fermer automatiquement",
+    OPT_AUTOCLOSE_TIME = "Fermer après",
+    SECONDS = "%d s",
 }
 
 locales.esES = {
@@ -142,6 +175,17 @@ locales.esES = {
     DIR_UP = "Hacia arriba",
     RELOAD_UI = "Recargar interfaz",
     DEFAULT = "Predeterminado",
+    OPT_SHOW_BUTTON = "Mostrar botón",
+    LBL_HIGHLIGHT = "Resaltado",
+    LBL_TEXT = "Texto",
+    OPT_ANTS_SPEED = "Velocidad del resaltado",
+    RIGHTEOUS_FURY = "Furia justa",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Bendiciones",
+    TRACK_FLYOUTS = "Menús desplegables",
+    OPT_AUTOCLOSE = "Cerrar automáticamente",
+    OPT_AUTOCLOSE_TIME = "Cerrar tras",
+    SECONDS = "%d s",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -180,6 +224,17 @@ locales.itIT = {
     DIR_UP = "Verso l'alto",
     RELOAD_UI = "Ricarica interfaccia",
     DEFAULT = "Predefinito",
+    OPT_SHOW_BUTTON = "Mostra pulsante",
+    LBL_HIGHLIGHT = "Evidenziazione",
+    LBL_TEXT = "Testo",
+    OPT_ANTS_SPEED = "Velocità dell'evidenziazione",
+    RIGHTEOUS_FURY = "Giusta Furia",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Benedizioni",
+    TRACK_FLYOUTS = "Menu a comparsa",
+    OPT_AUTOCLOSE = "Chiudi automaticamente",
+    OPT_AUTOCLOSE_TIME = "Chiudi dopo",
+    SECONDS = "%d s",
 }
 
 locales.ptBR = {
@@ -214,6 +269,17 @@ locales.ptBR = {
     DIR_UP = "Para cima",
     RELOAD_UI = "Recarregar interface",
     DEFAULT = "Padrão",
+    OPT_SHOW_BUTTON = "Mostrar botão",
+    LBL_HIGHLIGHT = "Destaque",
+    LBL_TEXT = "Texto",
+    OPT_ANTS_SPEED = "Velocidade do destaque",
+    RIGHTEOUS_FURY = "Fúria Íntegra",
+    TRACK_AURA = "Aura",
+    TRACK_BLESSINGS = "Bênçãos",
+    TRACK_FLYOUTS = "Menus suspensos",
+    OPT_AUTOCLOSE = "Fechar automaticamente",
+    OPT_AUTOCLOSE_TIME = "Fechar após",
+    SECONDS = "%d s",
 }
 
 locales.ruRU = {
@@ -248,6 +314,17 @@ locales.ruRU = {
     DIR_UP = "Вверх",
     RELOAD_UI = "Перезагрузить UI",
     DEFAULT = "По умолчанию",
+    OPT_SHOW_BUTTON = "Показывать кнопку",
+    LBL_HIGHLIGHT = "Подсветка",
+    LBL_TEXT = "Текст",
+    OPT_ANTS_SPEED = "Скорость подсветки",
+    RIGHTEOUS_FURY = "Праведное неистовство",
+    TRACK_AURA = "Аура",
+    TRACK_BLESSINGS = "Благословения",
+    TRACK_FLYOUTS = "Всплывающие панели",
+    OPT_AUTOCLOSE = "Закрывать автоматически",
+    OPT_AUTOCLOSE_TIME = "Закрывать через",
+    SECONDS = "%d с",
 }
 
 locales.koKR = {
@@ -282,6 +359,17 @@ locales.koKR = {
     DIR_UP = "위",
     RELOAD_UI = "UI 다시 불러오기",
     DEFAULT = "기본값",
+    OPT_SHOW_BUTTON = "버튼 표시",
+    LBL_HIGHLIGHT = "강조",
+    LBL_TEXT = "글자",
+    OPT_ANTS_SPEED = "강조 속도",
+    RIGHTEOUS_FURY = "정의의 격노",
+    TRACK_AURA = "오라",
+    TRACK_BLESSINGS = "축복",
+    TRACK_FLYOUTS = "플라이아웃",
+    OPT_AUTOCLOSE = "자동으로 닫기",
+    OPT_AUTOCLOSE_TIME = "닫기까지",
+    SECONDS = "%d초",
 }
 
 locales.zhCN = {
@@ -316,6 +404,17 @@ locales.zhCN = {
     DIR_UP = "向上",
     RELOAD_UI = "重载界面",
     DEFAULT = "默认",
+    OPT_SHOW_BUTTON = "显示按钮",
+    LBL_HIGHLIGHT = "高亮",
+    LBL_TEXT = "文字",
+    OPT_ANTS_SPEED = "高亮速度",
+    RIGHTEOUS_FURY = "正义之怒",
+    TRACK_AURA = "光环",
+    TRACK_BLESSINGS = "祝福",
+    TRACK_FLYOUTS = "弹出栏",
+    OPT_AUTOCLOSE = "自动关闭",
+    OPT_AUTOCLOSE_TIME = "关闭延迟",
+    SECONDS = "%d 秒",
 }
 
 locales.zhTW = {
@@ -350,6 +449,17 @@ locales.zhTW = {
     DIR_UP = "向上",
     RELOAD_UI = "重新載入介面",
     DEFAULT = "預設",
+    OPT_SHOW_BUTTON = "顯示按鈕",
+    LBL_HIGHLIGHT = "醒目",
+    LBL_TEXT = "文字",
+    OPT_ANTS_SPEED = "醒目速度",
+    RIGHTEOUS_FURY = "正義之怒",
+    TRACK_AURA = "光環",
+    TRACK_BLESSINGS = "祝福",
+    TRACK_FLYOUTS = "彈出欄",
+    OPT_AUTOCLOSE = "自動關閉",
+    OPT_AUTOCLOSE_TIME = "關閉延遲",
+    SECONDS = "%d 秒",
 }
 
 local client = GetLocale()

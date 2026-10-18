@@ -153,8 +153,11 @@ function ns.ApplyCombatHide()
     end
 end
 
--- Background and border of the bar and of every flyout. Neither is protected, so this works
--- in combat too.
+-- Other colors of the bar's buttons: functions added here run with ns.ApplyLook
+ns.onLook = {}
+
+-- Background and border of the bar and of every flyout, the class buttons' count color, and
+-- what ns.onLook adds. None of it is protected, so this works in combat too.
 function ns.ApplyLook()
     local c, e = db.bg, D.BORDER_COLOR
     local frames = { bar }
@@ -163,6 +166,9 @@ function ns.ApplyLook()
         f:SetBackdropColor(c.r, c.g, c.b, c.a)
         f:SetBackdropBorderColor(e.r, e.g, e.b, db.showBorder and e.a or 0)
     end
+    local n = db.countColor
+    for _, b in pairs(ns.classButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
+    for _, fn in ipairs(ns.onLook) do fn() end
 end
 
 -- Locked = red, unlocked = blue
@@ -302,8 +308,18 @@ function ns.Refresh()
     if not db or InCombatLockdown() then return end
     ns.attrPending = false
 
-    -- The aura and Righteous Fury buttons first, then the classes in the group
-    local shown = { ns.auraButton, ns.furyButton }
+    -- The aura and Righteous Fury buttons first, each if the settings show it, then the
+    -- classes in the group. A hidden button leaves no gap.
+    local shown = {}
+    for _, own in ipairs({ { ns.auraButton, "showAura" }, { ns.furyButton, "showFury" } }) do
+        local b, key = own[1], own[2]
+        if db[key] then
+            shown[#shown + 1] = b
+            b:Show()
+        else
+            b:Hide()
+        end
+    end
     local present = {}
     for _, unit in ipairs(B.Members()) do
         local class = select(2, UnitClass(unit))

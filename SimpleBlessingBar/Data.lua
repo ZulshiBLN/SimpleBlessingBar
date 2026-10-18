@@ -70,8 +70,8 @@ D.FLY_LAYOUT = {
     LEFT  = { fly = { "RIGHT", "LEFT", -6, 0 }, child = "RIGHT",  dx = -1, dy = 0,  arrow = { "RIGHT", "LEFT", 6, 0 },  rot = math.pi / 2 },
 }
 
--- Seconds an open flyout stays once the mouse has left it and its button. Fixed until a
--- settings window offers the switch and the time (Michel, 2026-10-18).
+-- Seconds an open flyout stays once the mouse has left it and its button: the default of the
+-- setting, and what the open snippet uses before the first refresh (Michel, 2026-10-18)
 D.FLYOUT_AUTOHIDE = 2
 
 -- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
@@ -80,7 +80,8 @@ D.ANTS_TEX    = "Interface\\SpellActivationOverlay\\IconAlertAnts"
 D.ANTS_FRAMES = 22
 D.ANTS_COLS   = 5
 D.ANTS_CELL   = 48 / 256
-D.ANTS_STEP   = 0.01                            -- seconds per frame: SimpleConjureBar's default
+-- Seconds per frame for the speeds 1-5 of the settings; 3 is SimpleConjureBar's default
+D.ANTS_STEPS  = { 0.04, 0.02, 0.01, 0.0075, 0.005 }
 D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's default gold
 
 ---------------------------------------------------------------------------

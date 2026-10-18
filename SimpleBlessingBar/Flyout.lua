@@ -36,7 +36,8 @@ local CLOSE_ALL = [[
 
 -- Main button: right click opens its flyout and closes the others, on the up click; it
 -- never casts. Shown, the flyout hides itself once the mouse has left it and its button for
--- D.FLYOUT_AUTOHIDE seconds - the client's secure auto-hide, allowed in combat. Any other
+-- the header's "autohide" seconds - the client's secure auto-hide, allowed in combat; 0 is
+-- off, and no attribute yet (before the first refresh) is D.FLYOUT_AUTOHIDE. Any other
 -- click - a left click that casts - closes every open flyout and lets the cast through
 -- (Michel, 2026-10-18).
 local OPEN = ([[
@@ -53,8 +54,12 @@ CLOSE_ALL
             fly:UnregisterAutoHide()
         else
             fly:Show()
-            fly:RegisterAutoHide(AUTOHIDE)
-            fly:AddToAutoHide(self)
+            local seconds = owner:GetAttribute("autohide")
+            if seconds == nil then seconds = AUTOHIDE end
+            if seconds > 0 then
+                fly:RegisterAutoHide(seconds)
+                fly:AddToAutoHide(self)
+            end
         end
     end
     return false
@@ -189,6 +194,11 @@ table.insert(ns.onRefresh, function()
 end)
 
 header:WrapScript(ns.furyButton, "OnClick", CLOSE)
+
+-- The auto-close time reaches the open snippet as data, never in its text (code.md)
+table.insert(ns.onRefresh, function()
+    SetAttr(header, "autohide", db.flyoutAutoClose and db.flyoutAutoCloseTime or 0)
+end)
 
 ---------------------------------------------------------------------------
 -- Class flyouts

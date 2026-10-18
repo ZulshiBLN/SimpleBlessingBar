@@ -155,6 +155,17 @@ function UI.AddCheckRow(items)
     stretchers[#stretchers + 1] = function(w) row:SetWidth(w + 3) end
 end
 
+-- Section header in Blizzard gold. labelKey: locale key or a function (see ns.SetL).
+local HEADER_SIZE = 14
+function UI.AddHeader(labelKey, gap)
+    local h = page:CreateFontString(nil, "OVERLAY", "GameFontNormalMed3")
+    h:SetTextColor(1, 0.82, 0)
+    h:SetPoint("TOPLEFT", INSET, Place(HEADER_SIZE + 4, (gap or 8) + 4))
+    SetL(h, labelKey)
+    measures[#measures + 1] = function() return h:GetStringWidth() end
+    return h
+end
+
 -- Plain slider without template
 function UI.MakeSlider(parent)
     local slider = CreateFrame("Slider", nil, parent)
@@ -172,6 +183,69 @@ function UI.MakeSlider(parent)
     slider:SetThumbTexture(thumb)
     slider:EnableMouseWheel(true)
     return slider
+end
+
+-- Whole-number slider bound to a setting, with label and value text. fmt(v) returns the
+-- shown value; onChange runs after every change. Returns the slider and its row.
+function UI.AddIntSlider(labelKey, key, minV, maxV, fmt, onChange, gap)
+    local ROW = 36
+    local row = CreateFrame("Frame", nil, page)
+    row:SetHeight(ROW)
+    row:SetPoint("TOPLEFT", INSET, Place(ROW, gap or 14))
+
+    local t = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    t:SetPoint("TOPLEFT", 0, 0)
+    SetL(t, labelKey)
+    local value = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    value:SetPoint("TOPRIGHT", 0, 0)
+
+    local slider = UI.MakeSlider(row)
+    slider:SetPoint("TOPLEFT", t, "BOTTOMLEFT", 2, -10)
+    slider:SetMinMaxValues(minV, maxV)
+    slider:SetValueStep(1)
+    slider:SetObeyStepOnDrag(true)
+
+    -- Tick marks for every step when there are only a few (e.g. 1-5)
+    local ticks = {}
+    if maxV - minV <= 10 then
+        for _ = minV, maxV do
+            local tk = slider:CreateTexture(nil, "BORDER")
+            tk:SetSize(2, 10)
+            tk:SetColorTexture(0.5, 0.5, 0.5, 1)
+            ticks[#ticks + 1] = tk
+        end
+    end
+
+    slider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v + 0.5)
+        db[key] = v
+        value:SetText(fmt(v))
+        if onChange then onChange() end
+    end)
+    slider:SetScript("OnMouseWheel", function(self, delta) self:SetValue(self:GetValue() + delta) end)
+
+    refreshers[#refreshers + 1] = function()
+        slider:SetValue(db[key])
+        value:SetText(fmt(db[key]))
+    end
+    measures[#measures + 1] = function() return t:GetStringWidth() + 16 + math.max(30, value:GetStringWidth()) end
+    stretchers[#stretchers + 1] = function(w)
+        row:SetWidth(w)
+        local sw = w - 4
+        slider:SetWidth(sw)
+        for i, tk in ipairs(ticks) do
+            tk:ClearAllPoints()
+            tk:SetPoint("CENTER", slider, "LEFT", 5 + (i - 1) * (sw - 10) / (#ticks - 1), 0)
+        end
+    end
+    return slider, row, value
+end
+
+-- Highlight speed: 5 steps, 3 = default
+function UI.AddSpeedSlider(key)
+    return UI.AddIntSlider("OPT_ANTS_SPEED", key, D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX, function(v)
+        return v == D.NUMBER_DEFAULTS[key].default and (v .. " (" .. L.DEFAULT .. ")") or tostring(v)
+    end)
 end
 
 -- Centered separator line in WoW style: 2 px gold, strong in the middle, fading to the ends.
@@ -368,6 +442,46 @@ function UI.AddSwatch(labelKey, key, gap, onChange)
     SetL(t, labelKey)
     measures[#measures + 1] = function() return 22 + 8 + t:GetStringWidth() end
     return swatch
+end
+
+-- One row: optional check box followed by any number of color swatches.
+-- colors = { { label = key, key = dbKey }, ... }. Returns the check box and the swatches.
+function UI.AddToggleColorRow(checkLabelKey, checkKey, onChange, colors)
+    local ROW, SPACING = 26, 18
+    local row = CreateFrame("Frame", nil, page)
+    row:SetHeight(ROW)
+    row:SetPoint("TOPLEFT", INSET - 3, Place(ROW, 6))
+
+    local cb, cbText
+    if checkKey then
+        cb, cbText = CreateCheck(row, checkLabelKey, checkKey, onChange)
+        cb:SetPoint("LEFT", 0, 0)
+    end
+
+    local items, swatches = {}, {}
+    for _, c in ipairs(colors) do
+        local sw = CreateSwatchButton(row, c.key)
+        local t = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        t:SetPoint("LEFT", sw, "RIGHT", 6, 0)
+        SetL(t, c.label)
+        items[#items + 1] = { sw = sw, text = t }
+        swatches[#swatches + 1] = sw
+    end
+
+    -- Positions depend on the text widths of the current language
+    local function Arrange()
+        local x = cbText and (26 + 4 + cbText:GetStringWidth() + SPACING) or 3
+        for _, it in ipairs(items) do
+            it.sw:ClearAllPoints()
+            it.sw:SetPoint("LEFT", row, "LEFT", x, 0)
+            x = x + 22 + 6 + it.text:GetStringWidth() + SPACING
+        end
+        row.needW = x - SPACING - 3
+    end
+    refreshers[#refreshers + 1] = Arrange
+    measures[#measures + 1] = function() return row.needW or 0 end
+    stretchers[#stretchers + 1] = function(w) row:SetWidth(w + 3) end
+    return cb, swatches
 end
 
 ---------------------------------------------------------------------------

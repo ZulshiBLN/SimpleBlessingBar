@@ -43,6 +43,13 @@ function ns.SetL(obj, key, ...)
     obj:SetText(Resolve(entry))
 end
 
+-- A name the client provides (a spell): the client's own while the addon speaks the client's
+-- language, else the addon's translation under `key` (localization.md)
+function ns.LocalName(clientName, key)
+    if clientName and ns.GetLocaleCode() == ns.clientLocale then return clientName end
+    return ns.L[key]
+end
+
 -- fn runs after every language change (layout updates that depend on text widths)
 function ns.OnLanguageChanged(fn)
     languageCallbacks[#languageCallbacks + 1] = fn

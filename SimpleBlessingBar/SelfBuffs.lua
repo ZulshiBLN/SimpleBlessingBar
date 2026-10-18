@@ -21,8 +21,9 @@ end
 
 -- The highlight ("marching ants" like spell procs in the Retail client), as in
 -- SimpleConjureBar. It sits on its own frame above the button; the animation runs
--- (OnUpdate) only while the highlight is visible.
-local function AttachAnts(b)
+-- (OnUpdate) only while the highlight is visible. Color and speed are the button's own
+-- settings: colorKey and speedKey name them.
+local function AttachAnts(b, colorKey, speedKey)
     local holder = CreateFrame("Frame", nil, b)
     holder:SetAllPoints()
     holder:SetFrameLevel(b:GetFrameLevel() + 2)
@@ -31,7 +32,6 @@ local function AttachAnts(b)
     ants:SetTexture(D.ANTS_TEX)
     ants:SetDesaturated(true)
     ants:SetBlendMode("ADD")
-    ants:SetVertexColor(D.ANTS_COLOR.r, D.ANTS_COLOR.g, D.ANTS_COLOR.b, D.ANTS_COLOR.a)
     ants:SetPoint("CENTER")
     ants:SetSize(SIZE * 1.42, SIZE * 1.42)
     ants:Hide()
@@ -43,22 +43,23 @@ local function AttachAnts(b)
     end
     SetFrame(0)
 
-    b.ants, b.antsHolder = ants, holder
+    b.ants, b.antsHolder, b.antsColorKey = ants, holder, colorKey
     b.antsUpdate = function(_, elapsed)
+        local step = D.ANTS_STEPS[db[speedKey]]
         timer = timer + elapsed
-        if timer < D.ANTS_STEP then return end
-        frame = (frame + math.floor(timer / D.ANTS_STEP)) % D.ANTS_FRAMES
-        timer = timer % D.ANTS_STEP
+        if timer < step then return end
+        frame = (frame + math.floor(timer / step)) % D.ANTS_FRAMES
+        timer = timer % step
         SetFrame(frame)
     end
 end
 
 -- Placed by the bar's layout (Bar.lua), which puts these two first
-local function NewButton(name)
+local function NewButton(name, colorKey, speedKey)
     local b = ns.CreateSecureButton(name, ns.bar)
     b:SetScript("OnEnter", ns.ShowSpellTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
-    AttachAnts(b)
+    AttachAnts(b, colorKey, speedKey)
     return b
 end
 
@@ -70,10 +71,18 @@ local function SetSpell(b, spell)
     b.icon:SetDesaturated(not spell)
 end
 
-local aura = NewButton("SimpleBlessingBarAura")
-local fury = NewButton("SimpleBlessingBarFury")
+local aura = NewButton("SimpleBlessingBarAura", "auraAntsColor", "auraAntsSpeed")
+local fury = NewButton("SimpleBlessingBarFury", "furyAntsColor", "furyAntsSpeed")
 ns.auraButton, ns.furyButton = aura, fury
 fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
+
+-- The ants' colors are part of the look (ns.ApplyLook), so the color picker reaches them
+table.insert(ns.onLook, function()
+    for _, b in ipairs({ aura, fury }) do
+        local c = db[b.antsColorKey]
+        b.ants:SetVertexColor(c.r, c.g, c.b, c.a)
+    end
+end)
 
 -- The aura families the paladin knows, in flyout order
 function ns.KnownAuras()

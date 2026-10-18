@@ -149,5 +149,48 @@ end
 -- Tracking
 ---------------------------------------------------------------------------
 UI.NewPage("TAB_TRACKING")
+local function Refresh() ns.Refresh() end
+
+controls.auraHeader = UI.AddHeader("TRACK_AURA", 6)
+controls.showAura, controls.auraColor = UI.AddToggleColorRow("OPT_SHOW_BUTTON", "showAura", Refresh, {
+    { label = "LBL_HIGHLIGHT", key = "auraAntsColor" },
+})
+controls.auraSpeed = UI.AddSpeedSlider("auraAntsSpeed")
+UI.AddSeparator()
+
+-- Righteous Fury is a spell: the client names it (localization.md)
+controls.furyHeader = UI.AddHeader(function()
+    return ns.LocalName(C_Spell.GetSpellName(D.RIGHTEOUS_FURY), "RIGHTEOUS_FURY")
+end, 6)
+controls.showFury, controls.furyColor = UI.AddToggleColorRow("OPT_SHOW_BUTTON", "showFury", Refresh, {
+    { label = "LBL_HIGHLIGHT", key = "furyAntsColor" },
+})
+do
+    local slider, _, value = UI.AddSpeedSlider("furyAntsSpeed")
+    controls.furySpeed, controls.furySpeedText = slider, value
+end
+UI.AddSeparator()
+
+-- The count on the class buttons
+UI.AddHeader("TRACK_BLESSINGS", 6)
+controls.countColor = select(2, UI.AddToggleColorRow(nil, nil, nil, {
+    { label = "LBL_TEXT", key = "countColor" },
+}))
+UI.AddSeparator()
+
+-- Flyout auto-close: the time slider is dimmed while it is off
+UI.AddHeader("TRACK_FLYOUTS", 6)
+local autoCloseRow
+local function ApplyAutoCloseState()
+    autoCloseRow:SetAlpha(db.flyoutAutoClose and 1 or 0.4)
+end
+controls.autoClose = UI.AddCheck("OPT_AUTOCLOSE", "flyoutAutoClose", function()
+    ApplyAutoCloseState()
+    ns.Refresh()
+end)
+controls.autoCloseTime, autoCloseRow = UI.AddIntSlider("OPT_AUTOCLOSE_TIME", "flyoutAutoCloseTime",
+    D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX, function(v) return L.SECONDS:format(v) end, Refresh, 6)
+controls.autoCloseRow = autoCloseRow
+refreshers[#refreshers + 1] = ApplyAutoCloseState
 
 UI.CreateTabs()

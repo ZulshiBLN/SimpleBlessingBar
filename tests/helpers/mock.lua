@@ -109,6 +109,9 @@ function Methods:GetPushedTexture() self.pushedTex = rawget(self, "pushedTex") o
 function Methods:GetHighlightTexture() self.hlTex = rawget(self, "hlTex") or NEWOBJ("Texture"); return self.hlTex end
 function Methods:SetBackdrop(b) self.backdrop = b end
 function Methods:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
+function Methods:SetTexCoord(...) self.texCoord = { ... } end
+function Methods:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
+function Methods:SetVertexColor(r, g, b, a) self.vertexColor = { r, g, b, a } end
 function Methods:SetAlpha(a) self.alpha = a end
 function Methods:GetAlpha() return rawget(self, "alpha") or 1 end
 function Methods:GetFrameLevel() return rawget(self, "level") or 1 end
@@ -431,6 +434,7 @@ C_UnitAuras = {
 C_Spell = {
   IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
   GetSpellTexture = function(id) return "icon" .. id end,
+  GetSpellName = function(id) return "spell" .. id end,
 }
 C_Item = { GetItemCount = function(id) return STATE.bags[id] or 0 end }
 IsPlayerSpell = function(id) return STATE.known[id] == true end
