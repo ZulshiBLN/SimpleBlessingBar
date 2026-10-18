@@ -263,10 +263,12 @@ end
 -- buttons, out of combat only.
 ns.onRefresh = {}
 
--- Flyout direction, SimpleConjureBar's rule: a horizontal bar opens up in the lower half of
--- the screen and down in the upper; a vertical bar opens right in the left half and left in
--- the right.
+-- Flyout direction: the player's fixed choice, or SimpleConjureBar's rule - a horizontal bar
+-- opens up in the lower half of the screen and down in the upper; a vertical bar opens right
+-- in the left half and left in the right.
 local function ComputeFlyDir()
+    if db.flyoutDir == "FIRST" then return db.vertical and "RIGHT" or "UP" end
+    if db.flyoutDir == "SECOND" then return db.vertical and "LEFT" or "DOWN" end
     local cx, cy = bar:GetCenter()
     if not cx then return db.vertical and "RIGHT" or "UP" end
     local s = bar:GetEffectiveScale() / UIParent:GetEffectiveScale()

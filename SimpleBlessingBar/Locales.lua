@@ -67,6 +67,8 @@ locales.enUS = {
     DEMO = "Demo",
     DEMO_CAST = "would cast %s",
     DEMO_GREATER = "%s (Greater)",
+    OPT_FLYDIR = "Flyout direction",
+    FLYDIR_AUTO = "Automatic",
 }
 
 locales.deDE = {
@@ -128,6 +130,8 @@ locales.deDE = {
     DEMO = "Demo",
     DEMO_CAST = "würde %s wirken",
     DEMO_GREATER = "%s (Groß)",
+    OPT_FLYDIR = "Flyout-Richtung",
+    FLYDIR_AUTO = "Automatisch",
 }
 
 locales.frFR = {
@@ -189,6 +193,8 @@ locales.frFR = {
     DEMO = "Démo",
     DEMO_CAST = "lancerait %s",
     DEMO_GREATER = "%s (supérieure)",
+    OPT_FLYDIR = "Direction des menus volants",
+    FLYDIR_AUTO = "Automatique",
 }
 
 locales.esES = {
@@ -250,6 +256,8 @@ locales.esES = {
     DEMO = "Demo",
     DEMO_CAST = "lanzaría %s",
     DEMO_GREATER = "%s (superior)",
+    OPT_FLYDIR = "Dirección de los menús",
+    FLYDIR_AUTO = "Automática",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -315,6 +323,8 @@ locales.itIT = {
     DEMO = "Demo",
     DEMO_CAST = "lancerebbe %s",
     DEMO_GREATER = "%s (superiore)",
+    OPT_FLYDIR = "Direzione dei menu",
+    FLYDIR_AUTO = "Automatica",
 }
 
 locales.ptBR = {
@@ -376,6 +386,8 @@ locales.ptBR = {
     DEMO = "Demo",
     DEMO_CAST = "lançaria %s",
     DEMO_GREATER = "%s (maior)",
+    OPT_FLYDIR = "Direção dos menus",
+    FLYDIR_AUTO = "Automática",
 }
 
 locales.ruRU = {
@@ -437,6 +449,8 @@ locales.ruRU = {
     DEMO = "Демо",
     DEMO_CAST = "было бы применено: %s",
     DEMO_GREATER = "%s (великое)",
+    OPT_FLYDIR = "Направление панелей",
+    FLYDIR_AUTO = "Автоматически",
 }
 
 locales.koKR = {
@@ -498,6 +512,8 @@ locales.koKR = {
     DEMO = "데모",
     DEMO_CAST = "%s 시전 예정",
     DEMO_GREATER = "%s (상급)",
+    OPT_FLYDIR = "플라이아웃 방향",
+    FLYDIR_AUTO = "자동",
 }
 
 locales.zhCN = {
@@ -559,6 +575,8 @@ locales.zhCN = {
     DEMO = "演示",
     DEMO_CAST = "将施放 %s",
     DEMO_GREATER = "%s（强效）",
+    OPT_FLYDIR = "弹出方向",
+    FLYDIR_AUTO = "自动",
 }
 
 locales.zhTW = {
@@ -620,6 +638,8 @@ locales.zhTW = {
     DEMO = "示範",
     DEMO_CAST = "將施放 %s",
     DEMO_GREATER = "%s（強效）",
+    OPT_FLYDIR = "彈出方向",
+    FLYDIR_AUTO = "自動",
 }
 
 local client = GetLocale()

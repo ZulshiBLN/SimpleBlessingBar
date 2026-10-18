@@ -188,6 +188,52 @@ describe("the General page", function()
         end)
     end
 
+    local function texts(dd)
+        local list = {}
+        for _, e in ipairs(MENU(dd)) do list[#list + 1] = e.text end
+        return list
+    end
+
+    it("offers automatic and the two flyout directions of the orientation, at once on a switch", function()
+        local ns, c = open()
+        local L = ns.L
+        assert.are.same({ L.FLYDIR_AUTO, L.DIR_UP, L.DIR_DOWN }, texts(c.flyDir))
+        local before = rawget(c.flyDir, "generated") or 0
+        pick(c.layout, L.VERTICAL)
+        assert.are.equal(before + 1, c.flyDir.generated) -- the open dropdown is rebuilt
+        assert.are.same({ L.FLYDIR_AUTO, L.DIR_RIGHT, L.DIR_LEFT }, texts(c.flyDir))
+        assert.are.equal(L.FLYDIR_AUTO, selected(c.flyDir))
+    end)
+
+    -- layout, choice, centre of the bar -> the flyout's direction, in both screen halves
+    local FIXED = {
+        { "HORIZONTAL", "DIR_UP",    "UP" },
+        { "HORIZONTAL", "DIR_DOWN",  "DOWN" },
+        { "VERTICAL",   "DIR_RIGHT", "RIGHT" },
+        { "VERTICAL",   "DIR_LEFT",  "LEFT" },
+    }
+    for _, case in ipairs(FIXED) do
+        local layout, choice, dir = unpack(case)
+        it("opens the flyouts " .. dir .. " when set so, on either side of the screen", function()
+            for _, center in ipairs({ { 300, 300 }, { 1600, 800 } }) do
+                local ns, c, db = open()
+                STATE.center = center
+                pick(c.layout, ns.L[layout])
+                pick(c.flyDir, ns.L[choice])
+                assert.are.equal(dir, ns.flyDir)
+                local lay = ns.D.FLY_LAYOUT[dir]
+                assert.are.equal(lay.fly[1], (ns.flyouts.MAGE:GetPoint()))
+                assert.are.equal(lay.rot, rawget(ns.classButtons.MAGE.arrow, "rotation"))
+                -- back to automatic: the screen half decides again
+                pick(c.flyDir, ns.L.FLYDIR_AUTO)
+                assert.are.equal("AUTO", db.flyoutDir)
+                local auto = layout == "VERTICAL" and (center[1] > 960 and "LEFT" or "RIGHT")
+                    or (center[2] > 540 and "DOWN" or "UP")
+                assert.are.equal(auto, ns.flyDir)
+            end
+        end)
+    end
+
     it("reloads the UI from its button", function()
         local _, c = open()
         RUNSCRIPT(c.reload, "OnClick")

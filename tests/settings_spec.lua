@@ -116,3 +116,37 @@ describe("settings version 3", function()
         assert.is_false(SimpleBlessingBarDB.demo)
     end)
 end)
+
+-- Version 4 (ruleset plan 2026-10-18-bar-polish, IMPLEMENTATION "Settings, version 4")
+describe("settings version 4", function()
+    it("migrate a version 3 file: automatic flyouts, the time narrowed, twice without change", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 3, flyoutAutoCloseTime = 8, vertical = true } })
+        local D = ns.D
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.equal(D.DB_VERSION, db.dbVersion)
+        assert.are.equal(D.FLYOUT_DIR_DEFAULT, db.flyoutDir)
+        assert.are.equal(D.AUTOCLOSE_MAX, db.flyoutAutoCloseTime)
+        assert.is_true(db.vertical)
+        local once = copy(db)
+        ns.InitDB()
+        assert.are.same(once, SimpleBlessingBarDB)
+    end)
+
+    it("start a missing auto-close time at the default", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 3 } })
+        ns.InitDB()
+        assert.are.equal(ns.D.FLYOUT_AUTOHIDE, SimpleBlessingBarDB.flyoutAutoCloseTime)
+    end)
+
+    it("keep a valid flyout direction and replace an invalid one", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = "SECOND" } })
+        ns.InitDB()
+        assert.are.equal("SECOND", SimpleBlessingBarDB.flyoutDir)
+        for _, bad in ipairs({ "UP", 2, true }) do
+            ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = bad } })
+            ns.InitDB()
+            assert.are.equal(ns.D.FLYOUT_DIR_DEFAULT, SimpleBlessingBarDB.flyoutDir, tostring(bad))
+        end
+    end)
+end)

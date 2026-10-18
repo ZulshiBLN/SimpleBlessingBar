@@ -150,6 +150,10 @@ function ns.InitDB()
     end
     db.demo = false -- demo mode always starts switched off
 
+    -- Version 4 adds the flyout direction and narrows the auto-close time to 1-5 s; the number
+    -- loop above already clamps a saved 6-10 to 5.
+    if not D.FLYOUT_DIRS[db.flyoutDir] then db.flyoutDir = D.FLYOUT_DIR_DEFAULT end
+
     db.dbVersion = D.DB_VERSION
 
     for _, fn in ipairs(dbCallbacks) do fn(db) end

@@ -117,14 +117,16 @@ controls.border = UI.AddCheck("OPT_BORDER", "showBorder", function() ns.ApplyLoo
 controls.bg = UI.AddSwatch("OPT_BG", "bg", 8)
 UI.AddSeparator()
 
--- Orientation and growth direction (anchor point of the bar)
-local RefreshDirection
+-- Orientation, growth direction (anchor point of the bar) and flyout direction
+local RefreshDirection, RefreshFlyDir
 controls.layout = select(2, UI.AddDropdown("OPT_LAYOUT", {
     { value = false, text = function() return L.HORIZONTAL end },
     { value = true,  text = function() return L.VERTICAL end },
 }, function() return db.vertical end, function(v)
     db.vertical = v
-    if RefreshDirection then RefreshDirection() end -- direction texts (right/left or down/up)
+    -- Both direction dropdowns name their choices by orientation (right/left or down/up)
+    if RefreshDirection then RefreshDirection() end
+    if RefreshFlyDir then RefreshFlyDir() end
     ns.Refresh()
 end))
 RefreshDirection, controls.direction = UI.AddDropdown("OPT_DIRECTION", {
@@ -132,6 +134,14 @@ RefreshDirection, controls.direction = UI.AddDropdown("OPT_DIRECTION", {
     { value = true,  text = function() return (db and db.vertical) and L.DIR_UP or L.DIR_LEFT end },
 }, function() return db.growRev end, function(v)
     db.growRev = v
+    ns.Refresh()
+end)
+RefreshFlyDir, controls.flyDir = UI.AddDropdown("OPT_FLYDIR", {
+    { value = "AUTO",   text = function() return L.FLYDIR_AUTO end },
+    { value = "FIRST",  text = function() return (db and db.vertical) and L.DIR_RIGHT or L.DIR_UP end },
+    { value = "SECOND", text = function() return (db and db.vertical) and L.DIR_LEFT or L.DIR_DOWN end },
+}, function() return db.flyoutDir end, function(v)
+    db.flyoutDir = v
     ns.Refresh()
 end)
 

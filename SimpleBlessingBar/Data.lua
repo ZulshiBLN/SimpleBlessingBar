@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 3
+D.DB_VERSION = 4
 
 ---------------------------------------------------------------------------
 -- Spells, lowest rank first. IDs do not rise with rank (Devotion Aura rank 2 is 10290,
@@ -76,8 +76,14 @@ D.FLY_LAYOUT = {
 }
 
 -- Seconds an open flyout stays once the mouse has left it and its button: the default of the
--- setting, and what the open snippet uses before the first refresh (Michel, 2026-10-18)
-D.FLYOUT_AUTOHIDE = 2
+-- setting, and what the open snippet uses before the first refresh (Michel, 2026-10-18:
+-- 3 of 1-5 s; 2 of 1-10 s before)
+D.FLYOUT_AUTOHIDE = 3
+
+-- Where flyouts open: AUTO by the screen half (SimpleConjureBar's rule), FIRST up or right,
+-- SECOND down or left - named by orientation, so a switch of orientation keeps a valid choice
+D.FLYOUT_DIRS = { AUTO = true, FIRST = true, SECOND = true }
+D.FLYOUT_DIR_DEFAULT = "AUTO"
 
 -- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
 -- 48 px in a 256 px texture, desaturated and tinted
@@ -98,7 +104,7 @@ D.DEFAULT_AURA = "DEVOTION"
 -- the settings, never referenced, so nothing written to the settings changes these tables.
 D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
-D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 10
+D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
     showAura = true, showFury = true, flyoutAutoClose = true,
