@@ -23,14 +23,8 @@ local KEYS = { "AURA" }
 for _, class in ipairs(D.CLASS_ORDER) do KEYS[#KEYS + 1] = class end
 local KEY_LIST = '"' .. table.concat(KEYS, '", "') .. '"'
 
--- Main button: right click opens its flyout and closes the others, on the up click; it
--- never casts. Shown, the flyout hides itself once the mouse has left it and its button for
--- D.FLYOUT_AUTOHIDE seconds - the client's secure auto-hide, allowed in combat. Left click
--- passes through to the main button's own action.
-local OPEN = ([[
-    if button ~= "RightButton" then return end
-    if not down then
-        local fly = owner:GetFrameRef("fly_KEY")
+-- Closes every open flyout but `fly`. Pasted into the snippets below.
+local CLOSE_ALL = [[
         for _, k in ipairs(newtable(KEYS)) do
             local other = owner:GetFrameRef("fly_" .. k)
             if other and other ~= fly and other:IsShown() then
@@ -38,6 +32,22 @@ local OPEN = ([[
                 other:UnregisterAutoHide()
             end
         end
+]]
+
+-- Main button: right click opens its flyout and closes the others, on the up click; it
+-- never casts. Shown, the flyout hides itself once the mouse has left it and its button for
+-- D.FLYOUT_AUTOHIDE seconds - the client's secure auto-hide, allowed in combat. Any other
+-- click - a left click that casts - closes every open flyout and lets the cast through
+-- (Michel, 2026-10-18).
+local OPEN = ([[
+    local fly = owner:GetFrameRef("fly_KEY")
+    if button ~= "RightButton" then
+        fly = nil
+CLOSE_ALL
+        return
+    end
+    if not down then
+CLOSE_ALL
         if fly:IsShown() then
             fly:Hide()
             fly:UnregisterAutoHide()
@@ -48,7 +58,13 @@ local OPEN = ([[
         end
     end
     return false
-]]):gsub("KEYS", KEY_LIST):gsub("AUTOHIDE", tostring(D.FLYOUT_AUTOHIDE))
+]]):gsub("CLOSE_ALL", CLOSE_ALL):gsub("KEYS", KEY_LIST):gsub("AUTOHIDE", tostring(D.FLYOUT_AUTOHIDE))
+
+-- A main button without a flyout (Righteous Fury): its click closes every open flyout too
+local CLOSE = ([[
+    local fly = nil
+CLOSE_ALL
+]]):gsub("CLOSE_ALL", CLOSE_ALL):gsub("KEYS", KEY_LIST)
 
 -- Icon: only a left click, on its release, on an icon with a spell, selects; the message
 -- lets the post body run. An icon casts nothing itself - it has no secure action.
@@ -160,6 +176,8 @@ table.insert(ns.onRefresh, function()
     end
     ns.FillFlyout(auraFly, entries)
 end)
+
+header:WrapScript(ns.furyButton, "OnClick", CLOSE)
 
 ---------------------------------------------------------------------------
 -- Class flyouts

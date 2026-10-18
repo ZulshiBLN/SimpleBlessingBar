@@ -97,6 +97,24 @@ describe("a class flyout", function()
         assert.is_true(fly:IsShown())
     end)
 
+    it("closes on a left click on any main button, which still casts", function()
+        local ns, D, fly, button = party()
+        STATE.known[D.RIGHTEOUS_FURY] = true
+        TICK()
+        for _, main in ipairs({ ns.auraButton, ns.furyButton, ns.classButtons.PALADIN }) do
+            click(button, "RightButton")
+            assert.is_true(fly:IsShown())
+            STATE.combat = true
+            click(main, "LeftButton")
+            STATE.combat = false
+            assert.is_false(fly:IsShown(), main:GetName())
+            assert.is_nil(fly.autoHide)
+        end
+        -- the fury button's click still cast (no aura is known here, so only it casts)
+        assert.are.same({ { spell = D.RIGHTEOUS_FURY, unit = "player" } }, STATE.casts)
+        assert.are.same({}, STATE.errors)
+    end)
+
     it("closes the other flyouts when it opens", function()
         local ns, _, fly, button = party()
         click(ns.auraButton, "RightButton")
