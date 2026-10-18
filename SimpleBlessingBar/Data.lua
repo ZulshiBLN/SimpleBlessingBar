@@ -46,6 +46,21 @@ D.SYMBOL_OF_KINGS = 21177
 -- Class buttons appear in this order, each only while the class is in the group
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 
+---------------------------------------------------------------------------
+-- Look: SimpleConjureBar's, so both addons read as one family
+---------------------------------------------------------------------------
+D.SIZE, D.GAP, D.PAD = 36, 4, 7 -- button size, gap between buttons, bar padding
+D.BACKDROP = {
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true, tileSize = 16, edgeSize = 12,
+    insets = { left = 3, right = 3, top = 3, bottom = 3 },
+}
+D.BG_COLOR     = { r = 0, g = 0, b = 0, a = 0.6 }       -- bar and flyout background
+D.BORDER_COLOR = { r = 0.4, g = 0.4, b = 0.4, a = 0.8 }
+D.HANDLE_UNLOCKED = { r = 0.41, g = 0.8, b = 0.94, a = 0.6 }
+D.HANDLE_LOCKED   = { r = 0.9, g = 0.25, b = 0.2, a = 0.6 }
+
 -- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
 -- 48 px in a 256 px texture, desaturated and tinted
 D.ANTS_TEX    = "Interface\\SpellActivationOverlay\\IconAlertAnts"

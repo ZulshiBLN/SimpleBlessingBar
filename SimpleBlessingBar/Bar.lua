@@ -9,32 +9,93 @@ if not ns.enabled then return end
 local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
 
-local SIZE, GAP = 36, 2
-ns.BUTTON_SIZE, ns.BUTTON_GAP = SIZE, GAP
+local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
 -- The aura and Righteous Fury buttons (SelfBuffs.lua) take the first two places
-local FIRST_CLASS_X = 2 * (SIZE + GAP)
+local FIRST_CLASS_X = PAD + 2 * (SIZE + GAP)
 local CLASS_ICONS = "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"
 
 local db
 ns.OnDBReady(function(d) db = d end)
 
 ---------------------------------------------------------------------------
+-- Look shared by the bar and the flyouts: SimpleConjureBar's
+---------------------------------------------------------------------------
+function ns.ApplyBackdrop(frame)
+    frame:SetBackdrop(D.BACKDROP)
+    local c, e = D.BG_COLOR, D.BORDER_COLOR
+    frame:SetBackdropColor(c.r, c.g, c.b, c.a)
+    frame:SetBackdropBorderColor(e.r, e.g, e.b, e.a)
+end
+
+-- A secure button with its own action button look, as in SimpleConjureBar. Deliberately
+-- without ActionButtonTemplate: its scripts override a secure button's click handling.
+function ns.CreateSecureButton(name, parent)
+    local b = CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
+    b:SetSize(SIZE, SIZE)
+
+    -- Pixel-exact symmetric border: dark background, icon inset by 1 px
+    local edge = b:CreateTexture(nil, "BACKGROUND")
+    edge:SetAllPoints()
+    edge:SetColorTexture(0, 0, 0, 1)
+
+    b.icon = b:CreateTexture(nil, "BORDER")
+    b.icon:SetPoint("TOPLEFT", 1, -1)
+    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+
+    -- Pushed and hover textures exactly on the icon
+    b:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
+    local pushed = b:GetPushedTexture()
+    pushed:ClearAllPoints()
+    pushed:SetAllPoints(b.icon)
+    b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    local hl = b:GetHighlightTexture()
+    hl:ClearAllPoints()
+    hl:SetAllPoints(b.icon)
+
+    b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    b.count:SetPoint("BOTTOMRIGHT", -3, 3)
+
+    -- A secure click acts on key down or up per ActionButtonUseKeyDown; both are registered
+    b:RegisterForClicks("AnyUp", "AnyDown")
+    return b
+end
+
+-- The spell a main button casts, as the game's own tooltip
+function ns.ShowSpellTooltip(self)
+    local spell = self:GetAttribute("spell1")
+    if not spell then return end
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetSpellByID(spell)
+    GameTooltip:Show()
+end
+
+function ns.HideTooltip()
+    GameTooltip:Hide()
+end
+
+---------------------------------------------------------------------------
 -- Bar and handle
 ---------------------------------------------------------------------------
-local bar = CreateFrame("Frame", "SimpleBlessingBarFrame", UIParent)
+local bar = CreateFrame("Frame", "SimpleBlessingBarFrame", UIParent, "BackdropTemplate")
 ns.bar = bar
-bar:SetSize(SIZE, SIZE)
+bar:SetSize(SIZE + 2 * PAD, SIZE + 2 * PAD)
 bar:SetMovable(true)
 bar:SetClampedToScreen(true)
 bar:SetPoint("CENTER", UIParent, "CENTER", 0, -150) -- start position, replaced at login
+ns.ApplyBackdrop(bar)
 
+-- Drag handle; only visible while the mouse is over it, or while dragging
 local handle = CreateFrame("Frame", nil, bar)
 ns.handle = handle
 handle:SetSize(10, SIZE)
 handle:SetPoint("RIGHT", bar, "LEFT", -1, 0)
 handle:EnableMouse(true)
+handle:SetAlpha(0)
 local handleTex = handle:CreateTexture(nil, "BACKGROUND")
 handleTex:SetAllPoints()
+handle:SetScript("OnEnter", function(self) self:SetAlpha(1) end)
+handle:SetScript("OnLeave", function(self) if not self.moving then self:SetAlpha(0) end end)
 
 function ns.LoadPosition()
     bar:ClearAllPoints()
@@ -52,11 +113,8 @@ end
 
 -- Locked = red, unlocked = blue
 function ns.ApplyLock()
-    if db.locked then
-        handleTex:SetColorTexture(0.9, 0.25, 0.2, 0.6)
-    else
-        handleTex:SetColorTexture(0.96, 0.55, 0.73, 0.6)
-    end
+    local c = db.locked and D.HANDLE_LOCKED or D.HANDLE_UNLOCKED
+    handleTex:SetColorTexture(c.r, c.g, c.b, c.a)
 end
 
 function ns.ToggleLock()
@@ -85,6 +143,7 @@ local function StopDrag()
     if InCombatLockdown() then return end
     bar:StopMovingOrSizing()
     SavePosition()
+    if not handle:IsMouseOver() then handle:SetAlpha(0) end
 end
 handle:SetScript("OnMouseUp", StopDrag)
 
@@ -94,20 +153,19 @@ handle:SetScript("OnMouseUp", StopDrag)
 local buttons = {}
 ns.classButtons = buttons
 
+-- The class is the button's icon; the assigned blessing sits small in the top right corner,
+-- the count bottom right where SimpleConjureBar keeps its counts.
 for _, class in ipairs(D.CLASS_ORDER) do
-    local b = CreateFrame("Button", "SimpleBlessingBarClass" .. class, bar, "SecureActionButtonTemplate")
-    b:SetSize(SIZE, SIZE)
-    -- A secure click acts on key down or up per ActionButtonUseKeyDown; both are registered
-    b:RegisterForClicks("AnyUp", "AnyDown")
-    b.classIcon = b:CreateTexture(nil, "BACKGROUND")
-    b.classIcon:SetAllPoints()
+    local b = ns.CreateSecureButton("SimpleBlessingBarClass" .. class, bar)
+    b.classIcon = b.icon
     b.classIcon:SetTexture(CLASS_ICONS)
     b.classIcon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
     b.blessIcon = b:CreateTexture(nil, "ARTWORK")
-    b.blessIcon:SetSize(SIZE / 2, SIZE / 2)
-    b.blessIcon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 0)
-    b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    b.count:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, -2)
+    b.blessIcon:SetSize(SIZE / 2 - 2, SIZE / 2 - 2)
+    b.blessIcon:SetPoint("TOPRIGHT", b, "TOPRIGHT", -1, -1)
+    b.blessIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    b:SetScript("OnEnter", ns.ShowSpellTooltip)
+    b:SetScript("OnLeave", ns.HideTooltip)
     b.class = class
     b:Hide()
     buttons[class] = b
@@ -167,7 +225,7 @@ function ns.Refresh()
             b:Hide()
         end
     end
-    bar:SetWidth(x - GAP)
+    bar:SetWidth(x - GAP + PAD)
     for _, fn in ipairs(ns.onRefresh) do fn() end
 end
 

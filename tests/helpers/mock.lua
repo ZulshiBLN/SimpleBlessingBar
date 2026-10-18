@@ -59,6 +59,12 @@ function Methods:SetText(t) self.text = t end
 function Methods:GetText() return self.text end
 function Methods:IsMouseOver() return false end
 function Methods:GetName() return rawget(self, "name") end
+function Methods:GetPushedTexture() self.pushedTex = rawget(self, "pushedTex") or NEWOBJ("Texture"); return self.pushedTex end
+function Methods:GetHighlightTexture() self.hlTex = rawget(self, "hlTex") or NEWOBJ("Texture"); return self.hlTex end
+function Methods:SetBackdrop(b) self.backdrop = b end
+function Methods:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
+function Methods:SetAlpha(a) self.alpha = a end
+function Methods:GetAlpha() return rawget(self, "alpha") or 1 end
 function Methods:GetFrameLevel() return rawget(self, "level") or 1 end
 function Methods:SetFrameLevel(l) self.level = l end
 function Methods:GetParent() return rawget(self, "parent") end
@@ -66,7 +72,12 @@ function Methods:GetParent() return rawget(self, "parent") end
 function NEWOBJ(kind, name, parent)
   local o = { kind = kind, name = name, parent = parent, scripts = {}, hooks = {}, events = {},
               attrs = {}, points = {}, shown = true }
-  setmetatable(o, { __index = function(_, k) return Methods[k] or noop end })
+  -- An unknown method is a no-op, as many client methods are to a spec; an unknown field is
+  -- nil, as in the client. Only names starting with a capital are methods.
+  setmetatable(o, { __index = function(_, k)
+    if Methods[k] then return Methods[k] end
+    if type(k) == "string" and k:match("^%u") then return noop end
+  end })
   return o
 end
 

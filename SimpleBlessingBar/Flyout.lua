@@ -9,7 +9,7 @@ if not ns.enabled then return end
 
 local D, B = ns.D, ns.Blessings
 local SetAttr = ns.SetAttr
-local SIZE, GAP = ns.BUTTON_SIZE, ns.BUTTON_GAP
+local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
 
 local db
 ns.OnDBReady(function(d) db = d end)
@@ -55,16 +55,6 @@ local CHOOSE_POST = [[
 local flyouts = {}
 ns.flyouts = flyouts
 
-local function ShowTooltip(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:SetSpellByID(self:GetAttribute("spell1"))
-    GameTooltip:Show()
-end
-
-local function HideTooltip()
-    GameTooltip:Hide()
-end
-
 -- The insecure half of a choice: remember it. Only on the click that casts - key down while
 -- ActionButtonUseKeyDown is on, else key up - so a press dragged off the icon still counts.
 local function Save(icon, mouseButton, down)
@@ -75,10 +65,19 @@ end
 
 -- One flyout above a main button. `save(family, spell)` stores a choice and shows it on the
 -- main button; the counts follow at the next refresh.
+-- Looks as in SimpleConjureBar: the bar's background and border, and a small arrow above
+-- the main button that marks it as having a flyout.
 function ns.CreateFlyout(key, main, save)
-    local fly = CreateFrame("Frame", "SimpleBlessingBarFlyout" .. key, main)
-    fly:SetPoint("BOTTOM", main, "TOP", 0, GAP)
-    fly:SetSize(SIZE, SIZE)
+    local arrow = main:CreateTexture(nil, "OVERLAY")
+    arrow:SetTexture("Interface\\Buttons\\Arrow-Up-Up")
+    arrow:SetSize(14, 14)
+    arrow:SetPoint("BOTTOM", main, "TOP", 0, -6)
+    main.arrow = arrow
+
+    local fly = CreateFrame("Frame", "SimpleBlessingBarFlyout" .. key, main, "BackdropTemplate")
+    fly:SetPoint("BOTTOM", main, "TOP", 0, 6)
+    fly:SetSize(SIZE + 2 * PAD, SIZE + 2 * PAD)
+    ns.ApplyBackdrop(fly)
     fly:Hide()
     fly.key, fly.main, fly.save, fly.icons = key, main, save, {}
     header:SetFrameRef("fly_" .. key, fly)
@@ -93,16 +92,12 @@ end
 local function Icon(fly, i)
     local icon = fly.icons[i]
     if icon then return icon end
-    icon = CreateFrame("Button", fly:GetName() .. "Icon" .. i, fly, "SecureActionButtonTemplate")
-    icon:SetSize(SIZE, SIZE)
-    icon:SetPoint("BOTTOM", fly, "BOTTOM", 0, (i - 1) * (SIZE + GAP))
-    icon:RegisterForClicks("AnyUp", "AnyDown")
-    icon.icon = icon:CreateTexture(nil, "ARTWORK")
-    icon.icon:SetAllPoints()
+    icon = ns.CreateSecureButton(fly:GetName() .. "Icon" .. i, fly)
+    icon:SetPoint("BOTTOM", fly, "BOTTOM", 0, PAD + (i - 1) * (SIZE + GAP))
     header:WrapScript(icon, "OnClick", CHOOSE_PRE, (CHOOSE_POST:gsub("KEY", fly.key)))
     icon:HookScript("OnClick", Save)
-    icon:SetScript("OnEnter", ShowTooltip)
-    icon:SetScript("OnLeave", HideTooltip)
+    icon:SetScript("OnEnter", ns.ShowSpellTooltip)
+    icon:SetScript("OnLeave", ns.HideTooltip)
     fly.icons[i] = icon
     return icon
 end
@@ -122,7 +117,7 @@ function ns.FillFlyout(fly, entries)
         icon:Show()
     end
     for i = #entries + 1, #fly.icons do fly.icons[i]:Hide() end
-    fly:SetHeight(math.max(1, #entries) * (SIZE + GAP) - GAP)
+    fly:SetHeight(math.max(1, #entries) * (SIZE + GAP) - GAP + 2 * PAD)
 end
 
 ---------------------------------------------------------------------------

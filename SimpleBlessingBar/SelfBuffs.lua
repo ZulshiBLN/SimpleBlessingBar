@@ -8,7 +8,7 @@ if not ns.enabled then return end
 
 local D, B = ns.D, ns.Blessings
 local SetAttr = ns.SetAttr
-local SIZE, GAP = ns.BUTTON_SIZE, ns.BUTTON_GAP
+local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
 
 local db
 ns.OnDBReady(function(d) db = d end)
@@ -54,13 +54,10 @@ local function AttachAnts(b)
 end
 
 local function NewButton(name, x)
-    local b = CreateFrame("Button", name, ns.bar, "SecureActionButtonTemplate")
-    b:SetSize(SIZE, SIZE)
+    local b = ns.CreateSecureButton(name, ns.bar)
     b:SetPoint("LEFT", ns.bar, "LEFT", x, 0)
-    -- A secure click acts on key down or up per ActionButtonUseKeyDown; both are registered
-    b:RegisterForClicks("AnyUp", "AnyDown")
-    b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetAllPoints()
+    b:SetScript("OnEnter", ns.ShowSpellTooltip)
+    b:SetScript("OnLeave", ns.HideTooltip)
     AttachAnts(b)
     return b
 end
@@ -73,8 +70,8 @@ local function SetSpell(b, spell)
     b.icon:SetDesaturated(not spell)
 end
 
-local aura = NewButton("SimpleBlessingBarAura", 0)
-local fury = NewButton("SimpleBlessingBarFury", SIZE + GAP)
+local aura = NewButton("SimpleBlessingBarAura", PAD)
+local fury = NewButton("SimpleBlessingBarFury", PAD + SIZE + GAP)
 ns.auraButton, ns.furyButton = aura, fury
 fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
 
