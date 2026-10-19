@@ -8,7 +8,7 @@ local M, K = D.BLESSINGS.MIGHT, D.BLESSINGS.KINGS
 
 -- `world` as for addon.load; `know` spell IDs; `symbols` in the bags; `db` the saved file
 local function plan(world, know, symbols)
-    local ns = addon.load("enUS", world)
+    local ns = addon.load("enUS", addon.mightFirst(world))
     STATE.known = {}
     for _, id in ipairs(know) do STATE.known[id] = true end
     STATE.bags = { [D.SYMBOL_OF_KINGS] = symbols or 0 }

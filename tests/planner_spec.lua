@@ -9,7 +9,7 @@ local M, K, W = D.BLESSINGS.MIGHT, D.BLESSINGS.KINGS, D.BLESSINGS.WISDOM
 
 -- `world`: group, units; `know`: spell IDs this paladin knows; `symbols` in the bags
 local function plan(world, know, symbols)
-    local ns = addon.load("enUS", world)
+    local ns = addon.load("enUS", addon.mightFirst(world))
     STATE.known = {}
     for _, id in ipairs(know) do STATE.known[id] = true end
     STATE.bags = { [D.SYMBOL_OF_KINGS] = symbols or 0 }

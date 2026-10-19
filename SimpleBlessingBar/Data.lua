@@ -57,14 +57,20 @@ D.CLASS_ROLES = {
     WARLOCK = { "CASTER" },
     DRUID   = { "CASTER", "HEALER", "MELEE", "TANK" },
 }
--- The blessings a role wants, most wanted first. Might raises melee attack power only, so
--- ranged does without it first.
-D.ROLE_LISTS = {
-    TANK   = { "KINGS", "MIGHT", "LIGHT", "WISDOM" },
-    HEALER = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
-    MELEE  = { "MIGHT", "KINGS", "LIGHT", "WISDOM" },
-    RANGED = { "KINGS", "WISDOM", "LIGHT", "MIGHT" },
-    CASTER = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+-- A class's default list, most wanted first, and the blessings it can have at all (Michel's
+-- orders, ruleset plan 2026-10-20-class-defaults). Might raises melee attack power only, in
+-- Forever too: last for the classes without melee in any spec. Warriors and Rogues use no
+-- mana in any spec: no Wisdom.
+D.CLASS_LISTS = {
+    WARRIOR = { "MIGHT", "KINGS", "LIGHT" },
+    ROGUE   = { "MIGHT", "KINGS", "LIGHT" },
+    PALADIN = { "KINGS", "MIGHT", "WISDOM", "LIGHT" },
+    HUNTER  = { "KINGS", "WISDOM", "MIGHT", "LIGHT" },
+    SHAMAN  = { "WISDOM", "KINGS", "MIGHT", "LIGHT" },
+    DRUID   = { "WISDOM", "KINGS", "MIGHT", "LIGHT" },
+    PRIEST  = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+    MAGE    = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+    WARLOCK = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
 }
 -- In a raid, the members of a class who must lack a blessing before its Greater form, or
 -- Mass Salvation, pays (Michel, 2026-10-19)

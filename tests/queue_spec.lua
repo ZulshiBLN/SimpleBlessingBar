@@ -14,7 +14,7 @@ local function know(extra)
 end
 
 local function login(world, extra, symbols)
-    local ns = addon.load("enUS", world)
+    local ns = addon.load("enUS", addon.mightFirst(world))
     STATE.known = know(extra)
     STATE.bags = { [D.SYMBOL_OF_KINGS] = symbols or 0 }
     FIRE("PLAYER_LOGIN")

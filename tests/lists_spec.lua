@@ -1,7 +1,7 @@
 -- The Priorities tab: the renewal, a priority list per class in two columns, dragged and
 -- switched off, Enable all, the aura list, dragged, and the overview (ruleset plans
--- 2026-10-19-blessing-steering, 2026-10-19-priorities). Icons are dragged as the client does
--- it: press, cursor moves, OnUpdate, release.
+-- 2026-10-19-blessing-steering, 2026-10-19-priorities, 2026-10-20-class-defaults). Icons are
+-- dragged as the client does it: press, cursor moves, OnUpdate, release.
 
 local addon = require("addon")
 
@@ -59,8 +59,8 @@ end
 
 local function rightClick(icon) RUNSCRIPT(icon, "OnMouseUp", "RightButton") end
 
--- A class's default: the list of its default role
-local function classDefault(class) return D.ROLE_LISTS[D.CLASS_ROLES[class][1]] end
+-- A class's default list
+local function classDefault(class) return D.CLASS_LISTS[class] end
 
 -- A deep copy, so a later InitDB cannot change what a test compares against
 local function copy(t)
@@ -185,9 +185,9 @@ describe("the Priorities tab", function()
         local ns, db = login()
         local page = openTab(ns)
         local pal = row(ns, "PALADIN")
-        drag(page, pal, 4, 1)
-        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, db.classLists.PALADIN.order)
-        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, (shown(pal)))
+        drag(page, pal, 3, 1)
+        assert.are.same({ "WISDOM", "KINGS", "MIGHT", "LIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({ "WISDOM", "KINGS", "MIGHT", "LIGHT" }, (shown(pal)))
         assert.are.equal(W.normal[1], ns.blessingButton:GetAttribute("spell1"))
         assert.is_nil(page:GetScript("OnUpdate"))
     end)
@@ -202,14 +202,14 @@ describe("the Priorities tab", function()
         openTab(ns)
         local pal = row(ns, "PALADIN")
         rightClick(pal.icons[1])
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM" }, db.classLists.PALADIN.order)
-        assert.are.same({ MIGHT = true }, db.classLists.PALADIN.off)
+        assert.are.same({ "MIGHT", "WISDOM", "LIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({ KINGS = true }, db.classLists.PALADIN.off)
         local families, grey = shown(pal)
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, families)
+        assert.are.same({ "MIGHT", "WISDOM", "LIGHT", "KINGS" }, families)
         assert.are.same({ false, false, false, true }, grey)
-        assert.are.equal(K.normal[1], ns.blessingButton:GetAttribute("spell1"))
+        assert.are.equal(M.normal[1], ns.blessingButton:GetAttribute("spell1"))
         rightClick(pal.icons[4])
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({ "MIGHT", "WISDOM", "LIGHT", "KINGS" }, db.classLists.PALADIN.order)
         assert.are.same({}, db.classLists.PALADIN.off)
     end)
 
@@ -234,13 +234,14 @@ describe("the Priorities tab", function()
         local ns, db = login()
         local page = openTab(ns)
         local pal = row(ns, "PALADIN")
-        drag(page, pal, 4, 1) -- Wisdom, Might, Kings, Light
-        rightClick(pal.icons[2]) -- Might off
+        drag(page, pal, 3, 1) -- Wisdom, Kings, Might, Light
+        rightClick(pal.icons[2]) -- Kings off
         rightClick(row(ns, "WARRIOR").icons[1]) -- the warrior's Might off
         RUNSCRIPT(ns.UI.controls.enableAll, "OnClick")
-        assert.are.same({ "WISDOM", "KINGS", "LIGHT", "MIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({ "WISDOM", "MIGHT", "LIGHT", "KINGS" }, db.classLists.PALADIN.order)
         assert.are.same({}, db.classLists.PALADIN.off)
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, db.classLists.WARRIOR.order)
+        -- the warrior has no Wisdom to switch on (ruleset plan 2026-10-20-class-defaults)
+        assert.are.same({ "KINGS", "LIGHT", "MIGHT" }, db.classLists.WARRIOR.order)
         assert.are.same({}, db.classLists.WARRIOR.off)
         assert.are.equal(W.normal[1], ns.blessingButton:GetAttribute("spell1"))
     end)
@@ -272,7 +273,7 @@ describe("the Priorities tab", function()
         end
         assert.are.same(D.AURA_ORDER, db.auraList)
         assert.are_not.equal(D.AURA_ORDER, db.auraList)
-        assert.are.equal(M.normal[1], ns.blessingButton:GetAttribute("spell1"))
+        assert.are.equal(K.normal[1], ns.blessingButton:GetAttribute("spell1"))
         assert.are.same({}, STATE.errors)
     end)
 
@@ -280,12 +281,73 @@ describe("the Priorities tab", function()
         local ns = login()
         STATE.known[M.normal[2]] = true
         openTab(ns)
-        local pal = row(ns, "PALADIN")
-        RUNSCRIPT(pal.icons[1], "OnEnter")
+        local war = row(ns, "WARRIOR") -- Might, Kings, Light
+        RUNSCRIPT(war.icons[1], "OnEnter")
         assert.are.equal(M.normal[2], GameTooltip.spell)
-        RUNSCRIPT(pal.icons[3], "OnEnter")
+        RUNSCRIPT(war.icons[3], "OnEnter")
         assert.are.equal(D.BLESSINGS.LIGHT.normal[1], GameTooltip.spell)
         assert.are.same({}, STATE.errors)
+    end)
+end)
+
+-- Each class's own default list, without the blessings it cannot use, its name in its class
+-- colour (ruleset plan 2026-10-20-class-defaults)
+describe("the class lists", function()
+    it("gives each class Michel's default list", function()
+        local ns = login()
+        local want = {
+            WARRIOR = { "MIGHT", "KINGS", "LIGHT" },
+            ROGUE   = { "MIGHT", "KINGS", "LIGHT" },
+            PALADIN = { "KINGS", "MIGHT", "WISDOM", "LIGHT" },
+            HUNTER  = { "KINGS", "WISDOM", "MIGHT", "LIGHT" },
+            SHAMAN  = { "WISDOM", "KINGS", "MIGHT", "LIGHT" },
+            DRUID   = { "WISDOM", "KINGS", "MIGHT", "LIGHT" },
+            PRIEST  = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+            MAGE    = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+            WARLOCK = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+        }
+        local lists = ns.DefaultClassLists()
+        for _, class in ipairs(D.CLASS_ORDER) do
+            assert.are.same({ order = want[class], off = {} }, lists[class], class)
+        end
+    end)
+
+    it("shows Warrior and Rogue three icons, each hovered and right-clicked without error", function()
+        local ns, db = login()
+        openTab(ns)
+        for _, class in ipairs({ "WARRIOR", "ROGUE" }) do
+            local r = row(ns, class)
+            assert.are.equal(3, #r.icons, class)
+            for _, icon in ipairs(r.icons) do
+                RUNSCRIPT(icon, "OnEnter")
+                rightClick(icon)
+                rightClick(icon)
+            end
+            assert.is_nil(db.classLists[class].off.WISDOM)
+        end
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("plans no Wisdom for a Warrior who has every other blessing", function()
+        local ns = addon.load("enUS", { group = "party", units = {
+            party1 = { class = "WARRIOR", auras = {
+                { spellId = M.normal[1], expirationTime = 3600, source = "party2" },
+                { spellId = K.normal[1], expirationTime = 3600, source = "party2" },
+                { spellId = D.BLESSINGS.LIGHT.normal[1], expirationTime = 3600, source = "party2" } } },
+            party2 = { class = "PALADIN" } } })
+        STATE.known = { [W.normal[1]] = true, [K.normal[1]] = true, [M.normal[1]] = true }
+        FIRE("PLAYER_LOGIN")
+        ns.Refresh()
+        assert.is_nil(ns.Blessings.ChosenFamily("party1", "WARRIOR"))
+    end)
+
+    it("names each class row in its class colour", function()
+        local ns = login()
+        openTab(ns)
+        for _, class in ipairs(D.CLASS_ORDER) do
+            local r = row(ns, class)
+            assert.are.same({ C_ClassColor.GetClassColor(class):GetRGB() }, { unpack(r.label.textColor, 1, 3) }, class)
+        end
     end)
 end)
 
@@ -308,7 +370,7 @@ describe("settings version 8", function()
         ns.InitDB()
         local db = SimpleBlessingBarDB
         assert.are.equal(8, db.dbVersion)
-        assert.are.same({ "KINGS", "MIGHT", "LIGHT", "WISDOM" }, db.classLists.WARRIOR.order) -- melee
+        assert.are.same({ "KINGS", "MIGHT", "LIGHT" }, db.classLists.WARRIOR.order) -- melee, no Wisdom
         assert.are.same({ order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } }, db.classLists.MAGE)
         assert.are.same(default("PRIEST"), db.classLists.PRIEST) -- healer, not saved: default
         assert.are.same("CONCENTRATION", db.auraList[1])
@@ -348,7 +410,16 @@ describe("settings version 8", function()
     it("cleans a list: unknown and doubled families out, missing ones appended, off kept", function()
         local saved = lists({ WARRIOR = { order = { "KINGS", "SANCTUARY", "KINGS", 7 },
                                           off = { MIGHT = true, KINGS = true, BOGUS = true, LIGHT = 1 } } })
-        assert.are.same({ order = { "KINGS", "WISDOM", "LIGHT" }, off = { MIGHT = true } }, saved.WARRIOR)
+        assert.are.same({ order = { "KINGS", "LIGHT" }, off = { MIGHT = true } }, saved.WARRIOR)
+    end)
+
+    it("drops a family the class does not have, from both parts, and appends in the class's order", function()
+        local saved = lists({ ROGUE = { order = { "LIGHT", "WISDOM", "MIGHT" }, off = { WISDOM = true, KINGS = true } },
+                              WARRIOR = { order = { "WISDOM" }, off = {} },
+                              MAGE = { order = { "KINGS" }, off = {} } })
+        assert.are.same({ order = { "LIGHT", "MIGHT" }, off = { KINGS = true } }, saved.ROGUE)
+        assert.are.same(default("WARRIOR"), saved.WARRIOR) -- nothing it has: its default
+        assert.are.same({ order = { "KINGS", "WISDOM", "LIGHT", "MIGHT" }, off = {} }, saved.MAGE)
     end)
 
     it("gives a list with nothing on, or only unknown families, its default", function()

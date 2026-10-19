@@ -13,7 +13,7 @@ end
 
 -- A logged-in addon. `world` as for addon.load.
 local function login(world)
-    local ns = addon.load("enUS", world)
+    local ns = addon.load("enUS", addon.mightFirst(world))
     FIRE("PLAYER_LOGIN")
     ns.Refresh()
     return ns, ns.D, ns.blessingButton

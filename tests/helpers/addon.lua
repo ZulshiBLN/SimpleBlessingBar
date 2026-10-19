@@ -52,4 +52,15 @@ function M.load(locale, world)
     return ns
 end
 
+-- `world` with the player's own Paladin list starting with Might, the order the planner's
+-- specs were written against: they test the planner, not the class defaults (ruleset plan
+-- 2026-10-20-class-defaults moved the Paladin default to Kings first). A saved file of the
+-- world's own is kept.
+function M.mightFirst(world)
+    world = world or {}
+    world.db = world.db or { dbVersion = 8,
+        classLists = { PALADIN = { order = { "MIGHT", "KINGS", "LIGHT", "WISDOM" }, off = {} } } }
+    return world
+end
+
 return M

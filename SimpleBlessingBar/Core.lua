@@ -139,28 +139,33 @@ local function ValidOrder(saved, default)
 end
 
 -- The priority lists as the player edits them: per class the families on, in order, and those
--- switched off (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities). A
--- class's default is the list of its default role. A class whose entry is damaged, or whose
--- saved order holds no known family, gets its default; otherwise a family in neither part
--- is appended.
+-- switched off (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities). A class's
+-- default and the blessings it can have are D.CLASS_LISTS (ruleset plan
+-- 2026-10-20-class-defaults). A family the class does not have goes from both parts; a class
+-- whose entry is damaged, or whose saved order keeps no family, gets its default; otherwise a
+-- family of the class in neither part is appended, in the class's order.
 local function DefaultClassList(class)
-    return { order = { unpack(D.ROLE_LISTS[D.CLASS_ROLES[class][1]]) }, off = {} }
+    return { order = { unpack(D.CLASS_LISTS[class]) }, off = {} }
 end
 
-local function ValidList(entry, default)
-    if type(entry) ~= "table" or type(entry.order) ~= "table" or type(entry.off) ~= "table" then return default end
+local function ValidList(entry, class)
+    if type(entry) ~= "table" or type(entry.order) ~= "table" or type(entry.off) ~= "table" then
+        return DefaultClassList(class)
+    end
+    local has = {}
+    for _, family in ipairs(D.CLASS_LISTS[class]) do has[family] = true end
     local order, off, seen = {}, {}, {}
     for _, family in ipairs(entry.order) do
-        if D.BLESSINGS[family] and not seen[family] then
+        if has[family] and not seen[family] then
             order[#order + 1] = family
             seen[family] = true
         end
     end
-    if #order == 0 then return default end
+    if #order == 0 then return DefaultClassList(class) end
     for family, v in pairs(entry.off) do
-        if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
+        if has[family] and not seen[family] and v == true then off[family] = true end
     end
-    for _, family in ipairs(D.BLESSING_ORDER) do
+    for _, family in ipairs(D.CLASS_LISTS[class]) do
         if not seen[family] and not off[family] then order[#order + 1] = family end
     end
     return { order = order, off = off }
@@ -169,7 +174,7 @@ end
 local function ValidClassLists(saved)
     local lists = {}
     for _, class in ipairs(D.CLASS_ORDER) do
-        lists[class] = ValidList(type(saved) == "table" and saved[class], DefaultClassList(class))
+        lists[class] = ValidList(type(saved) == "table" and saved[class], class)
     end
     return lists
 end
@@ -225,9 +230,7 @@ function ns.InitDB()
         local classLists = {}
         if type(db.roleLists) == "table" then
             for _, class in ipairs(D.CLASS_ORDER) do
-                local saved = db.roleLists[D.CLASS_ROLES[class][1]]
-                local valid = ValidList(saved, nil)
-                if valid then classLists[class] = valid end
+                classLists[class] = ValidList(db.roleLists[D.CLASS_ROLES[class][1]], class)
             end
         end
         db.classLists = classLists

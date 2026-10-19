@@ -166,11 +166,9 @@ end
 -- The planner (ruleset plan 2026-10-19-blessing-core, IMPLEMENTATION "Definitions")
 -- Out of combat it decides, from what the group carries, what this paladin casts next.
 ---------------------------------------------------------------------------
--- Blessings are the families of the role lists; Salvation never counts as one
+-- Blessings are the families of D.BLESSING_ORDER; Salvation never counts as one
 local IS_BLESSING = {}
-for _, list in pairs(D.ROLE_LISTS) do
-    for _, family in ipairs(list) do IS_BLESSING[family] = true end
-end
+for _, family in ipairs(D.BLESSING_ORDER) do IS_BLESSING[family] = true end
 
 -- Whether an aura of mine runs out within the renewal time, so it is renewed before it is
 -- gone (ruleset plan 2026-10-19-blessing-steering). An aura without expiry never is.

@@ -402,9 +402,11 @@ do
     local function BlessingSpells(family) return D.BLESSINGS[family].normal end
     local rowsTop = Place(LEFT_ROWS * (ICON + ROW_GAP), 6)
     for r, class in ipairs(D.CLASS_ORDER) do
-        local row = NewRow(r, #D.BLESSING_ORDER, function()
+        -- As many icons as the class has blessings (ruleset plan 2026-10-20-class-defaults)
+        local row = NewRow(r, #D.CLASS_LISTS[class], function()
             return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
         end, function() return db.classLists[class] end, BlessingSpells, true)
+        row.label:SetTextColor(C_ClassColor.GetClassColor(class):GetRGB()) -- Michel
         row.class = class
         row.column = r <= LEFT_ROWS and 1 or 2
         local line = (r - 1) % LEFT_ROWS

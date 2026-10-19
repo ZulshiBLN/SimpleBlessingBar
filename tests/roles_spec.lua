@@ -42,11 +42,15 @@ describe("a member's role", function()
         assert.are.equal(D.CLASS_ROLES.SHAMAN[1], B.RoleOf("party3"))
     end)
 
-    it("has a list for every role, and every class has a role", function()
+    it("gives every class known roles, and no role a blessing list any more", function()
         local _, D = login({})
-        for _, role in ipairs(D.ROLES) do assert.is_table(D.ROLE_LISTS[role], role) end
+        local known = {}
+        for _, role in ipairs(D.ROLES) do known[role] = true end
         for _, class in ipairs(D.CLASS_ORDER) do
-            for _, role in ipairs(D.CLASS_ROLES[class]) do assert.is_table(D.ROLE_LISTS[role], class) end
+            assert.is_true(#D.CLASS_ROLES[class] > 0, class)
+            for _, role in ipairs(D.CLASS_ROLES[class]) do assert.is_true(known[role], class .. " " .. role) end
         end
+        -- the defaults are per class now (ruleset plan 2026-10-20-class-defaults)
+        assert.is_nil(D.ROLE_LISTS)
     end)
 end)

@@ -10,7 +10,7 @@ local M, K, W = D.BLESSINGS.MIGHT, D.BLESSINGS.KINGS, D.BLESSINGS.WISDOM
 -- `world`: group, units; `know`: spell IDs this paladin knows; `learned`: spell ID -> the
 -- level the game says it is learned at; `symbols` in the bags
 local function plan(world, know, learned, symbols)
-    local ns = addon.load("enUS", world)
+    local ns = addon.load("enUS", addon.mightFirst(world))
     STATE.known = {}
     for _, id in ipairs(know) do STATE.known[id] = true end
     STATE.learned = learned
