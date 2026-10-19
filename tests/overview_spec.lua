@@ -66,8 +66,6 @@ end
 -- An element's x offset in its row
 local function x(f) return select(2, f:GetPoint()) end
 
-local function className(ns, class) return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class) end
-
 describe("the overview", function()
     it("lists every member sorted by class, in group order within it, the game's role marked", function()
         local ns, o = login({ group = "party", units = {
@@ -225,23 +223,6 @@ describe("the overview", function()
         assert.are.equal(2 * colW(ns), o:GetWidth())
     end)
 
-    it("shows a row per class in demo mode, named by the class, without marks, only the next one faint", function()
-        local ns, o = login()
-        SimpleBlessingBarDB.demo = true
-        STATE.units.player.auras = { aura(M.normal[6], { mine = true }) }
-        ns.Refresh()
-        local shown = rows(o)
-        assert.are.equal(#D.CLASS_ORDER, #shown)
-        for i, class in ipairs(D.CLASS_ORDER) do
-            assert.are.same({ className(ns, class), class, false }, shown[i])
-        end
-        for _, r in ipairs(o.rows) do
-            if r:IsShown() then
-                for _, ic in pairs(icons(r)) do assert.are.same({ false, true }, ic) end
-            end
-        end
-    end)
-
     it("follows the refresh while shown", function()
         local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
         STATE.units.party1.auras = { aura(M.normal[6], { mine = true }) }
@@ -250,11 +231,9 @@ describe("the overview", function()
     end)
 
     it("follows a language switch while open", function()
-        local ns, o = login()
-        SimpleBlessingBarDB.demo = true
-        ns.Refresh()
-        ns.ApplyLanguage("deDE")
-        assert.are.equal(ns.locales.deDE.CLASS_WARRIOR, rows(o)[1][1])
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK", name = "Grom" } } })
+        ns.ApplyLanguage("koKR")
+        assert.are.equal("Grom " .. ns.locales.koKR.OV_TANK, row(o, "party1").name:GetText())
     end)
 
     it("explains the faint icon with its spell, a Greater one when only that fits", function()
@@ -341,15 +320,6 @@ describe("the overview's aura slot", function()
         assert.are.same({ ns.L.OV_FROM:format("Tyr") }, lines)
     end)
 
-    it("shows no aura in demo mode", function()
-        local ns, o = login()
-        STATE.units.player.auras = { aura(DEV, { source = "player" }) }
-        SimpleBlessingBarDB.demo = true
-        ns.Refresh()
-        for _, r in ipairs(o.rows) do
-            if r:IsShown() then assert.is_false(r.aura:IsShown()) end
-        end
-    end)
 end)
 
 -- Opening: the minimap button's middle click, nothing else (ruleset plan 2026-10-19-priorities)

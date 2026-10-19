@@ -452,13 +452,10 @@ function B.InGroup(source)
     end
 end
 
--- Every member in group order, described; in demo mode one per class, all on the player
+-- Every member in group order, described; in demo mode the made-up raid (Demo.lua)
 function B.Overview()
+    if ns.IsDemo() then return ns.DemoRaid() end
     local list = {}
-    if ns.IsDemo() then
-        for _, class in ipairs(D.CLASS_ORDER) do list[#list + 1] = B.Describe("player", class) end
-        return list
-    end
     for _, unit in ipairs(B.Members()) do
         local class = select(2, UnitClass(unit))
         if class then list[#list + 1] = B.Describe(unit, class) end

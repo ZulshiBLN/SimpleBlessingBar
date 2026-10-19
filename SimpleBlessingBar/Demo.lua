@@ -37,3 +37,135 @@ end
 for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do
     b:HookScript("OnClick", DemoClick)
 end
+
+---------------------------------------------------------------------------
+-- The demo raid (ruleset plan 2026-10-19-demo-raid): 40 made-up members for the overview,
+-- made once per session. A member has no unit; the overview reads his name and the givers
+-- from here.
+---------------------------------------------------------------------------
+local B = ns.Blessings
+local SYLLABLES = { "ar", "bel", "cor", "dra", "el", "fen", "gor", "hal", "is", "jor", "ka", "lor", "mir",
+                    "nor", "ol", "pyr", "quel", "ras", "sil", "tor", "ul", "val", "wyn", "xan", "yr", "zul" }
+local WISDOM_CLASSES = { PALADIN = true, PRIEST = true, SHAMAN = true, MAGE = true, WARLOCK = true, DRUID = true }
+local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
+local DPS_CLASSES = { "WARRIOR", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
+local RAID_SIZE, HOLDERS = 40, 3
+
+local function Pick(list) return list[math.random(#list)] end
+
+local function Shuffle(list)
+    for i = #list, 2, -1 do
+        local j = math.random(i)
+        list[i], list[j] = list[j], list[i]
+    end
+    return list
+end
+
+-- A made-up first name of `length` letters, a capital first, not in `taken`
+local function MakeName(length, taken)
+    local name
+    repeat
+        local s = ""
+        while #s < length do s = s .. Pick(SYLLABLES) end
+        name = s:sub(1, 1):upper() .. s:sub(2, length)
+    until not taken[name]
+    taken[name] = true
+    return name
+end
+
+local function DamageRole(class)
+    for _, role in ipairs(D.CLASS_ROLES[class]) do
+        if DAMAGE_ROLES[role] then return role end
+    end
+end
+
+local function Last(list) return list[#list] end
+
+-- The members: { name, class, role, aura, gives, carried = family -> { spell, by, left } },
+-- the player one of the healing Paladins
+local function MakeRaid()
+    local members = {}
+    local function Add(class, role) members[#members + 1] = { class = class, role = role, carried = {} } end
+    for _, class in ipairs({ "WARRIOR", "WARRIOR", "WARRIOR", "DRUID" }) do Add(class, "TANK") end
+    for _, class in ipairs({ "PALADIN", "PALADIN", "PALADIN", "PALADIN", "PRIEST", "PRIEST", "PRIEST",
+                             "SHAMAN", "SHAMAN", "DRUID" }) do Add(class, "HEALER") end
+    for _, class in ipairs({ "HUNTER", "ROGUE", "MAGE", "WARLOCK" }) do Add(class, DamageRole(class)) end
+    while #members < RAID_SIZE do
+        local class = Pick(DPS_CLASSES)
+        Add(class, DamageRole(class))
+    end
+    Shuffle(members)
+
+    -- Names: the player's own, one of 2 letters, the rest 3 to 12
+    local taken, paladins, two = {}, {}, false
+    for _, m in ipairs(members) do
+        if m.class == "PALADIN" then paladins[#paladins + 1] = m end
+    end
+    local me = paladins[1]
+    me.name, me.isPlayer = (UnitName("player")), true
+    for _, m in ipairs(members) do
+        if not m.name then
+            m.name = MakeName(two and math.random(3, 12) or 2, taken)
+            two = true
+        end
+    end
+
+    -- Auras: mine the chosen one, the other Paladins the first three besides it
+    local mine = B.ChooseAura()
+    me.aura = mine
+    local others = {}
+    for _, family in ipairs(D.AURA_ORDER) do
+        if family ~= mine and #others < #paladins - 1 then others[#others + 1] = family end
+    end
+    for i = 2, #paladins do paladins[i].aura = others[i - 1] end
+
+    -- Blessings: I give Salvation; the others Kings, Might or Wisdom, Light
+    paladins[2].gives, paladins[3].gives, paladins[4].gives = "KINGS", "MIGHT", "LIGHT"
+    for _, m in ipairs(members) do
+        for i = 2, #paladins do
+            local family = paladins[i].gives
+            if family == "MIGHT" and WISDOM_CLASSES[m.class] then family = "WISDOM" end
+            m.carried[family] = { spell = Last(D.BLESSINGS[family].greater), by = paladins[i].name,
+                                  left = math.random(15) }
+        end
+        if m.role ~= "TANK" then
+            m.carried.SALVATION = { spell = D.SALVATION, by = me.name, mine = true, left = math.random(15) }
+        end
+    end
+
+    -- States: three dimmed, three other non-tanks without Salvation; the player in neither
+    local candidates = {}
+    for _, m in ipairs(members) do
+        if not m.isPlayer then candidates[#candidates + 1] = m end
+    end
+    Shuffle(candidates)
+    local lacking = 0
+    for i, m in ipairs(candidates) do
+        if i <= HOLDERS then
+            m.greyed = true
+        elseif m.role ~= "TANK" and lacking < HOLDERS then
+            m.carried.SALVATION, m.lacking = nil, true
+            lacking = lacking + 1
+        end
+    end
+    return members
+end
+
+local raid
+
+-- The raid as the overview reads B.Describe's members: expiry times from now, so a tooltip
+-- never shows a negative time
+function ns.DemoRaid()
+    raid = raid or MakeRaid()
+    local now, list = GetTime(), {}
+    for _, m in ipairs(raid) do
+        local d = { name = m.name, class = m.class, role = m.role, greyed = m.greyed, carried = {} }
+        for family, c in pairs(m.carried) do
+            d.carried[family] = { spell = c.spell, by = c.by, mine = c.mine, expires = now + c.left * 60 }
+        end
+        if m.aura then d.aura = { spell = Last(D.AURAS[m.aura]), by = m.name, expires = 0 } end
+        if m.lacking then d.next = { family = "SALVATION", spell = D.SALVATION } end
+        list[#list + 1] = d
+    end
+    return list
+end

@@ -29,28 +29,28 @@ frame.rows = {}
 frame.divider = frame:CreateTexture(nil, "ARTWORK")
 frame.divider:SetColorTexture(1, 0.82, 0, 0.4)
 
-local function ClassName(class)
-    return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
-end
-
--- The member's name without Forever's second name, his role from the game marked after it -
--- "(T)", "(H)"; a class name without marks in demo mode
+-- The member's name without Forever's second name, his role marked after it - "(T)", "(H)";
+-- a demo member brings his name, having no unit
 local function Name(d)
-    if ns.IsDemo() then return ClassName(d.class) end
-    local name = (UnitName(d.unit))
+    local name = d.name or (UnitName(d.unit))
     if d.role == "TANK" then return name .. " " .. L.OV_TANK end
     if d.role == "HEALER" then return name .. " " .. L.OV_HEALER end
     return name
 end
 
--- An icon's tooltip: the game's, then who gave it and the minutes left
+-- An icon's tooltip: the game's, then who gave it - a demo member's giver by name - and the
+-- minutes left
 local function ShowIconTooltip(slot)
     GameTooltip:SetOwner(slot, "ANCHOR_TOP")
     GameTooltip:SetSpellByID(slot.spell)
     local c = slot.carried
     if c then
-        local giver = c.source and B.InGroup(c.source)
-        GameTooltip:AddLine(L.OV_FROM:format(giver and (UnitName(giver)) or L.OV_ANOTHER), 1, 1, 1)
+        local giver = c.by
+        if not giver then
+            local unit = c.source and B.InGroup(c.source)
+            giver = unit and (UnitName(unit))
+        end
+        GameTooltip:AddLine(L.OV_FROM:format(giver or L.OV_ANOTHER), 1, 1, 1)
         if c.expires > 0 then
             GameTooltip:AddLine(L.OV_LEFT:format(math.ceil((c.expires - GetTime()) / 60)), 1, 1, 1)
         end
