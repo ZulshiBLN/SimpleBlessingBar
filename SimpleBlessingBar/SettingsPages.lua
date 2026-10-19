@@ -247,8 +247,9 @@ controls.goldReserve = UI.AddNumberSlider({
 controls.amountRows = amountRows
 
 ---------------------------------------------------------------------------
--- Priorities: the renewal, a priority list per class in two columns, the aura list and the
--- overview (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities)
+-- Priorities: the renewal, the aura list, a priority list per class in two columns and the
+-- overview (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities,
+-- 2026-10-19-tab-layout)
 ---------------------------------------------------------------------------
 local prioritiesPage = UI.NewPage("TAB_PRIORITIES")
 
@@ -481,7 +482,7 @@ do
     refreshers[#refreshers + 1] = RefreshLists
     prioritiesPage:SetScript("OnHide", StopListDrag)
 
-    -- The overview: a scroll frame of ten rows, filled by Overview.lua
+    -- The overview: a scroll frame of ten rows in two columns, filled by Overview.lua
     local OVERVIEW_H = 200
     local scroll = CreateFrame("ScrollFrame", nil, prioritiesPage, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", INSET, Place(OVERVIEW_H, 6))

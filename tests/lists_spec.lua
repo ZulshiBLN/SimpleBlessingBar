@@ -92,7 +92,7 @@ describe("the Priorities tab", function()
         local c = ns.UI.controls
         -- renewal, Auras title, aura row, an empty line, Blessings title, class rows, buttons,
         -- overview (ruleset plan 2026-10-19-tab-layout)
-        local order = { top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle), top(c.listRows[1]),
+        local order = { top(c.renewMinutes), top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle), top(c.listRows[1]),
                         top(c.listsDefault), top(c.overviewScroll) }
         for i = 2, #order do assert.is_true(order[i] < order[i - 1], "element " .. i) end
         -- half a line between the lists (Michel): the row, then 18 px
