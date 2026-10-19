@@ -420,6 +420,8 @@ describe("settings version 8", function()
         assert.are.same({ order = { "LIGHT", "MIGHT" }, off = { KINGS = true } }, saved.ROGUE)
         assert.are.same(default("WARRIOR"), saved.WARRIOR) -- nothing it has: its default
         assert.are.same({ order = { "KINGS", "WISDOM", "LIGHT", "MIGHT" }, off = {} }, saved.MAGE)
+        saved = lists({ WARRIOR = { order = { "LIGHT", "WISDOM", "KINGS" }, off = { WISDOM = true } } })
+        assert.are.same({ order = { "LIGHT", "KINGS", "MIGHT" }, off = {} }, saved.WARRIOR)
     end)
 
     it("gives a list with nothing on, or only unknown families, its default", function()

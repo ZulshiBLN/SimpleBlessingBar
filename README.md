@@ -57,12 +57,6 @@ know. In combat it keeps the aura chosen before.
   A low-level member therefore gets the highest rank that reaches him, and a blessing none of
   whose ranks reaches him is skipped for the next on his list.
 
-  | Class | Priority (default) |
-  |---|---|
-  | Warrior, Paladin, Rogue | Might, Kings, Light, Wisdom |
-  | Hunter | Kings, Wisdom, Light, Might |
-  | Priest, Shaman, Mage, Warlock, Druid | Wisdom, Kings, Light, Might |
-
 - A member is done once it carries your blessing of the kind chosen for it. One of another kind
   is replaced - a paladin's second blessing on the same target replaces the first - so a change
   of a list is cast at once.
