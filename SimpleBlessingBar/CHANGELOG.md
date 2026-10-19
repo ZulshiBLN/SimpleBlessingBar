@@ -28,6 +28,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   switched off per role; "I give only", pinning one blessing for everyone until logout; and
   early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
 - A change of role, list or pin is cast at once, replacing your blessing of another kind.
+- Righteous Fury is only highlighted while the game reports you as tank (a group's role
+  check); otherwise its button is greyed.
 - An overview window: every group member under his role with the blessings and Salvation he
   carries, yours marked, the one you would give next faint; a footer with what each paladin
   gives. Opened with Shift and a right click on the blessing button, `/sbb overview`, a middle

@@ -68,8 +68,12 @@ local function Update()
     aura.icon:SetTexture(C_Spell.GetSpellTexture(spell or list[1]))
     ns.SetAnts(aura, #ns.KnownAuras() > 0 and not OwnAuraUp())
 
+    -- Righteous Fury matters to a tank only: the role the game reports - a group's role
+    -- check sets it - never one set by hand; alone the game reports none (Michel, 2026-10-19)
     local known = B.Known(D.RIGHTEOUS_FURY)
+    local tank = UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
-    ns.SetAnts(fury, known and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
+    fury.icon:SetDesaturated(not (known and tank))
+    ns.SetAnts(fury, known and tank and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
 end
 table.insert(ns.onRefresh, Update)

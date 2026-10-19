@@ -6,7 +6,9 @@ local addon = require("addon")
 
 -- A paladin with Devotion Aura and Righteous Fury learned, neither up, in a party with a mage
 local function open()
-    local ns = addon.load("enUS", { group = "party", units = { party1 = { class = "MAGE" } } })
+    -- The player a tank, so Righteous Fury's ants run (ruleset plan 2026-10-19-priorities)
+    local ns = addon.load("enUS", { group = "party", units = { party1 = { class = "MAGE" },
+                                                               player = { class = "PALADIN", role = "TANK" } } })
     local D = ns.D
     STATE.known = { [D.AURAS.DEVOTION[1]] = true, [D.RIGHTEOUS_FURY] = true,
                     [D.BLESSINGS.MIGHT.normal[1]] = true }

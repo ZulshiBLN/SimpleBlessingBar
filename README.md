@@ -21,7 +21,7 @@ The addon loads for paladins only.
 | Button | Left click | Right click |
 |---|---|---|
 | Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
-| Righteous Fury | Cast Righteous Fury - highlighted while it is missing | – |
+| Righteous Fury | Cast Righteous Fury - highlighted while it is missing and your group's role check made you tank; greyed otherwise, also alone | – |
 | Blessings | Cast the next blessing your group needs - highlighted while one is left | Set the role of your target, or your own; with Shift, open the overview (not in combat) |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |

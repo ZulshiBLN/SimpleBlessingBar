@@ -103,8 +103,8 @@ describe("the Righteous Fury button", function()
         assert.are.same({ "AnyUp", "AnyDown" }, b.clicks)
     end)
 
-    it("is highlighted while it is missing out of combat, and frozen in combat", function()
-        local ns = addon.load("enUS")
+    it("is highlighted while it is missing out of combat for a tank, and frozen in combat", function()
+        local ns = addon.load("enUS", { group = "party", units = { player = { class = "PALADIN", role = "TANK" } } })
         local rf = ns.D.RIGHTEOUS_FURY
         STATE.known[rf] = true
         FIRE("PLAYER_LOGIN")
@@ -127,6 +127,26 @@ describe("the Righteous Fury button", function()
         STATE.combat = false
         FIRE("PLAYER_REGEN_ENABLED")
         assert.is_true(glow:IsShown())
+    end)
+
+    -- Only the game's role counts: a role check sets it (ruleset plan 2026-10-19-priorities)
+    it("is greyed without ants unless the game reports the player as tank, and still casts", function()
+        local ns = addon.load("enUS")
+        local rf = ns.D.RIGHTEOUS_FURY
+        STATE.known[rf] = true
+        FIRE("PLAYER_LOGIN")
+        local b = ns.furyButton
+        assert.is_false(b.ants:IsShown())
+        assert.is_true(b.icon:IsDesaturated())
+        assert.are.equal("spell", b:GetAttribute("type1"))
+        STATE.units.player.role = "TANK"
+        ns.Refresh()
+        assert.is_true(b.ants:IsShown())
+        assert.is_false(b.icon:IsDesaturated())
+        STATE.units.player.auras = { { spellId = rf, expirationTime = 1800, mine = true } }
+        ns.Refresh()
+        assert.is_false(b.ants:IsShown())
+        assert.is_false(b.icon:IsDesaturated())
     end)
 
     it("is not highlighted and has no action while it is not learned", function()
