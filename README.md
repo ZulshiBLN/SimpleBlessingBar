@@ -40,7 +40,8 @@ chosen in the settings.
 
 - Every member has a role: tank, healer, melee, ranged or caster. A class with one possible
   role gets it; the others take the role the game reports for them, and their class default
-  where it reports none - your own role is always your class default, melee.
+  where it reports none. Out of a group the game reports no role, so yours is then your class
+  default, melee.
 - Each role has a priority list. A member gets the first blessing on its list that you know and
   no other paladin has given - in its Greater form, or in a rank at least as high as your best.
   A lower rank from someone else counts as missing.
