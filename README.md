@@ -45,6 +45,9 @@ chosen in the settings.
 - Each role has a priority list. A member gets the first blessing on its list that you know and
   no other paladin has given - in its Greater form, or in a rank at least as high as your best.
   A lower rank from someone else counts as missing.
+- The game refuses a rank on a target more than ten levels below the level you learned it at.
+  A low-level member therefore gets the highest rank that reaches him, and a blessing none of
+  whose ranks reaches him is skipped for the next on his list.
 
   | Role | Priority |
   |---|---|
@@ -67,7 +70,9 @@ chosen in the settings.
 **Salvation** goes to every member whose role is not tank. A tank carrying anyone's Salvation
 gets Revoke. In a raid, a class gets Mass Salvation when the members of it in range who lack
 Salvation, tanks not counted, are at least three plus the class's tanks; its tanks get Revoke
-after it. Mass Salvation costs a Symbol of Kings.
+after it. Mass Salvation costs a Symbol of Kings. Members too low for Salvation, Mass Salvation
+or Revoke - more than ten levels below the level you learned it at - are left out of it; Mass
+Salvation and Greater Blessings count only the members they reach.
 
 **Both buttons** show how many casts are left; with none left, no number shows and the highlight
 stops. Hover a button to see what it casts next and on whom. Dead, offline and out-of-range

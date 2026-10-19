@@ -17,6 +17,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   Kings.
 - The Salvation button gives Salvation to every member who is not a tank, Revoke to a tank
   carrying it, and in a raid Mass Salvation to a class with enough members lacking it.
+- Low-level members get the highest rank that reaches them; nothing is offered that the game
+  would refuse with "Target is too low level".
 - Both buttons show how many casts are left and name the next one in their tooltip. In combat
   they keep the cast that was first when the fight started.
 - An aura flyout: a right click on the aura button opens your auras beside it. A click on one
