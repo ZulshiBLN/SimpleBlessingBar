@@ -140,7 +140,8 @@ end
 
 -- The priority lists as the player edits them: per role the families on, in order, and those
 -- switched off (ruleset plan 2026-10-19-blessing-steering). A role whose entry is damaged,
--- or that has nothing on, gets its default; a family in neither part is appended.
+-- or whose saved order holds no known family, gets its default; otherwise a family in
+-- neither part is appended.
 local function DefaultRoleList(role)
     return { order = { unpack(D.ROLE_LISTS[role]) }, off = {} }
 end
@@ -157,13 +158,17 @@ local function ValidRoleLists(saved)
                     seen[family] = true
                 end
             end
-            for family, v in pairs(entry.off) do
-                if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
+            if #order == 0 then
+                lists[role] = DefaultRoleList(role)
+            else
+                for family, v in pairs(entry.off) do
+                    if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
+                end
+                for _, family in ipairs(D.BLESSING_ORDER) do
+                    if not seen[family] and not off[family] then order[#order + 1] = family end
+                end
+                lists[role] = { order = order, off = off }
             end
-            for _, family in ipairs(D.BLESSING_ORDER) do
-                if not seen[family] and not off[family] then order[#order + 1] = family end
-            end
-            lists[role] = #order > 0 and { order = order, off = off } or DefaultRoleList(role)
         else
             lists[role] = DefaultRoleList(role)
         end

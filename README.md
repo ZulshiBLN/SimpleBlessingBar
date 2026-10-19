@@ -46,9 +46,10 @@ chosen in the settings.
   is in your group, else for you: Automatic, or a role the class can play. It holds while that
   player stays in your group and is never saved - a feral druid reported as damage can be set
   to tank or melee this way.
-- Each role has a priority list, which you can change on the Blessings tab. A member gets the first blessing on its list that you know and
-  no other paladin has given - in its Greater form, or in a rank at least as high as your best.
-  A lower rank from someone else counts as missing.
+- Each role has a priority list, which you can change on the Blessings tab. A member gets the
+  first blessing on its list that you know and no other paladin has given - in its Greater
+  form, or in a rank at least as high as your best. A lower rank from someone else counts as
+  missing.
 - The game refuses a rank on a target more than ten levels below the level you learned it at.
   A low-level member therefore gets the highest rank that reaches him, and a blessing none of
   whose ranks reaches him is skipped for the next on his list.

@@ -37,7 +37,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and speed,
   the color of the blessing and Salvation buttons' count, and the flyouts' automatic closing and its time.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
-  order of the four buttons. Blessings: see below. Macros: prepared for a later version.
+  order of the four buttons. Blessings: see above. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored
   when they run low; at a vendor they are bought automatically up to a target, above a gold
   reserve.
