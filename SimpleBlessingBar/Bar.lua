@@ -15,7 +15,7 @@ local db
 ns.OnDBReady(function(d) db = d end)
 
 ---------------------------------------------------------------------------
--- Look shared by the bar and the flyouts: SimpleConjureBar's
+-- The bar's look: SimpleConjureBar's
 ---------------------------------------------------------------------------
 function ns.ApplyBackdrop(frame)
     frame:SetBackdrop(D.BACKDROP)
@@ -223,16 +223,12 @@ function ns.ApplyCombatHide()
     end
 end
 
--- Background and border of the bar and of every flyout, the queue buttons' count color and
--- every button's ants. None of it is protected, so this works in combat too.
+-- Background and border of the bar, the queue buttons' count color and every button's ants.
+-- None of it is protected, so this works in combat too.
 function ns.ApplyLook()
     local c, e = db.bg, D.BORDER_COLOR
-    local frames = { bar }
-    for _, fly in pairs(ns.flyouts or {}) do frames[#frames + 1] = fly end
-    for _, f in ipairs(frames) do
-        f:SetBackdropColor(c.r, c.g, c.b, c.a)
-        f:SetBackdropBorderColor(e.r, e.g, e.b, db.showBorder and e.a or 0)
-    end
+    bar:SetBackdropColor(c.r, c.g, c.b, c.a)
+    bar:SetBackdropBorderColor(e.r, e.g, e.b, db.showBorder and e.a or 0)
     local n = db.countColor
     for _, b in ipairs(ns.queueButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
     for _, b in ipairs(antsButtons) do
@@ -276,7 +272,6 @@ local function StopDrag()
     if InCombatLockdown() then return end
     bar:StopMovingOrSizing()
     ns.ReAnchor()
-    ns.Refresh() -- the flyout direction follows the screen half
     if not handle:IsMouseOver() then handle:SetAlpha(0) end
 end
 handle:SetScript("OnMouseUp", StopDrag)
@@ -308,22 +303,6 @@ ns.UpdateSymbols = UpdateSymbols
 ns.onRefresh = {}
 -- The blessing and Salvation buttons (Queue.lua)
 ns.queueButtons = {}
-
--- Flyout direction: the player's fixed choice, or SimpleConjureBar's rule - a horizontal bar
--- opens up in the lower half of the screen and down in the upper; a vertical bar opens right
--- in the left half and left in the right.
-local function ComputeFlyDir()
-    if db.flyoutDir == "FIRST" then return db.vertical and "RIGHT" or "UP" end
-    if db.flyoutDir == "SECOND" then return db.vertical and "LEFT" or "DOWN" end
-    local cx, cy = bar:GetCenter()
-    if not cx then return db.vertical and "RIGHT" or "UP" end
-    local s = bar:GetEffectiveScale() / UIParent:GetEffectiveScale()
-    cx, cy = cx * s, cy * s
-    if db.vertical then
-        return (cx > UIParent:GetWidth() / 2) and "LEFT" or "RIGHT"
-    end
-    return (cy > UIParent:GetHeight() / 2) and "DOWN" or "UP"
-end
 
 -- Places the shown buttons from the anchor point, sizes the bar, puts the handle on the
 -- anchor side.
@@ -378,7 +357,6 @@ function ns.Refresh(combatStart)
     -- A drag in progress keeps its own anchor; it re-anchors when it ends
     if not handle.moving then ns.ReAnchor() end
     Arrange(shown)
-    ns.flyDir = ComputeFlyDir()
     for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
 end
 

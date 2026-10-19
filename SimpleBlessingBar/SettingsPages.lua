@@ -120,16 +120,15 @@ controls.border = UI.AddCheck("OPT_BORDER", "showBorder", function() ns.ApplyLoo
 controls.bg = UI.AddSwatch("OPT_BG", "bg", 8)
 UI.AddSeparator()
 
--- Orientation, growth direction (anchor point of the bar) and flyout direction
-local RefreshDirection, RefreshFlyDir
+-- Orientation and growth direction (anchor point of the bar)
+local RefreshDirection
 controls.layout = select(2, UI.AddDropdown("OPT_LAYOUT", {
     { value = false, text = function() return L.HORIZONTAL end },
     { value = true,  text = function() return L.VERTICAL end },
 }, function() return db.vertical end, function(v)
     db.vertical = v
-    -- Both direction dropdowns name their choices by orientation (right/left or down/up)
+    -- The direction dropdown names its choices by orientation (right/left or down/up)
     if RefreshDirection then RefreshDirection() end
-    if RefreshFlyDir then RefreshFlyDir() end
     ns.Refresh()
 end))
 RefreshDirection, controls.direction = UI.AddDropdown("OPT_DIRECTION", {
@@ -137,14 +136,6 @@ RefreshDirection, controls.direction = UI.AddDropdown("OPT_DIRECTION", {
     { value = true,  text = function() return (db and db.vertical) and L.DIR_UP or L.DIR_LEFT end },
 }, function() return db.growRev end, function(v)
     db.growRev = v
-    ns.Refresh()
-end)
-RefreshFlyDir, controls.flyDir = UI.AddDropdown("OPT_FLYDIR", {
-    { value = "AUTO",   text = function() return L.FLYDIR_AUTO end },
-    { value = "FIRST",  text = function() return (db and db.vertical) and L.DIR_RIGHT or L.DIR_UP end },
-    { value = "SECOND", text = function() return (db and db.vertical) and L.DIR_LEFT or L.DIR_DOWN end },
-}, function() return db.flyoutDir end, function(v)
-    db.flyoutDir = v
     ns.Refresh()
 end)
 
@@ -217,22 +208,6 @@ controls.showSalvation, controls.salvationColors = UI.AddToggleColorRow("OPT_SHO
     { label = "LBL_HIGHLIGHT", key = "salvationAntsColor" },
 })
 controls.salvationSpeed = UI.AddSpeedSlider("salvationAntsSpeed")
-UI.AddSeparator()
-
--- Flyout auto-close: the time slider is dimmed while it is off
-UI.AddHeader("TRACK_FLYOUTS", 6)
-local autoCloseRow
-local function ApplyAutoCloseState()
-    autoCloseRow:SetAlpha(db.flyoutAutoClose and 1 or 0.4)
-end
-controls.autoClose = UI.AddCheck("OPT_AUTOCLOSE", "flyoutAutoClose", function()
-    ApplyAutoCloseState()
-    ns.Refresh()
-end)
-controls.autoCloseTime, autoCloseRow = UI.AddIntSlider("OPT_AUTOCLOSE_TIME", "flyoutAutoCloseTime",
-    D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX, function(v) return L.SECONDS:format(v) end, Refresh, 6)
-controls.autoCloseRow = autoCloseRow
-refreshers[#refreshers + 1] = ApplyAutoCloseState
 
 ---------------------------------------------------------------------------
 -- Supplies: the Symbol of Kings count and the auto-buy
@@ -279,7 +254,7 @@ local orderPage = UI.NewPage("TAB_ORDER")
 -- Name and icon per row
 local ORDER_INFO = {
     AURA      = { name = function() return L.TRACK_AURA end,
-                  icon = function() return C_Spell.GetSpellTexture(D.AURAS[db.aura][1]) end },
+                  icon = function() return C_Spell.GetSpellTexture(ns.auraButton.shownSpell) end },
     FURY      = { name = function() return ns.LocalName(C_Spell.GetSpellName(D.RIGHTEOUS_FURY), "RIGHTEOUS_FURY") end,
                   icon = function() return C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY) end },
     BLESSING  = { name = function() return L.BTN_BLESSINGS end,
@@ -422,28 +397,13 @@ do
 end
 
 ---------------------------------------------------------------------------
--- Blessings: a priority list per role, dragged and switched off (ruleset plan
--- 2026-10-19-blessing-steering)
+-- Blessings: a priority list per class, dragged and switched off, and the aura list, dragged
+-- (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities)
 ---------------------------------------------------------------------------
 local blessingsPage = UI.NewPage("TAB_BLESSINGS")
 
 do
     local B = ns.Blessings
-    local FamilyName = B.FamilyName
-
-    -- The pin "I give only X": in memory only, so it is not a setting in db
-    local pinOptions = { { value = false, text = function() return L.PIN_NONE end } }
-    for _, family in ipairs(D.BLESSING_ORDER) do
-        pinOptions[#pinOptions + 1] = { value = family, text = function() return FamilyName(family) end }
-    end
-    local _, pinDropdown = UI.AddDropdown("PIN_LABEL", pinOptions,
-        function() return B.pin or false end,
-        function(family)
-            B.pin = family or nil
-            ns.Refresh()
-        end)
-    controls.pin = pinDropdown
-
     UI.AddNote("LISTS_HINT", 10, 2)
 
     local ICON, ICON_GAP, LABEL_W = 24, 6, 120
@@ -452,7 +412,7 @@ do
     local RefreshLists
     local drag -- { row, index } while dragging
 
-    -- The families of a row as shown: those on, in order, then those off in D.BLESSING_ORDER
+    -- The families a row shows: those on, in order, then those off in D.BLESSING_ORDER
     local function Shown(list)
         local out = { unpack(list.order) }
         for _, family in ipairs(D.BLESSING_ORDER) do
@@ -467,7 +427,7 @@ do
         if not left then return end
         local cx = GetCursorPosition() / row.icons[1]:GetEffectiveScale()
         local slot = math.floor((cx - left) / (ICON + ICON_GAP)) + 1
-        return math.max(1, math.min(#db.roleLists[row.role].order, slot))
+        return math.max(1, math.min(#row.list().order, slot))
     end
 
     local function StopListDrag()
@@ -484,17 +444,18 @@ do
         local row = rows[drag.row]
         local slot = SlotUnderCursor(row)
         if slot and slot ~= drag.index then
-            local order = db.roleLists[row.role].order
+            local order = row.list().order
             table.insert(order, slot, table.remove(order, drag.index))
             drag.index = slot
             RefreshLists()
         end
     end
 
-    -- A right click switches a family off, greyed after the others, or on again, appended to
-    -- the ones on. At least one stays on.
-    local function Toggle(role, family)
-        local list = db.roleLists[role]
+    -- A right click switches a blessing off, greyed after the others, or on again, appended
+    -- to the ones on. At least one stays on. Auras are only reordered (Michel, 2026-10-19).
+    local function Toggle(row, family)
+        if not row.switchable then return end
+        local list = row.list()
         if list.off[family] then
             list.off[family] = nil
             table.insert(list.order, family)
@@ -508,19 +469,18 @@ do
         ns.Refresh()
     end
 
-    for r, role in ipairs(D.ROLES) do
+    -- A row: `list()` gives { order, off }, `spells(family)` the family's spell IDs by rank
+    local function NewRow(r, count, label, list, spells, switchable)
         local row = CreateFrame("Frame", nil, blessingsPage)
         row:SetHeight(ICON)
         row:SetPoint("TOPLEFT", INSET, Place(ICON, 6))
-        row.role = role
+        row.list, row.spells, row.switchable, row.labelText = list, spells, switchable, label
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         row.label:SetPoint("LEFT", 4, 0)
         row.label:SetWidth(LABEL_W)
         row.label:SetJustifyH("LEFT")
-        ns.SetL(row.label, "ROLE_" .. role)
-
         row.icons = {}
-        for i = 1, #D.BLESSING_ORDER do
+        for i = 1, count do
             local icon = CreateFrame("Button", nil, row)
             icon:SetSize(ICON, ICON)
             icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
@@ -529,7 +489,7 @@ do
             icon.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
             icon:SetScript("OnMouseDown", function(_, btn)
                 -- Only an icon that is on moves; those off keep their place at the end
-                if btn ~= "LeftButton" or i > #db.roleLists[role].order then return end
+                if btn ~= "LeftButton" or i > #row.list().order then return end
                 drag = { row = r, index = i }
                 RefreshLists()
                 blessingsPage:SetScript("OnUpdate", OnDragUpdate)
@@ -538,32 +498,71 @@ do
                 if btn == "LeftButton" then
                     StopListDrag()
                 elseif btn == "RightButton" then
-                    Toggle(role, self.family)
+                    Toggle(row, self.family)
                 end
             end)
             -- The game's own tooltip, of the best rank known, else of rank 1 (Michel)
             icon:SetScript("OnEnter", function(self)
-                local normal = D.BLESSINGS[self.family].normal
+                local ids = row.spells(self.family)
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
-                GameTooltip:SetSpellByID(B.Rank(normal) or normal[1])
+                GameTooltip:SetSpellByID(B.Rank(ids) or ids[1])
                 GameTooltip:Show()
             end)
             icon:SetScript("OnLeave", ns.HideTooltip)
             row.icons[i] = icon
         end
-
         rows[r] = row
-        measures[#measures + 1] = function() return 4 + LABEL_W + #D.BLESSING_ORDER * (ICON + ICON_GAP) + 20 end
+        measures[#measures + 1] = function() return 4 + LABEL_W + count * (ICON + ICON_GAP) + 20 end
         stretchers[#stretchers + 1] = function(w) row:SetWidth(w) end
+        return row
     end
+
+    local function BlessingSpells(family) return D.BLESSINGS[family].normal end
+    for r, class in ipairs(D.CLASS_ORDER) do
+        local row = NewRow(r, #D.BLESSING_ORDER, function()
+            return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
+        end, function() return db.classLists[class] end, BlessingSpells, true)
+        row.class = class
+    end
+
+    -- Default restores every list, blessings and auras; Enable all switches every blessing
+    -- on again, appended after those on, the order kept (Michel, 2026-10-19)
+    local reset = UI.AddButton(blessingsPage, "DEFAULT", function()
+        db.classLists = ns.DefaultClassLists()
+        db.auraList = { unpack(D.AURA_ORDER) }
+        RefreshLists()
+        ns.Refresh()
+    end)
+    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
+    controls.listsDefault = reset
+    local enableAll = UI.AddButton(blessingsPage, "ENABLE_ALL", function()
+        for _, class in ipairs(D.CLASS_ORDER) do
+            local list = db.classLists[class]
+            for _, family in ipairs(D.BLESSING_ORDER) do
+                if list.off[family] then
+                    list.off[family] = nil
+                    table.insert(list.order, family)
+                end
+            end
+        end
+        RefreshLists()
+        ns.Refresh()
+    end)
+    enableAll:SetPoint("LEFT", reset, "RIGHT", 8, 0)
+    controls.enableAll = enableAll
+
+    controls.auraRow = NewRow(#rows + 1, #D.AURA_ORDER, function() return L.AURA_LIST end,
+        function() return { order = db.auraList, off = {} } end,
+        function(family) return D.AURAS[family] end, false)
 
     RefreshLists = function()
         for r, row in ipairs(rows) do
-            local list = db.roleLists[row.role]
+            local list = row.list()
+            row.label:SetText(row.labelText())
             for i, family in ipairs(Shown(list)) do
                 local icon = row.icons[i]
                 icon.family = family
-                icon.tex:SetTexture(C_Spell.GetSpellTexture(D.BLESSINGS[family].normal[1]))
+                icon.tex:SetTexture(C_Spell.GetSpellTexture(row.spells(family)[1]))
                 icon.tex:SetDesaturated(list.off[family] == true)
                 local dragged = drag and drag.row == r and drag.index == i
                 icon:SetAlpha(list.off[family] and 0.5 or dragged and 0.7 or 1)
@@ -572,15 +571,6 @@ do
     end
     refreshers[#refreshers + 1] = RefreshLists
     blessingsPage:SetScript("OnHide", StopListDrag)
-
-    -- Restores every row
-    local reset = UI.AddButton(blessingsPage, "DEFAULT", function()
-        db.roleLists = ns.DefaultRoleLists()
-        RefreshLists()
-        ns.Refresh()
-    end)
-    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
-    controls.listsDefault = reset
 
     controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 14,
         onChange = function() ns.Refresh() end })

@@ -138,46 +138,44 @@ local function ValidOrder(saved, default)
     return out
 end
 
--- The priority lists as the player edits them: per role the families on, in order, and those
--- switched off (ruleset plan 2026-10-19-blessing-steering). A role whose entry is damaged,
--- or whose saved order holds no known family, gets its default; otherwise a family in
--- neither part is appended.
-local function DefaultRoleList(role)
-    return { order = { unpack(D.ROLE_LISTS[role]) }, off = {} }
+-- The priority lists as the player edits them: per class the families on, in order, and those
+-- switched off (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities). A
+-- class's default is the list of its default role. A class whose entry is damaged, or whose
+-- saved order holds no known family, gets its default; otherwise a family in neither part
+-- is appended.
+local function DefaultClassList(class)
+    return { order = { unpack(D.ROLE_LISTS[D.CLASS_ROLES[class][1]]) }, off = {} }
 end
 
-local function ValidRoleLists(saved)
-    local lists = {}
-    for _, role in ipairs(D.ROLES) do
-        local entry = type(saved) == "table" and saved[role]
-        if type(entry) == "table" and type(entry.order) == "table" and type(entry.off) == "table" then
-            local order, off, seen = {}, {}, {}
-            for _, family in ipairs(entry.order) do
-                if D.BLESSINGS[family] and not seen[family] then
-                    order[#order + 1] = family
-                    seen[family] = true
-                end
-            end
-            if #order == 0 then
-                lists[role] = DefaultRoleList(role)
-            else
-                for family, v in pairs(entry.off) do
-                    if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
-                end
-                for _, family in ipairs(D.BLESSING_ORDER) do
-                    if not seen[family] and not off[family] then order[#order + 1] = family end
-                end
-                lists[role] = { order = order, off = off }
-            end
-        else
-            lists[role] = DefaultRoleList(role)
+local function ValidList(entry, default)
+    if type(entry) ~= "table" or type(entry.order) ~= "table" or type(entry.off) ~= "table" then return default end
+    local order, off, seen = {}, {}, {}
+    for _, family in ipairs(entry.order) do
+        if D.BLESSINGS[family] and not seen[family] then
+            order[#order + 1] = family
+            seen[family] = true
         end
+    end
+    if #order == 0 then return default end
+    for family, v in pairs(entry.off) do
+        if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
+    end
+    for _, family in ipairs(D.BLESSING_ORDER) do
+        if not seen[family] and not off[family] then order[#order + 1] = family end
+    end
+    return { order = order, off = off }
+end
+
+local function ValidClassLists(saved)
+    local lists = {}
+    for _, class in ipairs(D.CLASS_ORDER) do
+        lists[class] = ValidList(type(saved) == "table" and saved[class], DefaultClassList(class))
     end
     return lists
 end
 
--- Fresh default lists, for the Blessings tab's Default
-function ns.DefaultRoleLists() return ValidRoleLists(nil) end
+-- Fresh default lists, for the Priorities tab's Default
+function ns.DefaultClassLists() return ValidClassLists(nil) end
 
 -- Saved variables are plain files that can be edited or damaged, so every value is checked
 -- before anything reads it.
@@ -213,10 +211,33 @@ function ns.InitDB()
         db.assign, db.classOrder = nil, nil
     end
 
+    -- Version 8 (ruleset plan 2026-10-19-priorities): blessing lists by class instead of by
+    -- role, auras by a list instead of one choice, the flyout settings gone. A class takes the
+    -- saved list of its default role; the saved aura leads the aura list. Before the checks
+    -- below, which would replace both with their defaults.
+    if (tonumber(db.dbVersion) or 0) < 8 then
+        local auraList = {}
+        if D.AURAS[db.aura] then auraList[1] = db.aura end
+        for _, family in ipairs(D.AURA_ORDER) do
+            if family ~= db.aura then auraList[#auraList + 1] = family end
+        end
+        db.auraList = auraList
+        local classLists = {}
+        if type(db.roleLists) == "table" then
+            for _, class in ipairs(D.CLASS_ORDER) do
+                local saved = db.roleLists[D.CLASS_ROLES[class][1]]
+                local valid = ValidList(saved, nil)
+                if valid then classLists[class] = valid end
+            end
+        end
+        db.classLists = classLists
+        db.aura, db.roleLists = nil, nil
+        db.flyoutAutoClose, db.flyoutAutoCloseTime, db.flyoutDir = nil, nil, nil
+    end
+
     -- Version 1 held nothing but its version; version 2 adds the fields below. The checks
     -- that follow create them, so the migration is these checks, and running it twice
     -- changes nothing.
-    if not D.AURAS[db.aura] then db.aura = D.DEFAULT_AURA end
     if type(db.locked) ~= "boolean" then db.locked = false end
     if type(db.point) ~= "string" or type(db.rel) ~= "string" or not finite(db.x) or not finite(db.y) then
         db.point, db.rel, db.x, db.y = nil, nil, nil, nil
@@ -239,15 +260,12 @@ function ns.InitDB()
     end
     db.demo = false -- demo mode always starts switched off
 
-    -- Version 4 adds the flyout direction and narrows the auto-close time to 1-5 s; the number
-    -- loop above already clamps a saved 6-10 to 5.
-    if not D.FLYOUT_DIRS[db.flyoutDir] then db.flyoutDir = D.FLYOUT_DIR_DEFAULT end
-
     -- Version 5 adds the supplies (the loops above) and the bar's order
     db.order = ValidOrder(db.order, D.DEFAULT_ORDER)
 
-    -- Version 7 adds the priority lists edited per role
-    db.roleLists = ValidRoleLists(db.roleLists)
+    -- Version 8: the blessing lists per class and the aura list
+    db.classLists = ValidClassLists(db.classLists)
+    db.auraList = ValidOrder(db.auraList, D.AURA_ORDER)
 
     db.dbVersion = D.DB_VERSION
 

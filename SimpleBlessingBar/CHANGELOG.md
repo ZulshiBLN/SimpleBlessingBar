@@ -10,8 +10,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   client's language. Every other class loads nothing.
 - A movable bar with an aura, a Righteous Fury, a blessing and a Salvation button. Each is
   highlighted while it has something to cast.
-- The blessing button blesses your group without any assignment: every member gets, by its
-  role, the first blessing on its role's priority list that no other paladin has given in
+- The blessing button blesses your group without any assignment: every member gets the
+  first blessing on his class's priority list that no other paladin has given in
   Greater form or an equal or higher rank. Greater Blessings where they are stronger; between
   equals only in a raid, from three members of a class in range, while you carry a Symbol of
   Kings.
@@ -22,27 +22,23 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Both buttons show how many casts are left and name the next one in their tooltip. In combat
   they keep the cast that was first when the fight started; one that must wait for the end of
   combat shows no highlight, and the tooltip says so.
-- A right click on the blessing button sets the role of your target, or your own, while that
-  player stays in your group.
-- A Blessings tab: the priority list of each role, reordered by drag and drop, with blessings
-  switched off per role; "I give only", pinning one blessing for everyone until logout; and
-  early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
-- A change of role, list or pin is cast at once, replacing your blessing of another kind.
+- A Blessings tab: the priority list of each class, reordered by drag and drop, with
+  blessings switched off per class and "Enable all" to switch them on again; the aura list;
+  and early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
+- A change of a list is cast at once, replacing your blessing of another kind.
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
 - An overview window: every group member under his role with the blessings and Salvation he
   carries, yours marked, the one you would give next faint; a footer with what each paladin
-  gives. Opened with Shift and a right click on the blessing button, `/sbb overview`, a middle
-  click on the minimap button or the Blessings tab; a right click on a row sets that member's
-  role.
-- An aura flyout: a right click on the aura button opens your auras beside it. A click on one
-  selects it for the button without casting, also in combat. The flyout closes 3 seconds after
-  the mouse leaves it, and a left click on any button of the bar closes it.
+  gives. Opened with `/sbb overview`, a middle click on the minimap button or the Blessings
+  tab.
+- The aura button casts the first aura of your list that no other paladin of your group runs,
+  so paladins need not agree who runs which.
 - A settings window, opened with `/sbb`, a middle click on the handle, the minimap button, the
   AddOn menu or the game's Options. General: language, hide in combat, hide the minimap button,
-  scale, border, background color, orientation, growth and flyout direction, demo mode, Report
-  bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and speed,
-  the color of the blessing and Salvation buttons' count, and the flyouts' automatic closing and its time.
+  scale, border, background color, orientation and growth direction, demo mode, Report bug,
+  Reload UI. Tracking: show each of the four buttons, their highlight's color and speed, and
+  the color of the blessing and Salvation buttons' count.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
   order of the four buttons. Blessings: see above. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored

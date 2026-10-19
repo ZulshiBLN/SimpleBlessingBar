@@ -124,7 +124,7 @@ describe("a Greater Blessing", function()
     end)
 
     it("is not held back by an exception it does not fit", function()
-        local B = plan(raid("WARRIOR", { { level = 60 }, { level = 60 }, { level = 60 }, { role = "TANK", level = 30 } }),
+        local B = plan(raid("WARRIOR", { { level = 60 }, { level = 60 }, { level = 60 }, { level = 30, auras = { aura(M.normal[6]) } } }),
             basics({ M.greater[1] }), learned, 5)
         local q = B.PlanBlessings()
         assert.is_true(q[1].greater)

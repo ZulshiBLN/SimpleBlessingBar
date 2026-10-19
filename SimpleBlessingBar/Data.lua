@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 7
+D.DB_VERSION = 8
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
@@ -115,29 +115,10 @@ D.BACKDROP = {
     tile = true, tileSize = 16, edgeSize = 12,
     insets = { left = 3, right = 3, top = 3, bottom = 3 },
 }
-D.BG_COLOR     = { r = 0, g = 0, b = 0, a = 0.6 }       -- bar and flyout background
+D.BG_COLOR     = { r = 0, g = 0, b = 0, a = 0.6 }       -- bar background
 D.BORDER_COLOR = { r = 0.4, g = 0.4, b = 0.4, a = 0.8 }
 D.HANDLE_UNLOCKED = { r = 0.41, g = 0.8, b = 0.94, a = 0.6 }
 D.HANDLE_LOCKED   = { r = 0.9, g = 0.25, b = 0.2, a = 0.6 }
-
--- Where a flyout opens, per direction, as in SimpleConjureBar: the flyout's anchor against its
--- main button, the side its icons start from and their step, the arrow's anchor and rotation
-D.FLY_LAYOUT = {
-    UP    = { fly = { "BOTTOM", "TOP", 0, 6 },  child = "BOTTOM", dx = 0,  dy = 1,  arrow = { "BOTTOM", "TOP", 0, -6 }, rot = 0 },
-    DOWN  = { fly = { "TOP", "BOTTOM", 0, -6 }, child = "TOP",    dx = 0,  dy = -1, arrow = { "TOP", "BOTTOM", 0, 6 },  rot = math.pi },
-    RIGHT = { fly = { "LEFT", "RIGHT", 6, 0 },  child = "LEFT",   dx = 1,  dy = 0,  arrow = { "LEFT", "RIGHT", -6, 0 }, rot = -math.pi / 2 },
-    LEFT  = { fly = { "RIGHT", "LEFT", -6, 0 }, child = "RIGHT",  dx = -1, dy = 0,  arrow = { "RIGHT", "LEFT", 6, 0 },  rot = math.pi / 2 },
-}
-
--- Seconds an open flyout stays once the mouse has left it and its button: the default of the
--- setting, and what the open snippet uses before the first refresh (Michel, 2026-10-18:
--- 3 of 1-5 s; 2 of 1-10 s before)
-D.FLYOUT_AUTOHIDE = 3
-
--- Where flyouts open: AUTO by the screen half (SimpleConjureBar's rule), FIRST up or right,
--- SECOND down or left - named by orientation, so a switch of orientation keeps a valid choice
-D.FLYOUT_DIRS = { AUTO = true, FIRST = true, SECOND = true }
-D.FLYOUT_DIR_DEFAULT = "AUTO"
 
 -- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
 -- 48 px in a 256 px texture, desaturated and tinted
@@ -152,16 +133,13 @@ D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's defaul
 ---------------------------------------------------------------------------
 -- Defaults
 ---------------------------------------------------------------------------
-D.DEFAULT_AURA = "DEVOTION"
-
 -- Settings with their defaults; numbers carry their range. Colors are copied into
 -- the settings, never referenced, so nothing written to the settings changes these tables.
 D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
-D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
-    showAura = true, showFury = true, flyoutAutoClose = true,
+    showAura = true, showFury = true,
     autoBuy = false, hideMinimap = false, showBlessing = true, showSalvation = true,
 }
 D.COLOR_DEFAULTS = {
@@ -183,7 +161,6 @@ D.NUMBER_DEFAULTS = {
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     blessingAntsSpeed   = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     salvationAntsSpeed  = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
-    flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
     symbolWarn          = { default = 5, min = 0, max = 20, integer = true },   -- 0 = no warning
     symbolAmount        = { default = 20, min = 0, max = 100, integer = true }, -- target in the bags
     goldReserve         = { default = 1, min = 0, max = 1000, integer = true }, -- gold never spent

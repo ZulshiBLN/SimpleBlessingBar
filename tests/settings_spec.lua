@@ -12,11 +12,12 @@ local function copy(t)
 end
 
 describe("settings", function()
-    it("start with the default aura, unlocked and no position", function()
+    it("start with the default aura list, unlocked and no position", function()
         local ns = addon.load("enUS")
         ns.InitDB()
         local db = SimpleBlessingBarDB
-        assert.are.equal(ns.D.DEFAULT_AURA, db.aura)
+        assert.are.same(ns.D.AURA_ORDER, db.auraList)
+        assert.is_nil(db.aura)
         assert.is_false(db.locked)
         assert.is_nil(db.point)
         assert.are.equal(ns.D.DB_VERSION, db.dbVersion)
@@ -39,7 +40,8 @@ describe("settings", function()
         ns.InitDB()
         local db = SimpleBlessingBarDB
         assert.is_nil(db.assign) -- version 6 drops the class assignments
-        assert.are.equal(ns.D.DEFAULT_AURA, db.aura)
+        assert.are.same(ns.D.AURA_ORDER, db.auraList) -- version 8: an unknown aura leads nothing
+        assert.is_nil(db.aura)
         assert.is_false(db.locked)
         assert.is_nil(db.point)
         assert.is_nil(db.x)
@@ -79,7 +81,7 @@ describe("settings version 3", function()
 
     it("clamp numbers, repair colors and booleans, and replace what is unusable", function()
         local ns = addon.load("enUS", { db = { dbVersion = 3,
-            scale = 9, auraAntsSpeed = 0, furyAntsSpeed = 2.6, flyoutAutoCloseTime = 0 / 0,
+            scale = 9, auraAntsSpeed = 0, furyAntsSpeed = 2.6,
             showBorder = "yes", vertical = true,
             bg = "x", countColor = { r = 5, g = -1, b = "z", a = 0.5 },
         } })
@@ -89,7 +91,6 @@ describe("settings version 3", function()
         assert.are.equal(D.SCALE_MAX, db.scale)
         assert.are.equal(D.ANTS_SPEED_MIN, db.auraAntsSpeed)
         assert.are.equal(3, db.furyAntsSpeed) -- whole steps: 2.6 rounds to 3
-        assert.are.equal(D.NUMBER_DEFAULTS.flyoutAutoCloseTime.default, db.flyoutAutoCloseTime)
         assert.are.equal(D.BOOL_DEFAULTS.showBorder, db.showBorder)
         assert.is_true(db.vertical)
         assert.are.same(D.COLOR_DEFAULTS.bg, db.bg)
@@ -117,7 +118,7 @@ describe("settings version 5", function()
         end
         assert.are.same(D.COLOR_DEFAULTS.symbolWarnColor, db.symbolWarnColor)
         assert.are_not.equal(D.COLOR_DEFAULTS.symbolWarnColor, db.symbolWarnColor)
-        assert.are.equal("FIRST", db.flyoutDir)
+        assert.is_nil(db.flyoutDir) -- version 8 drops the flyout settings
         local once = copy(db)
         ns.InitDB()
         assert.are.same(once, SimpleBlessingBarDB)
@@ -197,36 +198,20 @@ describe("settings version 6", function()
     end)
 end)
 
--- Version 4 (ruleset plan 2026-10-18-bar-polish, IMPLEMENTATION "Settings, version 4")
+-- Version 4 added the flyout direction and auto-close time; version 8 (ruleset plan
+-- 2026-10-19-priorities) drops them with the flyout
 describe("settings version 4", function()
-    it("migrate a version 3 file: automatic flyouts, the time narrowed, twice without change", function()
+    it("keep a version 3 file's layout while version 8 drops its flyout settings, twice without change", function()
         local ns = addon.load("enUS", { db = { dbVersion = 3, flyoutAutoCloseTime = 8, vertical = true } })
         local D = ns.D
         ns.InitDB()
         local db = SimpleBlessingBarDB
         assert.are.equal(D.DB_VERSION, db.dbVersion)
-        assert.are.equal(D.FLYOUT_DIR_DEFAULT, db.flyoutDir)
-        assert.are.equal(D.AUTOCLOSE_MAX, db.flyoutAutoCloseTime)
+        assert.is_nil(db.flyoutDir)
+        assert.is_nil(db.flyoutAutoCloseTime)
         assert.is_true(db.vertical)
         local once = copy(db)
         ns.InitDB()
         assert.are.same(once, SimpleBlessingBarDB)
-    end)
-
-    it("start a missing auto-close time at the default", function()
-        local ns = addon.load("enUS", { db = { dbVersion = 3 } })
-        ns.InitDB()
-        assert.are.equal(ns.D.FLYOUT_AUTOHIDE, SimpleBlessingBarDB.flyoutAutoCloseTime)
-    end)
-
-    it("keep a valid flyout direction and replace an invalid one", function()
-        local ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = "SECOND" } })
-        ns.InitDB()
-        assert.are.equal("SECOND", SimpleBlessingBarDB.flyoutDir)
-        for _, bad in ipairs({ "UP", 2, true }) do
-            ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = bad } })
-            ns.InitDB()
-            assert.are.equal(ns.D.FLYOUT_DIR_DEFAULT, SimpleBlessingBarDB.flyoutDir, tostring(bad))
-        end
     end)
 end)

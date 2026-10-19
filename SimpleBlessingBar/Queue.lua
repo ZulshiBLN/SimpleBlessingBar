@@ -26,10 +26,6 @@ local function ShowTooltip(b)
         -- Entries left but none to cast: every one held at combat start
         GameTooltip:AddLine(b.left > 0 and L.QUEUE_HELD or L.QUEUE_EMPTY, 1, 1, 1)
     end
-    -- A pin explains why only one blessing comes
-    if b == ns.blessingButton and B.pin then
-        GameTooltip:AddLine(L.PIN_TOOLTIP:format(B.FamilyName(B.pin)), 1, 0.82, 0)
-    end
     GameTooltip:Show()
 end
 
@@ -61,7 +57,7 @@ local function Head(queue, combatStart)
 end
 
 -- Writes a queue to its button, out of combat (the refresh runs only there). Left click
--- only; in demo mode no secure action, the click prints instead (Flyout.lua).
+-- only; in demo mode no secure action, the click prints instead (Demo.lua).
 local function Show(b, queue, combatStart)
     local head = Head(queue, combatStart)
     b.head, b.left = head, #queue
@@ -77,7 +73,6 @@ local function Show(b, queue, combatStart)
 end
 
 table.insert(ns.onRefresh, function(combatStart)
-    B.PruneHandRoles()
     local queue, symbolsUsed = B.PlanBlessings()
     Show(blessing, queue, combatStart)
     ns.UpdateSymbols(blessing, B.AnyGreaterKnown())

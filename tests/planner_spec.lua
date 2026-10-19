@@ -49,11 +49,12 @@ describe("my blessing for a member", function()
         assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
     end)
 
-    it("follows each member's role", function()
+    -- Lists by class: a role no longer chooses (ruleset plan 2026-10-19-priorities)
+    it("follows each member's class list, whatever his role", function()
         local B = plan({ group = "party", units = {
             party1 = { class = "WARRIOR", role = "TANK" }, party2 = { class = "PRIEST" }, party3 = { class = "HUNTER" } } },
             basics())
-        assert.are.same({ { M.normal[6], "player" }, { K.normal[1], "party1" }, { W.normal[5], "party2" },
+        assert.are.same({ { M.normal[6], "player" }, { M.normal[6], "party1" }, { W.normal[5], "party2" },
                           { K.normal[1], "party3" } }, entries((B.PlanBlessings())))
     end)
 
@@ -148,9 +149,10 @@ describe("Greater or normal", function()
         assert.is_nil(q[1].greater)
     end)
 
+    -- An exception: a member another paladin gave Might moves on to Kings
     it("gives a class one Greater family, the most chosen, and the others normal after it", function()
-        local tanks = { role = "TANK" }
-        local B = plan(raid("WARRIOR", { tanks, tanks, tanks, {}, {}, {}, {} }), basics(6, { M.greater[1], K.greater[1] }), 5)
+        local given = { auras = { aura(M.normal[6]) } }
+        local B = plan(raid("WARRIOR", { given, given, given, {}, {}, {}, {} }), basics(6, { M.greater[1], K.greater[1] }), 5)
         local q = B.PlanBlessings()
         assert.are.same({ M.greater[1], "raid1" }, entries(q)[1])
         assert.are.same({ { K.normal[1], "raid1" }, { K.normal[1], "raid2" }, { K.normal[1], "raid3" } },
@@ -160,8 +162,12 @@ describe("Greater or normal", function()
 
     it("queues the exceptions, and no Greater again, after the Greater one landed", function()
         local gm = aura(M.greater[1], true)
-        local function w(role) return { role = role, auras = { { spellId = gm.spellId, expirationTime = 3600, mine = true } } } end
-        local B = plan(raid("WARRIOR", { w("TANK"), w("TANK"), w("TANK"), w(), w(), w(), w() }),
+        local function w(given)
+            local auras = { { spellId = gm.spellId, expirationTime = 3600, mine = true } }
+            if given then auras[2] = aura(M.normal[6]) end
+            return { auras = auras }
+        end
+        local B = plan(raid("WARRIOR", { w(true), w(true), w(true), w(), w(), w(), w() }),
             basics(6, { M.greater[1], K.greater[1] }), 5)
         assert.are.same({ { K.normal[1], "raid1" }, { K.normal[1], "raid2" }, { K.normal[1], "raid3" } },
             entries((B.PlanBlessings())))

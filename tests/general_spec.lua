@@ -102,17 +102,16 @@ describe("the General page", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    it("shows and hides the border of the bar and the flyouts", function()
+    it("shows and hides the border of the bar", function()
         local ns, c, db = open()
         click(c.border, false)
         assert.is_false(db.showBorder)
         assert.are.equal(0, ns.bar.borderColor[4])
-        assert.are.equal(0, ns.flyouts.AURA.borderColor[4])
         click(c.border, true)
         assert.are.equal(ns.D.BORDER_COLOR.a, ns.bar.borderColor[4])
     end)
 
-    it("colors the background of the bar and the flyouts, and cancels back", function()
+    it("colors the background of the bar, and cancels back", function()
         local ns, c, db = open()
         RUNSCRIPT(c.bg, "OnClick")
         assert.is_true(ColorPickerFrame:IsShown())
@@ -120,7 +119,6 @@ describe("the General page", function()
         ColorPickerFrame.info.swatchFunc()
         assert.are.same({ r = 1, g = 0, b = 0, a = 0.5 }, db.bg)
         assert.are.same({ 1, 0, 0, 0.5 }, ns.bar.backdropColor)
-        assert.are.same({ 1, 0, 0, 0.5 }, ns.flyouts.AURA.backdropColor)
         ColorPickerFrame.info.cancelFunc()
         local d = ns.D.BG_COLOR
         assert.are.same({ d.r, d.g, d.b, d.a }, ns.bar.backdropColor)
@@ -167,72 +165,6 @@ describe("the General page", function()
         pick(c.layout, ns.L.VERTICAL)
         assert.are.same({ ns.L.DIR_DOWN, ns.L.DIR_UP }, { MENU(c.direction)[1].text, MENU(c.direction)[2].text })
     end)
-
-    -- layout, centre of the bar on screen -> the flyout's direction
-    local HALVES = {
-        { "HORIZONTAL", { 500, 300 },  "UP" },
-        { "HORIZONTAL", { 500, 800 },  "DOWN" },
-        { "VERTICAL",   { 300, 500 },  "RIGHT" },
-        { "VERTICAL",   { 1500, 500 }, "LEFT" },
-    }
-    for _, case in ipairs(HALVES) do
-        local layout, center, dir = unpack(case)
-        it("opens the flyouts " .. dir .. " for a " .. layout .. " bar at " .. center[1] .. "," .. center[2], function()
-            local ns, c = open()
-            STATE.center = center
-            pick(c.layout, ns.L[layout])
-            assert.are.equal(dir, ns.flyDir)
-            local lay = ns.D.FLY_LAYOUT[dir]
-            assert.are.equal(lay.fly[1], (ns.flyouts.AURA:GetPoint()))
-            assert.are.equal(lay.rot, rawget(ns.auraButton.arrow, "rotation"))
-        end)
-    end
-
-    local function texts(dd)
-        local list = {}
-        for _, e in ipairs(MENU(dd)) do list[#list + 1] = e.text end
-        return list
-    end
-
-    it("offers automatic and the two flyout directions of the orientation, at once on a switch", function()
-        local ns, c = open()
-        local L = ns.L
-        assert.are.same({ L.FLYDIR_AUTO, L.DIR_UP, L.DIR_DOWN }, texts(c.flyDir))
-        local before = rawget(c.flyDir, "generated") or 0
-        pick(c.layout, L.VERTICAL)
-        assert.are.equal(before + 1, c.flyDir.generated) -- the open dropdown is rebuilt
-        assert.are.same({ L.FLYDIR_AUTO, L.DIR_RIGHT, L.DIR_LEFT }, texts(c.flyDir))
-        assert.are.equal(L.FLYDIR_AUTO, selected(c.flyDir))
-    end)
-
-    -- layout, choice, centre of the bar -> the flyout's direction, in both screen halves
-    local FIXED = {
-        { "HORIZONTAL", "DIR_UP",    "UP" },
-        { "HORIZONTAL", "DIR_DOWN",  "DOWN" },
-        { "VERTICAL",   "DIR_RIGHT", "RIGHT" },
-        { "VERTICAL",   "DIR_LEFT",  "LEFT" },
-    }
-    for _, case in ipairs(FIXED) do
-        local layout, choice, dir = unpack(case)
-        it("opens the flyouts " .. dir .. " when set so, on either side of the screen", function()
-            for _, center in ipairs({ { 300, 300 }, { 1600, 800 } }) do
-                local ns, c, db = open()
-                STATE.center = center
-                pick(c.layout, ns.L[layout])
-                pick(c.flyDir, ns.L[choice])
-                assert.are.equal(dir, ns.flyDir)
-                local lay = ns.D.FLY_LAYOUT[dir]
-                assert.are.equal(lay.fly[1], (ns.flyouts.AURA:GetPoint()))
-                assert.are.equal(lay.rot, rawget(ns.auraButton.arrow, "rotation"))
-                -- back to automatic: the screen half decides again
-                pick(c.flyDir, ns.L.FLYDIR_AUTO)
-                assert.are.equal("AUTO", db.flyoutDir)
-                local auto = layout == "VERTICAL" and (center[1] > 960 and "LEFT" or "RIGHT")
-                    or (center[2] > 540 and "DOWN" or "UP")
-                assert.are.equal(auto, ns.flyDir)
-            end
-        end)
-    end
 
     it("reloads the UI from its button", function()
         local _, c = open()

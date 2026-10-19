@@ -62,8 +62,7 @@ end
 -- The member's name without Forever's second name; a class name in demo mode
 local function Name(d)
     if ns.IsDemo() then return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[d.class], "CLASS_" .. d.class) end
-    local name = (UnitName(d.unit))
-    return d.hand and (name .. " *") or name
+    return (UnitName(d.unit))
 end
 
 -- An icon's tooltip: the game's, then who gave it and the minutes left
@@ -89,12 +88,6 @@ local function NewRow(i)
     row.name:SetPoint("LEFT", 4, 0)
     row.name:SetWidth(NAME_W - 4)
     row.name:SetJustifyH("LEFT")
-    -- A right click opens the role menu for this member; not in demo mode, where every row
-    -- is the player
-    row:SetScript("OnMouseUp", function(self, button)
-        if button ~= "RightButton" or ns.IsDemo() or InCombatLockdown() then return end
-        ns.OpenRoleMenu(self, self.unit)
-    end)
     row.slots = {}
     for s, family in ipairs(SLOTS) do
         local slot = CreateFrame("Frame", nil, row)

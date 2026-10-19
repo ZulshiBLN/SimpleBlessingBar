@@ -1,6 +1,7 @@
 -- The bar's look follows SimpleConjureBar's, so both addons read as one family: backdrop on
--- the bar and every flyout, an arrow on each button with a flyout, a handle that shows only
--- under the mouse, buttons laid out with SimpleConjureBar's size, gap and padding.
+-- the bar, a handle that shows only under the mouse, buttons laid out with SimpleConjureBar's
+-- size, gap and padding. The aura flyout and its arrow went with ruleset plan
+-- 2026-10-19-priorities.
 
 local addon = require("addon")
 
@@ -13,13 +14,11 @@ local function login()
 end
 
 describe("the look", function()
-    it("gives the bar and every flyout SimpleConjureBar's backdrop and color", function()
+    it("gives the bar SimpleConjureBar's backdrop and color", function()
         local ns, D = login()
         local c = D.BG_COLOR
-        for _, frame in ipairs({ ns.bar, ns.flyouts.AURA }) do
-            assert.are.equal(D.BACKDROP, frame.backdrop)
-            assert.are.same({ c.r, c.g, c.b, c.a }, frame.backdropColor)
-        end
+        assert.are.equal(D.BACKDROP, ns.bar.backdrop)
+        assert.are.same({ c.r, c.g, c.b, c.a }, ns.bar.backdropColor)
     end)
 
     it("cuts every button's icon alike", function()
@@ -29,10 +28,10 @@ describe("the look", function()
         end
     end)
 
-    it("marks exactly the buttons with a flyout with an arrow", function()
+    it("has no flyout and no arrow on any button", function()
         local ns = login()
-        assert.is_truthy(rawget(ns.auraButton, "arrow"))
-        for _, b in ipairs({ ns.furyButton, ns.blessingButton, ns.salvationButton }) do
+        assert.is_nil(ns.flyouts)
+        for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do
             assert.is_nil(rawget(b, "arrow"))
         end
     end)
@@ -54,8 +53,5 @@ describe("the look", function()
         assert.are.equal(D.PAD + 2 * step, select(4, ns.blessingButton:GetPoint()))
         assert.are.equal(D.PAD + 3 * step, select(4, ns.salvationButton:GetPoint()))
         assert.are.equal(D.PAD + 4 * step - D.GAP + D.PAD, ns.bar:GetWidth())
-        -- the flyout's icons start inside its padding
-        local icon = ns.flyouts.AURA.icons[1]
-        assert.are.equal(D.PAD, select(5, icon:GetPoint()))
     end)
 end)

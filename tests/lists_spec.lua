@@ -1,6 +1,6 @@
--- The Blessings tab: a priority list per role, dragged and switched off by the player (ruleset
--- plan 2026-10-19-blessing-steering, phase 2). Icons are dragged as the client does it:
--- press, cursor moves, OnUpdate, release.
+-- The lists tab: a priority list per class, dragged and switched off, Enable all, and the aura
+-- list, dragged (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities). Icons
+-- are dragged as the client does it: press, cursor moves, OnUpdate, release.
 
 local addon = require("addon")
 
@@ -10,10 +10,12 @@ local M, K, W = D.BLESSINGS.MIGHT, D.BLESSINGS.KINGS, D.BLESSINGS.WISDOM
 local ICON = 24 + 6 -- an icon and its gap, as the tab lays them out
 local LEFT = 300    -- the first icon's left edge on screen
 
--- A paladin alone knowing Might, Kings and Wisdom; `db` is the saved file
+-- A paladin alone knowing Might, Kings, Wisdom and Devotion and Retribution Aura; `db` is the
+-- saved file
 local function login(db)
     local ns = addon.load("enUS", { db = db })
-    STATE.known = { [M.normal[1]] = true, [K.normal[1]] = true, [W.normal[1]] = true }
+    STATE.known = { [M.normal[1]] = true, [K.normal[1]] = true, [W.normal[1]] = true,
+                    [D.AURAS.DEVOTION[1]] = true, [D.AURAS.RETRIBUTION[1]] = true }
     FIRE("PLAYER_LOGIN")
     ns.Refresh()
     return ns, SimpleBlessingBarDB
@@ -26,10 +28,10 @@ local function openTab(ns)
     end
 end
 
--- The row of a role
-local function row(ns, role)
+-- The row of a class
+local function row(ns, class)
     for _, r in ipairs(ns.UI.controls.listRows) do
-        if r.role == role then return r end
+        if r.class == class then return r end
     end
 end
 
@@ -56,6 +58,9 @@ end
 
 local function rightClick(icon) RUNSCRIPT(icon, "OnMouseUp", "RightButton") end
 
+-- A class's default: the list of its default role
+local function classDefault(class) return D.ROLE_LISTS[D.CLASS_ROLES[class][1]] end
+
 -- A deep copy, so a later InitDB cannot change what a test compares against
 local function copy(t)
     if type(t) ~= "table" then return t end
@@ -64,145 +69,202 @@ local function copy(t)
     return out
 end
 
-describe("the Blessings tab", function()
-    it("shows a row per role, named, with its default list", function()
+describe("the lists tab", function()
+    it("shows a row per class, named by the class, with its default list, and the aura row", function()
         local ns = login()
         openTab(ns)
-        local rows = ns.UI.controls.listRows
-        assert.are.equal(#D.ROLES, #rows)
-        for i, role in ipairs(D.ROLES) do
-            assert.are.equal(role, rows[i].role)
-            assert.are.equal(ns.L["ROLE_" .. role], rows[i].label:GetText())
-            assert.are.same(D.ROLE_LISTS[role], (shown(rows[i])))
+        for i, class in ipairs(D.CLASS_ORDER) do
+            local r = ns.UI.controls.listRows[i]
+            assert.are.equal(class, r.class)
+            assert.are.equal(ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class), r.label:GetText())
+            assert.are.same(classDefault(class), (shown(r)))
         end
+        local auraRow = ns.UI.controls.auraRow
+        assert.are.equal(ns.L.AURA_LIST, auraRow.label:GetText())
+        assert.are.same(D.AURA_ORDER, (shown(auraRow)))
     end)
 
-    it("moves a blessing within its row, and the button follows on drop", function()
+    it("moves a blessing within a class row, and the button follows on drop", function()
         local ns, db = login()
         local page = openTab(ns)
-        local melee = row(ns, "MELEE")
-        drag(page, melee, 4, 1)
-        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, db.roleLists.MELEE.order)
-        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, (shown(melee)))
+        local pal = row(ns, "PALADIN")
+        drag(page, pal, 4, 1)
+        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({ "WISDOM", "MIGHT", "KINGS", "LIGHT" }, (shown(pal)))
         assert.are.equal(W.normal[1], ns.blessingButton:GetAttribute("spell1"))
         assert.is_nil(page:GetScript("OnUpdate"))
     end)
 
     it("keeps a saved list after a reload", function()
-        local ns = login({ dbVersion = 7, roleLists = { MELEE = { order = { "WISDOM", "MIGHT", "KINGS", "LIGHT" }, off = {} } } })
+        local ns = login({ dbVersion = 8, classLists = { PALADIN = { order = { "WISDOM", "MIGHT", "KINGS", "LIGHT" }, off = {} } } })
         assert.are.equal(W.normal[1], ns.blessingButton:GetAttribute("spell1"))
     end)
 
     it("switches a blessing off with a right click, greyed at the end, and on again last", function()
         local ns, db = login()
         openTab(ns)
-        local melee = row(ns, "MELEE")
-        rightClick(melee.icons[1])
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM" }, db.roleLists.MELEE.order)
-        assert.are.same({ MIGHT = true }, db.roleLists.MELEE.off)
-        local families, grey = shown(melee)
+        local pal = row(ns, "PALADIN")
+        rightClick(pal.icons[1])
+        assert.are.same({ "KINGS", "LIGHT", "WISDOM" }, db.classLists.PALADIN.order)
+        assert.are.same({ MIGHT = true }, db.classLists.PALADIN.off)
+        local families, grey = shown(pal)
         assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, families)
         assert.are.same({ false, false, false, true }, grey)
         assert.are.equal(K.normal[1], ns.blessingButton:GetAttribute("spell1"))
-        rightClick(melee.icons[4])
-        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, db.roleLists.MELEE.order)
-        assert.are.same({}, db.roleLists.MELEE.off)
-        assert.are.equal(K.normal[1], ns.blessingButton:GetAttribute("spell1"))
+        rightClick(pal.icons[4])
+        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({}, db.classLists.PALADIN.off)
+    end)
+
+    it("keeps one blessing on", function()
+        local ns, db = login({ dbVersion = 8, classLists = { PALADIN = { order = { "KINGS" }, off = { MIGHT = true, LIGHT = true, WISDOM = true } } } })
+        openTab(ns)
+        rightClick(row(ns, "PALADIN").icons[1])
+        assert.are.same({ "KINGS" }, db.classLists.PALADIN.order)
+    end)
+
+    it("drags no blessing that is off", function()
+        local ns = login()
+        local page = openTab(ns)
+        local pal = row(ns, "PALADIN")
+        rightClick(pal.icons[1])
+        STATE.mouseDown = true
+        RUNSCRIPT(pal.icons[4], "OnMouseDown", "LeftButton")
+        assert.is_nil(page:GetScript("OnUpdate"))
+    end)
+
+    it("switches every blessing on again with Enable all, the order kept", function()
+        local ns, db = login()
+        local page = openTab(ns)
+        local pal = row(ns, "PALADIN")
+        drag(page, pal, 4, 1) -- Wisdom, Might, Kings, Light
+        rightClick(pal.icons[2]) -- Might off
+        rightClick(row(ns, "WARRIOR").icons[1]) -- the warrior's Might off
+        RUNSCRIPT(ns.UI.controls.enableAll, "OnClick")
+        assert.are.same({ "WISDOM", "KINGS", "LIGHT", "MIGHT" }, db.classLists.PALADIN.order)
+        assert.are.same({}, db.classLists.PALADIN.off)
+        assert.are.same({ "KINGS", "LIGHT", "WISDOM", "MIGHT" }, db.classLists.WARRIOR.order)
+        assert.are.same({}, db.classLists.WARRIOR.off)
+        assert.are.equal(W.normal[1], ns.blessingButton:GetAttribute("spell1"))
+    end)
+
+    it("reorders the aura list by drag, the aura button follows, and switches nothing off", function()
+        local ns, db = login()
+        local page = openTab(ns)
+        local auraRow = ns.UI.controls.auraRow
+        assert.are.equal(D.AURAS.DEVOTION[1], ns.auraButton:GetAttribute("spell1"))
+        drag(page, auraRow, 2, 1)
+        assert.are.same("RETRIBUTION", db.auraList[1])
+        assert.are.equal(D.AURAS.RETRIBUTION[1], ns.auraButton:GetAttribute("spell1"))
+        rightClick(auraRow.icons[1])
+        assert.are.equal("RETRIBUTION", db.auraList[1])
+        assert.are.equal(#D.AURA_ORDER, #db.auraList)
+    end)
+
+    it("restores every list, blessings and auras, with Default, as copies", function()
+        local ns, db = login()
+        local page = openTab(ns)
+        drag(page, row(ns, "PALADIN"), 4, 1)
+        rightClick(row(ns, "WARRIOR").icons[1])
+        drag(page, ns.UI.controls.auraRow, 2, 1)
+        RUNSCRIPT(ns.UI.controls.listsDefault, "OnClick")
+        for _, class in ipairs(D.CLASS_ORDER) do
+            assert.are.same(classDefault(class), db.classLists[class].order)
+            assert.are_not.equal(classDefault(class), db.classLists[class].order)
+            assert.are.same({}, db.classLists[class].off)
+        end
+        assert.are.same(D.AURA_ORDER, db.auraList)
+        assert.are_not.equal(D.AURA_ORDER, db.auraList)
+        assert.are.equal(M.normal[1], ns.blessingButton:GetAttribute("spell1"))
+        assert.are.same({}, STATE.errors)
     end)
 
     it("shows the game's tooltip of the best known rank, rank 1 when none is known", function()
         local ns = login()
         STATE.known[M.normal[2]] = true
         openTab(ns)
-        local melee = row(ns, "MELEE")
-        RUNSCRIPT(melee.icons[1], "OnEnter")
+        local pal = row(ns, "PALADIN")
+        RUNSCRIPT(pal.icons[1], "OnEnter")
         assert.are.equal(M.normal[2], GameTooltip.spell)
-        RUNSCRIPT(melee.icons[3], "OnEnter")
+        RUNSCRIPT(pal.icons[3], "OnEnter")
         assert.are.equal(D.BLESSINGS.LIGHT.normal[1], GameTooltip.spell)
-        assert.are.same({}, STATE.errors)
-    end)
-
-    it("keeps one blessing on", function()
-        local ns, db = login({ dbVersion = 7, roleLists = { MELEE = { order = { "KINGS" }, off = { MIGHT = true, LIGHT = true, WISDOM = true } } } })
-        openTab(ns)
-        rightClick(row(ns, "MELEE").icons[1])
-        assert.are.same({ "KINGS" }, db.roleLists.MELEE.order)
-    end)
-
-    it("drags no blessing that is off", function()
-        local ns = login()
-        local page = openTab(ns)
-        local melee = row(ns, "MELEE")
-        rightClick(melee.icons[1])
-        STATE.mouseDown = true
-        RUNSCRIPT(melee.icons[4], "OnMouseDown", "LeftButton")
-        assert.is_nil(page:GetScript("OnUpdate"))
-    end)
-
-    it("restores every row with Default, as a copy, and the button follows", function()
-        local ns, db = login()
-        local page = openTab(ns)
-        drag(page, row(ns, "MELEE"), 4, 1)
-        rightClick(row(ns, "TANK").icons[1])
-        RUNSCRIPT(ns.UI.controls.listsDefault, "OnClick")
-        for _, role in ipairs(D.ROLES) do
-            assert.are.same(D.ROLE_LISTS[role], db.roleLists[role].order)
-            assert.are_not.equal(D.ROLE_LISTS[role], db.roleLists[role].order)
-            assert.are.same({}, db.roleLists[role].off)
-        end
-        assert.are.equal(M.normal[1], ns.blessingButton:GetAttribute("spell1"))
         assert.are.same({}, STATE.errors)
     end)
 end)
 
--- Version 7 (ruleset plan 2026-10-19-blessing-steering): the lists are checked at login
-describe("settings version 7", function()
+-- Version 8 (ruleset plan 2026-10-19-priorities): lists by class, the aura list, checked at
+-- login
+describe("settings version 8", function()
     local function lists(saved)
-        local ns = addon.load("enUS", { db = { dbVersion = 7, roleLists = saved } })
+        local ns = addon.load("enUS", { db = { dbVersion = 8, classLists = saved } })
         ns.InitDB()
-        return SimpleBlessingBarDB.roleLists, ns.D
+        return SimpleBlessingBarDB.classLists
     end
-    local function default(role) return { order = D.ROLE_LISTS[role], off = {} } end
+    local function default(class) return { order = classDefault(class), off = {} } end
 
-    it("gives a version-6 file the default lists, and changes nothing the second time", function()
-        local ns = addon.load("enUS", { db = { dbVersion = 6 } })
+    it("migrates a version-7 file: each class from its default role's list, the aura first", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 7, aura = "CONCENTRATION",
+            flyoutDir = "FIRST", flyoutAutoClose = false, flyoutAutoCloseTime = 2,
+            roleLists = { MELEE = { order = { "KINGS", "MIGHT", "LIGHT", "WISDOM" }, off = {} },
+                          CASTER = { order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } },
+                          TANK = { order = { "LIGHT" }, off = {} } } } })
         ns.InitDB()
         local db = SimpleBlessingBarDB
-        assert.are.equal(7, db.dbVersion)
-        for _, role in ipairs(D.ROLES) do assert.are.same(default(role), db.roleLists[role]) end
+        assert.are.equal(8, db.dbVersion)
+        assert.are.same({ "KINGS", "MIGHT", "LIGHT", "WISDOM" }, db.classLists.WARRIOR.order) -- melee
+        assert.are.same({ order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } }, db.classLists.MAGE)
+        assert.are.same(default("PRIEST"), db.classLists.PRIEST) -- healer, not saved: default
+        assert.are.same("CONCENTRATION", db.auraList[1])
+        assert.are.equal(#D.AURA_ORDER, #db.auraList)
+        for _, key in ipairs({ "aura", "roleLists", "flyoutDir", "flyoutAutoClose", "flyoutAutoCloseTime" }) do
+            assert.is_nil(db[key], key)
+        end
         local once = copy(db)
         ns.InitDB()
         assert.are.same(once, SimpleBlessingBarDB)
     end)
 
-    it("replaces lists that are not a table, and drops unknown roles", function()
-        for _, bad in ipairs({ "x", 5 }) do
-            local saved = lists(bad)
-            for _, role in ipairs(D.ROLES) do assert.are.same(default(role), saved[role]) end
-        end
-        assert.is_nil(lists({ BOGUS = { order = { "MIGHT" }, off = {} } }).BOGUS)
+    it("gives an older file without lists the defaults, and an unknown aura the default order", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 5, aura = "SANCTUARY" } })
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        for _, class in ipairs(D.CLASS_ORDER) do assert.are.same(default(class), db.classLists[class]) end
+        assert.are.same(D.AURA_ORDER, db.auraList)
     end)
 
-    it("gives a missing role, or any part not a table, its default", function()
-        local saved = lists({ TANK = "x", HEALER = { order = "x", off = {} }, MELEE = { order = { "KINGS" }, off = 5 } })
-        assert.are.same(default("TANK"), saved.TANK)
-        assert.are.same(default("HEALER"), saved.HEALER)
-        assert.are.same(default("MELEE"), saved.MELEE)
-        assert.are.same(default("CASTER"), saved.CASTER)
+    it("replaces lists that are not a table, and drops unknown classes", function()
+        for _, bad in ipairs({ "x", 5 }) do
+            local saved = lists(bad)
+            for _, class in ipairs(D.CLASS_ORDER) do assert.are.same(default(class), saved[class]) end
+        end
+        assert.is_nil(lists({ DEATHKNIGHT = { order = { "MIGHT" }, off = {} } }).DEATHKNIGHT)
+    end)
+
+    it("gives a missing class, or any part not a table, its default", function()
+        local saved = lists({ WARRIOR = "x", PRIEST = { order = "x", off = {} }, MAGE = { order = { "KINGS" }, off = 5 } })
+        assert.are.same(default("WARRIOR"), saved.WARRIOR)
+        assert.are.same(default("PRIEST"), saved.PRIEST)
+        assert.are.same(default("MAGE"), saved.MAGE)
+        assert.are.same(default("DRUID"), saved.DRUID)
     end)
 
     it("cleans a list: unknown and doubled families out, missing ones appended, off kept", function()
-        local saved = lists({ MELEE = { order = { "KINGS", "SANCTUARY", "KINGS", 7 },
-                                        off = { MIGHT = true, KINGS = true, BOGUS = true, LIGHT = 1 } } })
-        assert.are.same({ order = { "KINGS", "WISDOM", "LIGHT" }, off = { MIGHT = true } }, saved.MELEE)
+        local saved = lists({ WARRIOR = { order = { "KINGS", "SANCTUARY", "KINGS", 7 },
+                                          off = { MIGHT = true, KINGS = true, BOGUS = true, LIGHT = 1 } } })
+        assert.are.same({ order = { "KINGS", "WISDOM", "LIGHT" }, off = { MIGHT = true } }, saved.WARRIOR)
     end)
 
-    it("gives a list with nothing on its default", function()
-        local saved = lists({ MELEE = { order = {}, off = { MIGHT = true, KINGS = true, LIGHT = true, WISDOM = true } } })
-        assert.are.same(default("MELEE"), saved.MELEE)
-        -- an empty order is the default, not the missing families in some other order
-        saved = lists({ MELEE = { order = {}, off = {} }, TANK = { order = { "BOGUS" }, off = { MIGHT = true } } })
-        assert.are.same(default("MELEE"), saved.MELEE)
-        assert.are.same(default("TANK"), saved.TANK)
+    it("gives a list with nothing on, or only unknown families, its default", function()
+        local saved = lists({ WARRIOR = { order = {}, off = {} }, ROGUE = { order = { "BOGUS" }, off = { MIGHT = true } } })
+        assert.are.same(default("WARRIOR"), saved.WARRIOR)
+        assert.are.same(default("ROGUE"), saved.ROGUE)
+    end)
+
+    it("repairs a damaged aura list", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 8, auraList = { "FIRE", "BOGUS", "FIRE" } } })
+        ns.InitDB()
+        local list = SimpleBlessingBarDB.auraList
+        assert.are.equal("FIRE", list[1])
+        assert.are.equal(#D.AURA_ORDER, #list)
     end)
 end)

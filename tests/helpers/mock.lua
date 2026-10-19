@@ -509,7 +509,11 @@ GetRealmName = function() return "Forever" end
 UnitLevel = function(u) local r = U(u or "player") return r and r.level or 25 end
 GetBuildInfo = function() return "1.60.1", "70450", "Oct 1 2026", 16001 end
 date = function() return "2026-10-18 12:00" end
-issecretvalue = function(v) return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar") end
+-- STATE.secrets: further values made secret, e.g. a spell ID
+issecretvalue = function(v)
+  if STATE.secrets and STATE.secrets[v] then return true end
+  return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar")
+end
 -- BugGrabber: its errors are STATE.bugs; addon.load removes it for world.bugGrabber == false
 BugGrabber = { GetDB = function() return STATE.bugs or {} end }
 

@@ -69,7 +69,8 @@ describe("the blessing and Salvation buttons", function()
     end)
 
     it("put no Greater entry first at combat start for a class with exceptions", function()
-        local units = { raid1 = { class = "WARRIOR", role = "TANK" } }
+        -- the exception: another paladin gave raid1 Might, so he gets Kings
+        local units = { raid1 = { class = "WARRIOR", auras = { aura(M.normal[6]) } } }
         for i = 2, 4 do units["raid" .. i] = { class = "WARRIOR" } end
         local _, bless = login({ group = "raid", units = units }, { M.greater[1] }, 5)
         assert.are.equal(M.greater[1], bless:GetAttribute("spell1"))

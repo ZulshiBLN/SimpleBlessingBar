@@ -158,7 +158,7 @@ end)
 
 -- A regression guard: the class buttons went with the blessing core plan's phase 4
 describe("the bar's buttons", function()
-    it("have no class button or class flyout, in a raid of every class", function()
+    it("have no class button and no flyout, in a raid of every class", function()
         local units = {}
         local D = addon.load("enUS").D
         for i, class in ipairs(D.CLASS_ORDER) do units["raid" .. i] = { class = class, subgroup = 1 } end
@@ -167,10 +167,8 @@ describe("the bar's buttons", function()
             assert.is_nil(_G["SimpleBlessingBarClass" .. class], class)
             assert.is_nil(_G["SimpleBlessingBarFlyout" .. class], class)
         end
-        assert.are.same({ "AURA" }, (function()
-            local keys = {}
-            for key in pairs(ns.flyouts) do keys[#keys + 1] = key end
-            return keys
-        end)())
+        -- the aura flyout went with ruleset plan 2026-10-19-priorities
+        assert.is_nil(ns.flyouts)
+        assert.is_nil(ns.header)
     end)
 end)

@@ -84,43 +84,14 @@ end
 -- The game's group roles, mapped onto ours
 local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 
--- Roles set by hand, GUID -> role: kept while the member is in the group, never saved, so no
--- player's ID reaches SavedVariables (Michel, 2026-10-19)
-local handRoles = {}
-
-function B.SetHandRole(guid, role)
-    handRoles[guid] = role
-end
-
-function B.HandRole(unit)
-    local guid = UnitGUID(unit)
-    return guid and handRoles[guid]
-end
-
--- Forgets the roles of members no longer in the group. Out of combat only: a GUID may be
--- secret in combat.
-function B.PruneHandRoles()
-    local present = {}
-    for _, unit in ipairs(B.Members()) do
-        local guid = UnitGUID(unit)
-        if guid then present[guid] = true end
-    end
-    for guid in pairs(handRoles) do
-        if not present[guid] then handRoles[guid] = nil end
-    end
-end
-
--- A member's role: one set by hand, else the one the game reports, where the class can play
--- it - a damage dealer gets the class's first damage role - else the class default. Demo mode
--- puts every class on the player, so it reads neither: each class shows its default.
+-- A member's role: the one the game reports, where the class can play it - a damage dealer
+-- gets the class's first damage role - else the class default. Nothing sets a role by hand
+-- (Michel, 2026-10-19). Demo mode puts every class on the player, so it reads no role: each
+-- class shows its default.
 function B.RoleOf(unit, class)
     local roles = D.CLASS_ROLES[class or select(2, UnitClass(unit))]
     if not roles then return end
     if ns.IsDemo() then return roles[1] end
-    local hand = B.HandRole(unit)
-    for _, role in ipairs(roles) do
-        if role == hand then return role end
-    end
     local reported = UnitGroupRolesAssigned(unit)
     for _, role in ipairs(roles) do
         if role == reported or (reported == "DAMAGER" and DAMAGE_ROLES[role]) then return role end
@@ -237,21 +208,16 @@ local function Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
 
--- The pin "I give only X": a family, or nil. Kept in memory until logout, never saved
--- (Michel, 2026-10-19).
-B.pin = nil
-
 -- A family's name in the addon's language
 function B.FamilyName(family)
     return ns.LocalName(C_Spell.GetSpellName(D.BLESSINGS[family].normal[1]), "BLESSING_" .. family)
 end
 
--- The first family of the unit's role list, as the player edited it, this paladin can give the
--- unit - a normal rank or the best known Greater one fits - and others have not given. The
--- pin replaces every list, families switched off included.
+-- The first family of the unit's class list, as the player edited it, this paladin can give
+-- the unit - a normal rank or the best known Greater one fits - and others have not given
+-- (ruleset plan 2026-10-19-priorities: lists by class, roles no longer choose)
 function B.ChosenFamily(unit, class)
-    local list = B.pin and { B.pin } or db.roleLists[B.RoleOf(unit, class)].order
-    for _, family in ipairs(list) do
+    for _, family in ipairs(db.classLists[class or select(2, UnitClass(unit))].order) do
         local f = D.BLESSINGS[family]
         local greater = B.Rank(f.greater)
         if (B.RankFor(f.normal, unit) or (greater and B.Fits(greater, unit)))
@@ -450,7 +416,6 @@ end
 function B.Describe(unit, class)
     local demo = ns.IsDemo()
     local d = { unit = unit, class = class, role = B.RoleOf(unit, class), carried = {} }
-    d.hand = B.HandRole(unit) ~= nil -- demo rows are named by class, without the mark
     d.visible = demo or UnitIsVisible(unit)
     if d.visible and not demo then
         local mine = MineOn(unit)
@@ -521,4 +486,59 @@ function B.Footer(members)
         end
     end
     return lines, others
+end
+
+---------------------------------------------------------------------------
+-- The aura (ruleset plan 2026-10-19-priorities): the first known family on the aura list that
+-- no other paladin runs. Out of combat only.
+---------------------------------------------------------------------------
+local AURA_FAMILY = {}
+for family, list in pairs(D.AURAS) do
+    for _, id in ipairs(list) do AURA_FAMILY[id] = family end
+end
+B.AURA_FAMILY = AURA_FAMILY
+
+-- The aura families other paladins run, read from their own buffs: every visible paladin of
+-- the group but the player; in a raid only the player's subgroup, as an aura reaches no
+-- further. A buff from the player counts nothing, so an aura we share moves this paladin on,
+-- as with blessings (Michel, 2026-10-19).
+local function TakenAuras()
+    local taken = {}
+    if ns.IsDemo() then return taken end
+    local members, subgroup = B.Members(), nil
+    if IsInRaid() then
+        for i, unit in ipairs(members) do
+            if UnitIsUnit(unit, "player") then subgroup = select(3, GetRaidRosterInfo(i)) end
+        end
+    end
+    for i, unit in ipairs(members) do
+        if not UnitIsUnit(unit, "player") and select(2, UnitClass(unit)) == "PALADIN" and UnitIsVisible(unit)
+           and (not subgroup or select(3, GetRaidRosterInfo(i)) == subgroup) then
+            local n = 1
+            while true do
+                local aura = C_UnitAuras.GetAuraDataByIndex(unit, n, "HELPFUL")
+                if not aura then break end
+                local id, source = aura.spellId, aura.sourceUnit
+                if not issecretvalue(id) and AURA_FAMILY[id]
+                   and not (source and UnitIsUnit(source, "player")) then
+                    taken[AURA_FAMILY[id]] = true
+                end
+                n = n + 1
+            end
+        end
+    end
+    return taken
+end
+
+-- The family the aura button casts: the first known one on the aura list that is not taken;
+-- none free, the first known; none known, nil
+function B.ChooseAura()
+    local taken, firstKnown = TakenAuras(), nil
+    for _, family in ipairs(db.auraList) do
+        if B.Rank(D.AURAS[family]) then
+            firstKnown = firstKnown or family
+            if not taken[family] then return family end
+        end
+    end
+    return firstKnown
 end

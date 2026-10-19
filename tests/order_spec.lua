@@ -69,6 +69,16 @@ describe("the Order page", function()
         assert.are.equal("spell" .. ns.D.SALVATION, rows[4].label:GetText()) -- the client's name
     end)
 
+    -- The aura row shows the aura button's spell (ruleset plan 2026-10-19-priorities)
+    it("shows the aura the aura button casts", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 8, auraList = { "RETRIBUTION", "DEVOTION" } } })
+        local A = ns.D.AURAS
+        STATE.known = { [A.DEVOTION[1]] = true, [A.RETRIBUTION[1]] = true }
+        FIRE("PLAYER_LOGIN")
+        openOrder(ns)
+        assert.are.equal("icon" .. A.RETRIBUTION[1], ns.UI.controls.orderRows[1].icon:GetTexture())
+    end)
+
     it("moves a row, and the bar follows on drop", function()
         local ns, db = login()
         local page = openOrder(ns)

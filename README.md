@@ -1,11 +1,11 @@
 # SimpleBlessingBar
 
 A paladin blessing manager for **WoW Forever** (Classic content on the modern Retail client,
-Interface 16001): it blesses your group by role, works around what other paladins already gave,
+Interface 16001): it blesses your group by class, works around what other paladins already gave,
 and casts Salvation, auras and Righteous Fury, with a modern look.
 
-**Status: early development.** No release has been published yet. Setting a member's role and
-editing the priority lists come later.
+**Status: early development.** No release has been published yet. Exceptions for single
+characters come later.
 
 ## Installation
 
@@ -20,54 +20,40 @@ The addon loads for paladins only.
 
 | Button | Left click | Right click |
 |---|---|---|
-| Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
+| Aura | Cast the first aura of your list no other paladin runs, highest rank you know - highlighted until it runs | – |
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing and your group's role check made you tank; greyed otherwise, also alone | – |
-| Blessings | Cast the next blessing your group needs - highlighted while one is left | Set the role of your target, or your own; with Shift, open the overview (not in combat) |
+| Blessings | Cast the next blessing your group needs - highlighted while one is left | – |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
 
 A middle click on the handle opens or closes the settings; hover it for a tooltip with the
 lock state and its clicks.
 
-**Aura flyout.** A right click on the aura button opens a row of your auras beside it; a second
-right click closes it. A click on an icon **selects** it for the button without casting, **also
-in combat**; the button's left click casts it. Hover an icon for the game's own tooltip. The
-flyout closes 3 seconds after the mouse leaves it (see the settings), and a left click on any
-button of the bar closes it. It opens towards the middle of the screen, or in the direction
-chosen in the settings.
+**Auras** come from a priority list on the Blessings tab, so paladins need not agree who runs
+which: the button casts the first aura on your list that you know and no other paladin of your
+group runs - in a raid, of your subgroup, as an aura reaches no further. An aura you share with
+another paladin moves you on to your next one. With every aura taken, it casts the first you
+know. In combat it keeps the aura chosen before.
 
 **Blessings.** Nothing is assigned: the addon decides for every member of your group.
 
-- Every member has a role: tank, healer, melee, ranged or caster. A class with one possible
-  role gets it; the others take the role the game reports for them, and their class default
-  where it reports none. Out of a group the game reports no role, so yours is then your class
-  default, melee.
-- **A role by hand:** a right click on the blessing button opens a menu for your target if it
-  is in your group, else for you: Automatic, or a role the class can play. It holds while that
-  player stays in your group and is never saved - a feral druid reported as damage can be set
-  to tank or melee this way.
-- Each role has a priority list, which you can change on the Blessings tab. A member gets the
-  first blessing on its list that you know and no other paladin has given - in its Greater
-  form, or in a rank at least as high as your best. A lower rank from someone else counts as
-  missing.
+- Each class has a priority list, which you can change on the Blessings tab. A member gets
+  the first blessing on his class's list that you know and no other paladin has given - in its
+  Greater form, or in a rank at least as high as your best. A lower rank from someone else
+  counts as missing.
 - The game refuses a rank on a target more than ten levels below the level you learned it at.
   A low-level member therefore gets the highest rank that reaches him, and a blessing none of
   whose ranks reaches him is skipped for the next on his list.
 
-  | Role | Priority (default) |
+  | Class | Priority (default) |
   |---|---|
-  | Tank | Kings, Might, Light, Wisdom |
-  | Healer | Wisdom, Kings, Light, Might |
-  | Melee | Might, Kings, Light, Wisdom |
-  | Ranged | Kings, Wisdom, Light, Might |
-  | Caster | Wisdom, Kings, Light, Might |
+  | Warrior, Paladin, Rogue | Might, Kings, Light, Wisdom |
+  | Hunter | Kings, Wisdom, Light, Might |
+  | Priest, Shaman, Mage, Warlock, Druid | Wisdom, Kings, Light, Might |
 
-- **The pin** "I give only", on the Blessings tab: while set, every member gets that blessing
-  from you - whatever its role list says - unless another paladin gave it or no rank reaches
-  him. It holds until you log out, and the blessing button's tooltip names it.
 - A member is done once it carries your blessing of the kind chosen for it. One of another kind
   is replaced - a paladin's second blessing on the same target replaces the first - so a change
-  of role, list or pin is cast at once.
+  of a list is cast at once.
 - **Greater or normal:** the stronger form you know is cast. Where both are equally strong, a
   Greater Blessing is cast only in a raid, when at least three members of a class in range lack
   it, and only while you carry a Symbol of Kings. A class gets at most one Greater Blessing from
@@ -76,7 +62,9 @@ chosen in the settings.
   Symbols of Kings you carry: orange at or below the warning threshold, red at 0.
 - Blessing of Sanctuary does not exist on WoW Forever.
 
-**Salvation** goes to every member whose role is not tank. A tank carrying anyone's Salvation
+**Salvation** goes to every member whose role is not tank - the role the game reports, set by
+your group's role check; without one, a class's default, never tank. A tank carrying anyone's
+Salvation
 gets Revoke. In a raid, a class gets Mass Salvation when the members of it in range who lack
 Salvation, tanks not counted, are at least three plus the class's tanks; its tanks get Revoke
 after it. Mass Salvation costs a Symbol of Kings. Members too low for Salvation, Mass Salvation
@@ -96,18 +84,15 @@ again casts it again. Everything updates when combat ends.
 
 ## Overview
 
-Shift and a right click on the blessing button, `/sbb overview`, a middle click on the minimap
-button, or the "Overview" button on the Blessings tab open a window with your whole group; Escape
+`/sbb overview`, a middle click on the minimap button, or the "Overview" button on the Blessings tab open a window with your whole group; Escape
 closes it, and you can drag it anywhere. It closes when combat starts - buffs cannot be read
 then - and opens again when combat ends.
 
 - Every member stands under his role, with the blessings and the Salvation he carries. Yours
-  have a gold border; the blessing you would give him next is faint, with a "+". A role set by
-  hand is marked "*". Members out of range, dead or offline are greyed.
+  have a gold border; the blessing you would give him next is faint, with a "+". Members out
+  of range, dead or offline are greyed.
 - Hover an icon for the spell, who gave it - "another paladin" for one outside your group -
   and the minutes left.
-- A right click on a member's row sets his role, as the blessing button's menu does, without
-  targeting him.
 - At the bottom, a line per paladin in your group, yours first: what he gave and to how many
   members. Blessings from paladins outside your group are listed as "Others".
 - From 21 members the window shows two columns.
@@ -123,10 +108,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - Language: automatic (the client's) or any of the eleven, switched without a reload.
 - Hide the bar in combat; hide the minimap button.
 - Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too).
-- Border on or off, and the background color with its opacity - for the bar and the flyouts.
-- Orientation (horizontal or vertical), the direction the bar grows, and the direction the
-  flyouts open: automatic (towards the middle of the screen), or up or down for a horizontal
-  bar, right or left for a vertical one.
+- Border on or off, and the background color with its opacity.
+- Orientation (horizontal or vertical) and the direction the bar grows.
 - **Demo mode**: plans a blessing and Salvation for every class, each with its default role,
   shows a sample Symbol count, and treats every aura and blessing as learned. Clicks cast
   nothing; the chat says what would be cast. Demo mode is off after every login and cannot be
@@ -138,7 +121,6 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - Blessings: show the button or not, the highlight's color and speed, and the color of the
   count on the blessing and Salvation buttons.
 - Salvation: show the button or not, the highlight's color and its speed.
-- Flyouts: close automatically or not, and after how many seconds (1 to 5, 3 by default).
 
 **Supplies**
 - Symbol of Kings: the warning threshold (0 = no warning) and the warning and empty colors of
@@ -152,10 +134,11 @@ closes when combat starts and opens again when combat ends. Every change takes e
   blessings, Salvation.
 
 **Blessings**
-- I give only: follow the lists, or pin one blessing for everyone until you log out.
-- A row per role with its priority list: drag a blessing left or right to reorder it; a right
-  click switches it off for that role (greyed at the end, never given) or on again. At least one
-  stays on. "Default" restores every row.
+- A row per class with its priority list: drag a blessing left or right to reorder it; a right
+  click switches it off for that class (greyed at the end, never given) or on again. At least one
+  stays on. "Enable all" switches every blessing on again, the order kept; "Default" restores
+  every row and the aura list.
+- The aura list: drag an aura left or right to reorder it.
 - Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
   blessing has run out.
 - "Overview" opens the overview beside the settings window.
@@ -190,14 +173,13 @@ unless you choose another in the settings.
 | File | Content |
 |---|---|
 | `Locales.lua` | All texts per language, locale switching |
-| `Data.lua` | Spell IDs by rank, roles and their priority lists, defaults, the settings' schema version |
+| `Data.lua` | Spell IDs by rank, roles and the default priority lists, defaults, the settings' schema version |
 | `Core.lua` | Paladin check, chat output, language registry, secure attributes, saved variables, demo mode |
-| `Blessings.lua` | Known spells and ranks, roles, group scan, what others gave, the blessing and Salvation planner |
+| `Blessings.lua` | Known spells and ranks, roles, group scan, what others gave, the blessing and Salvation planner, the aura choice |
 | `Bar.lua` | Bar, handle, position and lock, layout, scale and look, Symbol count, refresh |
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
-| `Flyout.lua` | Secure header, the aura flyout, demo mode's chat output |
-| `RoleMenu.lua` | The blessing button's right-click menu: a member's role set by hand |
+| `Demo.lua` | Demo mode's chat output |
 | `Overview.lua` | The overview window: members by role, what they carry, the paladins' footer |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |

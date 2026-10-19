@@ -72,11 +72,9 @@ describe("the overview", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    it("names a member without his second name, and marks a role set by hand", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", name = "Grom", surname = "Hellscream" } } })
-        ns.Blessings.SetHandRole(UnitGUID("party1"), "TANK")
-        ns.Refresh()
-        assert.are.same({ "Grom *", "TANK", 1, false }, rows(o)[1])
+    it("names a member without his second name, under the role the game reports", function()
+        local _, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK", name = "Grom", surname = "Hellscream" } } })
+        assert.are.same({ "Grom", "TANK", 1, false }, rows(o)[1])
     end)
 
     it("shows the blessings and Salvation carried, mine bordered", function()
@@ -162,7 +160,6 @@ describe("the overview", function()
 
     it("shows a row per class in demo mode, named by the class, only the next one faint", function()
         local ns, o = login()
-        ns.Blessings.SetHandRole(UnitGUID("player"), "TANK") -- no "*" in demo mode
         SimpleBlessingBarDB.demo = true
         STATE.units.player.auras = { aura(M.normal[6], { mine = true }) }
         ns.Refresh()
@@ -268,24 +265,6 @@ describe("opening the overview", function()
         FIRE("PLAYER_LOGIN")
         return ns, ns.overview
     end
-    local function click(frame, button)
-        RUNCLICK(frame, button, true)
-        RUNCLICK(frame, button, false)
-    end
-
-    it("toggles with Shift and a right click on the blessing button; without Shift it is the role menu", function()
-        local ns, o = fresh()
-        click(ns.blessingButton, "RightButton")
-        assert.is_false(o:IsShown() == true)
-        assert.is_table(STATE.menu)
-        STATE.menu = nil
-        STATE.shift = true
-        click(ns.blessingButton, "RightButton")
-        assert.is_true(o:IsShown())
-        assert.is_nil(STATE.menu)
-        click(ns.blessingButton, "RightButton")
-        assert.is_false(o:IsShown())
-    end)
 
     it("toggles with /sbb overview, listed by /sbb help, and refuses in combat", function()
         local ns, o = fresh()
@@ -368,39 +347,6 @@ describe("opening the overview", function()
     end)
 end)
 
--- The role menu from a row (phase 4)
-describe("a right click on an overview row", function()
-    local function entry(text)
-        for _, e in ipairs(STATE.menu.entries) do
-            if e.text == text then return e end
-        end
-    end
-
-    it("opens the role menu for that member; Tank moves him under Tank with Kings faint", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", name = "Grom",
-            auras = { aura(M.normal[6]) } } } })
-        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "RightButton")
-        assert.are.same({ ns.L.ROLE_MENU, "Grom" }, STATE.menu.titles)
-        entry(ns.L.ROLE_TANK).pick()
-        local r = row(o, "party1")
-        assert.are.same({ "Grom *", "TANK" }, { r.name:GetText(), r.role })
-        assert.are.same({ MIGHT = { false, false }, KINGS = { false, true } }, icons(r))
-        assert.are.same({}, STATE.errors)
-    end)
-
-    it("opens nothing in demo mode, nor for a left click", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
-        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "LeftButton")
-        assert.is_nil(STATE.menu)
-        SimpleBlessingBarDB.demo = true
-        ns.Refresh()
-        for _, r in ipairs(o.rows) do
-            if r:IsShown() then RUNSCRIPT(r, "OnMouseUp", "RightButton") end
-        end
-        assert.is_nil(STATE.menu)
-    end)
-end)
-
 -- Checked against the plan (ruleset plan 2026-10-19-overview)
 describe("the overview, beyond the first checks", function()
     it("puts a section starting on the second column there alone, without an empty header", function()
@@ -449,14 +395,20 @@ describe("the overview, beyond the first checks", function()
         assert.is_truthy(ns)
     end)
 
-    it("opens nothing with Shift and a right click in combat, and says nothing", function()
-        local ns, o = login()
-        ns.ToggleOverview()
-        STATE.combat, STATE.shift = true, true
-        local before = #CHAT
-        RUNCLICK(ns.blessingButton, "RightButton", true)
-        RUNCLICK(ns.blessingButton, "RightButton", false)
-        assert.is_false(o:IsShown())
-        assert.are.equal(before, #CHAT)
+end)
+
+-- Roles by hand went with ruleset plan 2026-10-19-priorities
+describe("the overview without roles by hand", function()
+    it("opens no menu on a right click, on a row or on the blessing button, Shift or not", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "RightButton")
+        for _, shift in ipairs({ false, true }) do
+            STATE.shift = shift
+            RUNCLICK(ns.blessingButton, "RightButton", true)
+            RUNCLICK(ns.blessingButton, "RightButton", false)
+        end
+        assert.is_nil(STATE.menu)
+        assert.is_true(o:IsShown())
+        assert.are.same({}, STATE.errors)
     end)
 end)
