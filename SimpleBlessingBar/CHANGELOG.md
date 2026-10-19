@@ -29,9 +29,10 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - A change of a list is cast at once, replacing your blessing of another kind.
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
-- The overview, on the Priorities tab: every group member under his class, his role marked,
-  with the blessings and Salvation he carries, yours marked, the one you would give next faint;
-  a footer with what each paladin gives. A middle click on the minimap button opens it.
+- The overview, on the Priorities tab: every group member in two columns, sorted by class and
+  named in its colour, his role marked, a paladin's aura, the blessings and Salvation he
+  carries, yours marked, the one you would give next faint. A middle click on the minimap
+  button opens it.
 - The aura button casts the first aura of your list that no other paladin of your group runs,
   so paladins need not agree who runs which.
 - A settings window, opened with `/sbb`, a middle click on the handle, the minimap button, the

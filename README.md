@@ -121,14 +121,14 @@ closes when combat starts and opens again when combat ends. Every change takes e
   or right to reorder it; a right click switches it off for that class (greyed at the end,
   never given) or on again. At least one stays on. "Enable all" switches every blessing on
   again, the order kept; "Default" restores every row and the aura list.
-- **The overview** of your group, scrolled for a raid: every member under his class, his role
-  from the game marked "(T)" tank or "(H)" healer, with the blessings and the Salvation he
-  carries. Yours have a gold border; the blessing you would give him next is faint, with a
-  "+". Members out of range, dead or offline are greyed. Hover an icon for the spell, who gave
-  it - "another paladin" for one outside your group - and the minutes left. At the bottom, a
-  line per paladin in your group, yours first: what he gave and to how many members;
-  blessings from paladins outside your group are listed as "Others". In demo mode it shows a
-  row per class, with the blessing you would give it.
+- **The overview** of your group in two columns, twenty members before it scrolls: sorted by
+  class, each name in its class colour, the role from the game marked "(T)" tank or "(H)"
+  healer; a name too long for its place is cut with "...". In front of a paladin's blessings
+  the aura he runs, then the blessings and the Salvation each member carries. Yours have a
+  gold border; the blessing you would give him next is faint, with a "+". Members out of
+  range, dead or offline are dimmed. Hover an icon for the spell, who gave it - "another
+  paladin" for one outside your group - and the minutes left. In demo mode it shows a row per
+  class, with the blessing you would give it.
 
 **Order**
 - Drag the rows to reorder the bar's four buttons. "Default" restores aura, Righteous Fury,
@@ -171,7 +171,7 @@ unless you choose another in the settings.
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
 | `Demo.lua` | Demo mode's chat output |
-| `Overview.lua` | The overview on the Priorities tab: members by class, what they carry, the paladins' footer |
+| `Overview.lua` | The overview on the Priorities tab: members by class in two columns, their auras and what they carry |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |
