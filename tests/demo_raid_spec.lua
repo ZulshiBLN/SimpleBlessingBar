@@ -270,6 +270,8 @@ describe("the demo raid", function()
         assert.is_true(field < 84, field)
         local cut, fit = edges(o)
         assert.are.equal(12, #cut)
+        -- wide letters only: twelve narrow ones fit the field whole in game
+        assert.is_truthy(cut:lower():match("^[mwodagnu]+$"), cut)
         assert.is_true(#cut * 7 > field)
         assert.are.equal(math.floor(field / 7), #fit)
         assert.are.equal(cut:sub(1, #fit), fit)

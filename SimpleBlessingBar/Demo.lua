@@ -46,6 +46,9 @@ end
 local B = ns.Blessings
 local SYLLABLES = { "ar", "bel", "cor", "dra", "el", "fen", "gor", "hal", "is", "jor", "ka", "lor", "mir",
                     "nor", "ol", "pyr", "quel", "ras", "sil", "tor", "ul", "val", "wyn", "xan", "yr", "zul" }
+-- Wide letters only, for the name at the field's edge: twelve narrow ones fit the field whole
+-- (Michel's look in game)
+local WIDE_SYLLABLES = { "maw", "wan", "dom", "mag", "wom", "dum", "mow", "gan" }
 local WISDOM_CLASSES = { PALADIN = true, PRIEST = true, SHAMAN = true, MAGE = true, WARLOCK = true, DRUID = true }
 local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 local DPS_CLASSES = { "WARRIOR", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
@@ -61,12 +64,12 @@ local function Shuffle(list)
     return list
 end
 
--- A made-up first name of `length` letters, a capital first, not in `taken`
-local function MakeName(length, taken)
+-- A made-up first name of `length` letters from `syllables`, a capital first, not in `taken`
+local function MakeName(length, taken, syllables)
     local name
     repeat
         local s = ""
-        while #s < length do s = s .. Pick(SYLLABLES) end
+        while #s < length do s = s .. Pick(syllables or SYLLABLES) end
         name = s:sub(1, 1):upper() .. s:sub(2, length)
     until not taken[name]
     taken[name] = true
@@ -100,7 +103,7 @@ local function MakeRaid()
     -- name - one shows it whole, cut where the field is narrower, the other the longest part
     -- that fits (the overview fits it); one of 2 letters; the rest 3 to 12
     local taken, paladins, two, edges = {}, {}, false, 0
-    local edge = MakeName(12, taken)
+    local edge = MakeName(12, taken, WIDE_SYLLABLES)
     for _, m in ipairs(members) do
         if m.class == "PALADIN" then paladins[#paladins + 1] = m end
         if DAMAGE_ROLES[m.role] and edges < 2 then
