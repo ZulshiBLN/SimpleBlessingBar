@@ -31,7 +31,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   check); otherwise its button is greyed.
 - The overview, on the Priorities tab: every group member in two columns, sorted by class and
   named in its colour, his role marked, a paladin's aura, the blessings and Salvation he
-  carries, yours marked, the one you would give next faint. A middle click on the minimap
+  carries, yours glowing, the one you would give next faint. A middle click on the minimap
   button opens it.
 - The aura button casts the first aura of your list that no other paladin of your group runs,
   so paladins need not agree who runs which.
@@ -49,5 +49,5 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - A bug report to copy into a GitHub issue, without character names or realm.
 - The handle's tooltip names the lock state and what each click does.
 - Demo mode plans a blessing and Salvation for every class and casts nothing; the chat says
-  what a click would cast.
+  what a click would cast. Its overview shows a made-up raid of 40.
 - `/sbb help`, `/sbb lock`, `/sbb reset` and `/sbb bug`.

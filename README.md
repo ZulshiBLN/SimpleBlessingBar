@@ -96,7 +96,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - Orientation (horizontal or vertical) and the direction the bar grows.
 - **Demo mode**: plans a blessing and Salvation for every class, each with its default role,
   shows a sample Symbol count, and treats every aura and blessing as learned. Clicks cast
-  nothing; the chat says what would be cast. Demo mode is off after every login and cannot be
+  nothing; the chat says what would be cast. The overview shows a made-up raid of 40 instead
+  of your group. Demo mode is off after every login and cannot be
   switched in combat.
 - Report bug, and Reload UI.
 
@@ -124,11 +125,13 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - **The overview** of your group in two columns, twenty members before it scrolls: sorted by
   class, each name in its class colour, the role from the game marked "(T)" tank or "(H)"
   healer; a name too long for its place is cut with "...". In front of a paladin's blessings
-  the aura he runs, then the blessings and the Salvation each member carries. Yours have a
-  gold border; the blessing you would give him next is faint, with a "+". Members out of
+  the aura he runs, then the blessings and the Salvation each member carries. Yours glow
+  gold; the blessing you would give him next is faint, with a "+". Members out of
   range, dead or offline are dimmed. Hover an icon for the spell, who gave it - "another
-  paladin" for one outside your group - and the minutes left. In demo mode it shows a row per
-  class, with the blessing you would give it.
+  paladin" for one outside your group - and the minutes left. In demo mode it shows a made-up
+  raid of 40, the same until `/reload`: all classes, four paladins with their auras, you one of
+  them, tanks and healers, a few members dimmed or without Salvation, and names from 2 to 12
+  letters, one cut and one just fitting its place.
 
 **Order**
 - Drag the rows to reorder the bar's four buttons. "Default" restores aura, Righteous Fury,
@@ -170,7 +173,7 @@ unless you choose another in the settings.
 | `Bar.lua` | Bar, handle, position and lock, layout, scale and look, Symbol count, refresh |
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
-| `Demo.lua` | Demo mode's chat output |
+| `Demo.lua` | Demo mode's chat output and the overview's made-up raid |
 | `Overview.lua` | The overview on the Priorities tab: members by class in two columns, their auras and what they carry |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
