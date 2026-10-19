@@ -400,3 +400,63 @@ describe("a right click on an overview row", function()
         assert.is_nil(STATE.menu)
     end)
 end)
+
+-- Checked against the plan (ruleset plan 2026-10-19-overview)
+describe("the overview, beyond the first checks", function()
+    it("puts a section starting on the second column there alone, without an empty header", function()
+        local units = {}
+        for i = 1, 11 do units["raid" .. i] = { class = "WARRIOR", role = "TANK", subgroup = 1 } end
+        for i = 12, 21 do units["raid" .. i] = { class = "PRIEST", subgroup = 1 } end
+        local _, o = login({ group = "raid", units = units })
+        assert.are.same({ { "TANK", 1 }, { "HEALER", 2 } }, headers(o))
+    end)
+
+    it("follows a language switch while open", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK" } } })
+        ns.ApplyLanguage("deDE")
+        assert.are.equal(ns.locales.deDE.ROLE_TANK, o.headers[1]:GetText())
+    end)
+
+    it("counts Mass Salvation as Salvation, and nothing from a member who is not visible", function()
+        local ns, o = login({ group = "party", units = {
+            party1 = { class = "WARRIOR", auras = { aura(D.MASS_SALVATION, { source = "player" }) } },
+            party2 = { class = "MAGE", visible = false, auras = { aura(W.normal[1], { source = "player" }) } } } })
+        local L = ns.L
+        local salv = ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION")
+        assert.are.equal(L.OV_LINE:format("player", L.OV_COUNT:format(salv, 1)), o.footer[1]:GetText())
+    end)
+
+    it("explains the faint icon with its spell, a Greater one when only that fits", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", level = 30 } } })
+        STATE.known[M.greater[1]] = true
+        STATE.learned = {}
+        for i = 1, 6 do STATE.learned[M.normal[i]] = 60 end
+        STATE.learned[M.greater[1]] = 40
+        ns.Refresh()
+        local slot
+        for _, s in ipairs(row(o, "party1").slots) do if s.family == "MIGHT" then slot = s end end
+        assert.is_true(slot.faint)
+        RUNSCRIPT(slot, "OnEnter")
+        assert.are.equal(M.greater[1], GameTooltip.spell)
+    end)
+
+    it("closes with Escape and keeps no place in the client's layout", function()
+        local ns, o = login()
+        local listed = false
+        for _, name in ipairs(UISpecialFrames) do if name == o:GetName() then listed = true end end
+        assert.is_true(listed)
+        assert.is_true(o.dontSavePosition)
+        assert.is_truthy(ns)
+    end)
+
+    it("opens nothing with Shift and a right click in combat, and says nothing", function()
+        local ns, o = login()
+        ns.ToggleOverview()
+        STATE.combat, STATE.shift = true, true
+        local before = #CHAT
+        RUNCLICK(ns.blessingButton, "RightButton", true)
+        RUNCLICK(ns.blessingButton, "RightButton", false)
+        assert.is_false(o:IsShown())
+        assert.are.equal(before, #CHAT)
+    end)
+end)

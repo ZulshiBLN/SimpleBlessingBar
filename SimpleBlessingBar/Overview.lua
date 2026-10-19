@@ -179,12 +179,17 @@ local function Build()
     for _, role in ipairs(D.ROLES) do
         local list = byRole[role]
         if list then
-            Header(role)
+            -- A section gets its header above its first row in each column, so a split on a
+            -- section boundary leaves no empty header behind
+            local headed = false
             for _, d in ipairs(list) do
-                if placed == leftCount then
+                if placed == leftCount and column == 1 then
                     height = math.max(height, y)
-                    column, y = 2, 0
+                    column, y, headed = 2, 0, false
+                end
+                if not headed then
                     Header(role)
+                    headed = true
                 end
                 nRows = nRows + 1
                 local row = frame.rows[nRows] or NewRow(nRows)

@@ -48,6 +48,8 @@ function Methods:Hide()
 end
 function Methods:IsShown() return self.shown end
 function Methods:SetShown(v) if v then self:Show() else self:Hide() end end
+-- The client keeps a moved frame's place unless told not to
+function Methods:SetDontSavePosition(v) self.dontSavePosition = v end
 function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
 function Methods:ClearAllPoints() Guard(self, "ClearAllPoints"); self.points = {} end
 function Methods:GetPoint(i) local p = self.points[i or 1]; if p then return unpack(p) end end

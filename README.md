@@ -111,6 +111,7 @@ then - and opens again when combat ends.
 - At the bottom, a line per paladin in your group, yours first: what he gave and to how many
   members. Blessings from paladins outside your group are listed as "Others".
 - From 21 members the window shows two columns.
+- In demo mode it shows a row per class, with the blessing you would give it.
 
 ## Settings
 
