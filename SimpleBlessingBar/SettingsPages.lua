@@ -579,6 +579,9 @@ do
     end)
     reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
     controls.listsDefault = reset
+
+    controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 14,
+        onChange = function() ns.Refresh() end })
 end
 
 ---------------------------------------------------------------------------

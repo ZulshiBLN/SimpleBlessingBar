@@ -201,7 +201,14 @@ for _, list in pairs(D.ROLE_LISTS) do
     for _, family in ipairs(list) do IS_BLESSING[family] = true end
 end
 
--- The family of this paladin's blessing on a unit, normal or Greater, or nil
+-- Whether an aura of mine runs out within the renewal time, so it is renewed before it is
+-- gone (ruleset plan 2026-10-19-blessing-steering). An aura without expiry never is.
+local function Expiring(aura)
+    return aura.expirationTime > 0 and aura.expirationTime - GetTime() < db.renewMinutes * 60
+end
+
+-- The family of this paladin's blessing on a unit, normal or Greater, or nil - also when it
+-- is about to run out
 local function MyBlessingOn(unit)
     if ns.IsDemo() then return end
     local i = 1
@@ -209,7 +216,10 @@ local function MyBlessingOn(unit)
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return end
         local rank = RANKS[aura.spellId]
-        if rank and IS_BLESSING[rank.family] then return rank.family end
+        if rank and IS_BLESSING[rank.family] then
+            if Expiring(aura) then return end
+            return rank.family
+        end
         i = i + 1
     end
 end
@@ -354,14 +364,19 @@ function B.PlanBlessings()
     return queue, Symbols() - symbols
 end
 
--- Whether a unit carries Salvation or Mass Salvation, from anyone
-local function HasSalvation(unit)
+-- Whether a unit carries Salvation or Mass Salvation, from anyone. With `renew`, one of mine
+-- about to run out counts as absent - for a non-tank; a tank's Revoke sees every Salvation.
+local function HasSalvation(unit, renew)
     if ns.IsDemo() then return false end
+    local mine = renew and MineOn(unit) or {}
     local i = 1
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
         if not aura then return false end
-        if aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION then return true end
+        if (aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION)
+           and not (mine[aura.auraInstanceID] and Expiring(aura)) then
+            return true
+        end
         i = i + 1
     end
 end
@@ -377,7 +392,8 @@ function B.PlanSalvation(symbolsUsed)
     for i, r in ipairs(Roster()) do
         position[r] = i
         if B.InRange(D.SALVATION, r.unit) then
-            local m = { unit = r.unit, tank = B.RoleOf(r.unit, r.class) == "TANK", has = HasSalvation(r.unit), at = r }
+            local tank = B.RoleOf(r.unit, r.class) == "TANK"
+            local m = { unit = r.unit, tank = tank, has = HasSalvation(r.unit, not tank), at = r }
             if not byClass[r.class] then
                 byClass[r.class] = {}
                 classes[#classes + 1] = r.class

@@ -177,6 +177,8 @@ D.COLOR_DEFAULTS = {
 }
 D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
+    -- Minutes before an aura of mine runs out at which it is renewed; 0 = once it ran out
+    renewMinutes        = { default = 5, min = 0, max = 15, integer = true },
     auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     blessingAntsSpeed   = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
