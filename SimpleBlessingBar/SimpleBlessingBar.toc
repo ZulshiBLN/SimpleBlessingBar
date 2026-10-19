@@ -42,10 +42,10 @@ Bar.lua
 SelfBuffs.lua
 Queue.lua
 Demo.lua
-Overview.lua
 Merchant.lua
 Minimap.lua
 Report.lua
 Settings.lua
 SettingsPages.lua
+Overview.lua
 Main.lua

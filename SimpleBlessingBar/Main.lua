@@ -32,7 +32,6 @@ local COMMANDS = {
     { cmd = "lock",  desc = "CMD_LOCK" },
     { cmd = "reset", desc = "CMD_RESET" },
     { cmd = "bug",   desc = "CMD_BUG" },
-    { cmd = "overview", desc = "CMD_OVERVIEW" },
 }
 
 local function PrintHelp()
@@ -62,8 +61,6 @@ SlashCmdList.SIMPLEBLESSINGBAR = function(msg)
         ns.Print(L.POS_RESET)
     elseif msg == "bug" then
         ns.OpenBugReport()
-    elseif msg == "overview" then
-        ns.ToggleOverviewOrSay()
     else
         ns.Print(L.CMD_UNKNOWN:format("|cffffd100/sbb help|r"))
     end

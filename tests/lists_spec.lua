@@ -1,6 +1,7 @@
--- The lists tab: a priority list per class, dragged and switched off, Enable all, and the aura
--- list, dragged (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities). Icons
--- are dragged as the client does it: press, cursor moves, OnUpdate, release.
+-- The Priorities tab: the renewal, a priority list per class in two columns, dragged and
+-- switched off, Enable all, the aura list, dragged, and the overview (ruleset plans
+-- 2026-10-19-blessing-steering, 2026-10-19-priorities). Icons are dragged as the client does
+-- it: press, cursor moves, OnUpdate, release.
 
 local addon = require("addon")
 
@@ -24,7 +25,7 @@ end
 local function openTab(ns)
     SlashCmdList.SIMPLEBLESSINGBAR("")
     for i, page in ipairs(ns.UI.pages) do
-        if page.titleKey == "TAB_BLESSINGS" then RUNSCRIPT(ns.UI.tabs[i], "OnClick") return page end
+        if page.titleKey == "TAB_PRIORITIES" then RUNSCRIPT(ns.UI.tabs[i], "OnClick") return page end
     end
 end
 
@@ -69,7 +70,39 @@ local function copy(t)
     return out
 end
 
-describe("the lists tab", function()
+describe("the Priorities tab", function()
+    -- The y offset a frame was placed at on the page
+    local function top(frame) return select(3, frame:GetPoint()) end
+
+    it("stands between Supplies and Order, laid out top to bottom", function()
+        local ns = login()
+        local page = openTab(ns)
+        local keys = {}
+        for i, pg in ipairs(ns.UI.pages) do keys[i] = pg.titleKey end
+        local at = {}
+        for i, k in ipairs(keys) do at[k] = i end
+        assert.are.equal(at.TAB_SUPPLIES + 1, at.TAB_PRIORITIES)
+        assert.are.equal(at.TAB_PRIORITIES + 1, at.TAB_ORDER)
+        local c = ns.UI.controls
+        local rowsTop = top(c.listRows[1])
+        assert.is_true(rowsTop < 0)
+        assert.is_true(top(c.auraRow) < rowsTop - 4 * 30)
+        assert.is_true(top(c.overviewScroll) < top(c.auraRow))
+        assert.are.equal(page, ns.overviewHost.page)
+    end)
+
+    it("puts five classes in the left column and four in the right, a line between them", function()
+        local ns = login()
+        openTab(ns)
+        local rows = ns.UI.controls.listRows
+        for i = 1, #D.CLASS_ORDER do
+            assert.are.equal(i <= 5 and 1 or 2, rows[i].column, D.CLASS_ORDER[i])
+        end
+        assert.are.equal(top(rows[1]), top(rows[6]))
+        assert.is_true(select(2, rows[6]:GetPoint()) > select(2, rows[1]:GetPoint()))
+        assert.is_truthy(ns.UI.controls.listsDivider)
+    end)
+
     it("shows a row per class, named by the class, with its default list, and the aura row", function()
         local ns = login()
         openTab(ns)

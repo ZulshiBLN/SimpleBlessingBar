@@ -29,7 +29,7 @@ The addon loads for paladins only.
 A middle click on the handle opens or closes the settings; hover it for a tooltip with the
 lock state and its clicks.
 
-**Auras** come from a priority list on the Blessings tab, so paladins need not agree who runs
+**Auras** come from a priority list on the Priorities tab, so paladins need not agree who runs
 which: the button casts the first aura on your list that you know and no other paladin of your
 group runs - in a raid, of your subgroup, as an aura reaches no further. An aura you share with
 another paladin moves you on to your next one. With every aura taken, it casts the first you
@@ -37,7 +37,7 @@ know. In combat it keeps the aura chosen before.
 
 **Blessings.** Nothing is assigned: the addon decides for every member of your group.
 
-- Each class has a priority list, which you can change on the Blessings tab. A member gets
+- Each class has a priority list, which you can change on the Priorities tab. A member gets
   the first blessing on his class's list that you know and no other paladin has given - in its
   Greater form, or in a rank at least as high as your best. A lower rank from someone else
   counts as missing.
@@ -74,29 +74,13 @@ Salvation and Greater Blessings count only the members they reach.
 **Both buttons** show how many casts are left; with none left, no number shows and the highlight
 stops. Hover a button to see what it casts next and on whom. Dead, offline and out-of-range
 players are left out. A blessing, Salvation or Mass Salvation of yours is renewed when less
-than 5 minutes are left (see the Blessings tab); another paladin's counts until it runs out.
+than 5 minutes are left (see the Priorities tab); another paladin's counts until it runs out.
 
 **In combat** the game hides who has which buff. The blessing and Salvation buttons keep the
 cast that was first when the fight started - a Greater Blessing or Mass Salvation that would be
 followed by casts that cannot happen in combat waits for the end of it; if nothing else is
 left, the button keeps its number without the highlight, and its tooltip says so. Clicking
 again casts it again. Everything updates when combat ends.
-
-## Overview
-
-`/sbb overview`, a middle click on the minimap button, or the "Overview" button on the Blessings tab open a window with your whole group; Escape
-closes it, and you can drag it anywhere. It closes when combat starts - buffs cannot be read
-then - and opens again when combat ends.
-
-- Every member stands under his role, with the blessings and the Salvation he carries. Yours
-  have a gold border; the blessing you would give him next is faint, with a "+". Members out
-  of range, dead or offline are greyed.
-- Hover an icon for the spell, who gave it - "another paladin" for one outside your group -
-  and the minutes left.
-- At the bottom, a line per paladin in your group, yours first: what he gave and to how many
-  members. Blessings from paladins outside your group are listed as "Others".
-- From 21 members the window shows two columns.
-- In demo mode it shows a row per class, with the blessing you would give it.
 
 ## Settings
 
@@ -129,24 +113,32 @@ closes when combat starts and opens again when combat ends. Every change takes e
   in your bags, never spending below the gold reserve. Only once you know a Greater Blessing.
   The chat says what was bought and what it cost.
 
+**Priorities** - a middle click on the minimap button opens the window here.
+- Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
+  blessing has run out.
+- A row per class with its priority list, in two columns: drag a blessing left or right to
+  reorder it; a right click switches it off for that class (greyed at the end, never given) or
+  on again. At least one stays on. "Enable all" switches every blessing on again, the order
+  kept; "Default" restores every row and the aura list.
+- The aura list: drag an aura left or right to reorder it.
+- **The overview** of your group, scrolled for a raid: every member under his class, his role
+  from the game marked "(T)" tank or "(H)" healer, with the blessings and the Salvation he
+  carries. Yours have a gold border; the blessing you would give him next is faint, with a
+  "+". Members out of range, dead or offline are greyed. Hover an icon for the spell, who gave
+  it - "another paladin" for one outside your group - and the minutes left. At the bottom, a
+  line per paladin in your group, yours first: what he gave and to how many members;
+  blessings from paladins outside your group are listed as "Others". In demo mode it shows a
+  row per class, with the blessing you would give it.
+
 **Order**
 - Drag the rows to reorder the bar's four buttons. "Default" restores aura, Righteous Fury,
   blessings, Salvation.
 
-**Blessings**
-- A row per class with its priority list: drag a blessing left or right to reorder it; a right
-  click switches it off for that class (greyed at the end, never given) or on again. At least one
-  stays on. "Enable all" switches every blessing on again, the order kept; "Default" restores
-  every row and the aura list.
-- The aura list: drag an aura left or right to reorder it.
-- Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
-  blessing has run out.
-- "Overview" opens the overview beside the settings window.
 
 **Macros** - prepared; macros follow in a later version.
 
 **Minimap button** - left click opens the settings, right click locks or unlocks the bar, middle
-click opens the overview, drag moves it around the minimap.
+click opens the Priorities tab, drag moves it around the minimap.
 
 **Bug report** - `/sbb bug` or "Report bug" builds a report with the addon version, client,
 language, settings and this addon's errors from BugSack, if installed. Copy it with Ctrl+C and
@@ -161,7 +153,6 @@ paste it as a new issue on GitHub. It contains no character name or realm.
 | `/sbb lock` | Lock or unlock the bar |
 | `/sbb reset` | Move the bar back to its start position (not in combat) |
 | `/sbb bug` | Open the bug report |
-| `/sbb overview` | Open or close the overview |
 
 ## Languages
 
@@ -180,7 +171,7 @@ unless you choose another in the settings.
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
 | `Demo.lua` | Demo mode's chat output |
-| `Overview.lua` | The overview window: members by role, what they carry, the paladins' footer |
+| `Overview.lua` | The overview on the Priorities tab: members by class, what they carry, the paladins' footer |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |

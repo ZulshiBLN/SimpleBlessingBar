@@ -26,8 +26,8 @@ local function ShowEntryTooltip(owner, anchor)
     GameTooltip:AddLine(" ")
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
-    if anchor == "ANCHOR_LEFT" then -- only the minimap button opens the overview and can be dragged
-        GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.OVERVIEW, 0, 1, 0, 1, 1, 1)
+    if anchor == "ANCHOR_LEFT" then -- only the minimap button opens the Priorities tab and can be dragged
+        GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.TAB_PRIORITIES, 0, 1, 0, 1, 1, 1)
         GameTooltip:AddDoubleLine(L.DRAG, L.MOVE, 0, 1, 0, 1, 1, 1)
     end
     GameTooltip:Show()
@@ -92,9 +92,15 @@ end
 minimapBtn:SetScript("OnDragStart", function(self) self:SetScript("OnUpdate", OnMinimapDrag) end)
 minimapBtn:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
 
--- A middle click opens the overview; the AddOn compartment keeps its two clicks
+-- A middle click opens the settings on the Priorities tab, with the overview; open on that
+-- tab, it closes them. The AddOn compartment keeps its two clicks (ruleset plan
+-- 2026-10-19-priorities).
+local function PrioritiesClick()
+    if InCombatLockdown() then ns.Print(L.NOT_IN_COMBAT) return end
+    if ns.SettingsPageShown("TAB_PRIORITIES") then ns.CloseSettings() else ns.OpenSettingsOn("TAB_PRIORITIES") end
+end
 minimapBtn:SetScript("OnClick", function(_, button)
-    if button == "MiddleButton" then ns.ToggleOverviewOrSay() else Click(button) end
+    if button == "MiddleButton" then PrioritiesClick() else Click(button) end
 end)
 minimapBtn:SetScript("OnEnter", function(self) ShowEntryTooltip(self, "ANCHOR_LEFT") end)
 minimapBtn:SetScript("OnLeave", ns.HideTooltip)

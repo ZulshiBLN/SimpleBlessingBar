@@ -671,6 +671,23 @@ function ns.OpenSettings(aboveClient)
 end
 settings:HookScript("OnHide", function() settings:SetFrameStrata("DIALOG") end)
 
+-- The window on one tab, for the minimap button's middle click (ruleset plan
+-- 2026-10-19-priorities)
+local function PageIndex(titleKey)
+    for i, pg in ipairs(pages) do
+        if pg.titleKey == titleKey then return i end
+    end
+end
+
+function ns.SettingsPageShown(titleKey)
+    return settings:IsShown() and activePage == PageIndex(titleKey)
+end
+
+function ns.OpenSettingsOn(titleKey)
+    ShowPage(PageIndex(titleKey))
+    if not settings:IsShown() then settings:Show() end
+end
+
 -- Combat start: close the window, and reopen it afterwards if combat closed it
 do
     local reopenAfterCombat = false

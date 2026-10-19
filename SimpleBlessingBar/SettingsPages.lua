@@ -247,6 +247,217 @@ controls.goldReserve = UI.AddNumberSlider({
 controls.amountRows = amountRows
 
 ---------------------------------------------------------------------------
+-- Priorities: the renewal, a priority list per class in two columns, the aura list and the
+-- overview (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities)
+---------------------------------------------------------------------------
+local prioritiesPage = UI.NewPage("TAB_PRIORITIES")
+
+do
+    local B = ns.Blessings
+
+    controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 6,
+        onChange = function() ns.Refresh() end })
+    UI.AddSeparator()
+
+    local ICON, ICON_GAP, LABEL_W, ROW_GAP = 24, 6, 90, 6
+    local COL_W = LABEL_W + #D.BLESSING_ORDER * (ICON + ICON_GAP) + 16
+    local LEFT_ROWS = 5 -- five classes left, four right
+    local rows = {}
+    controls.listRows = rows
+    local RefreshLists
+    local drag -- { row, index } while dragging
+
+    -- The families a row shows: those on, in order, then those off in D.BLESSING_ORDER
+    local function Shown(list)
+        local out = { unpack(list.order) }
+        for _, family in ipairs(D.BLESSING_ORDER) do
+            if list.off[family] then out[#out + 1] = family end
+        end
+        return out
+    end
+
+    -- The slot under the cursor among the icons that are on
+    local function SlotUnderCursor(row)
+        local left = row.icons[1]:GetLeft()
+        if not left then return end
+        local cx = GetCursorPosition() / row.icons[1]:GetEffectiveScale()
+        local slot = math.floor((cx - left) / (ICON + ICON_GAP)) + 1
+        return math.max(1, math.min(#row.list().order, slot))
+    end
+
+    local function StopListDrag()
+        if not drag then return end
+        drag = nil
+        prioritiesPage:SetScript("OnUpdate", nil)
+        RefreshLists()
+        ns.Refresh() -- the queue is rebuilt only once the icon is dropped
+    end
+
+    local function OnDragUpdate()
+        -- Safety net: the mouse button was released outside the window
+        if not IsMouseButtonDown("LeftButton") then StopListDrag() return end
+        local row = rows[drag.row]
+        local slot = SlotUnderCursor(row)
+        if slot and slot ~= drag.index then
+            local order = row.list().order
+            table.insert(order, slot, table.remove(order, drag.index))
+            drag.index = slot
+            RefreshLists()
+        end
+    end
+
+    -- A right click switches a blessing off, greyed after the others, or on again, appended
+    -- to the ones on. At least one stays on. Auras are only reordered (Michel, 2026-10-19).
+    local function Toggle(row, family)
+        if not row.switchable then return end
+        local list = row.list()
+        if list.off[family] then
+            list.off[family] = nil
+            table.insert(list.order, family)
+        elseif #list.order > 1 then
+            for i, f in ipairs(list.order) do
+                if f == family then table.remove(list.order, i) break end
+            end
+            list.off[family] = true
+        end
+        RefreshLists()
+        ns.Refresh()
+    end
+
+    -- A row: `list()` gives { order, off }, `spells(family)` the family's spell IDs by rank.
+    -- The caller places it.
+    local function NewRow(r, count, label, list, spells, switchable)
+        local row = CreateFrame("Frame", nil, prioritiesPage)
+        row:SetHeight(ICON)
+        row.list, row.spells, row.switchable, row.labelText = list, spells, switchable, label
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        row.label:SetPoint("LEFT", 4, 0)
+        row.label:SetWidth(LABEL_W)
+        row.label:SetJustifyH("LEFT")
+        row.icons = {}
+        for i = 1, count do
+            local icon = CreateFrame("Button", nil, row)
+            icon:SetSize(ICON, ICON)
+            icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
+            icon.tex = icon:CreateTexture(nil, "ARTWORK")
+            icon.tex:SetAllPoints()
+            icon.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            icon:SetScript("OnMouseDown", function(_, btn)
+                -- Only an icon that is on moves; those off keep their place at the end
+                if btn ~= "LeftButton" or i > #row.list().order then return end
+                drag = { row = r, index = i }
+                RefreshLists()
+                prioritiesPage:SetScript("OnUpdate", OnDragUpdate)
+            end)
+            icon:SetScript("OnMouseUp", function(self, btn)
+                if btn == "LeftButton" then
+                    StopListDrag()
+                elseif btn == "RightButton" then
+                    Toggle(row, self.family)
+                end
+            end)
+            -- The game's own tooltip, of the best rank known, else of rank 1 (Michel)
+            icon:SetScript("OnEnter", function(self)
+                local ids = row.spells(self.family)
+                GameTooltip:SetOwner(self, "ANCHOR_TOP")
+                GameTooltip:SetSpellByID(B.Rank(ids) or ids[1])
+                GameTooltip:Show()
+            end)
+            icon:SetScript("OnLeave", ns.HideTooltip)
+            row.icons[i] = icon
+        end
+        rows[r] = row
+        return row
+    end
+
+    -- The class rows: two columns, a vertical line between them
+    local function BlessingSpells(family) return D.BLESSINGS[family].normal end
+    local rowsTop = Place(LEFT_ROWS * (ICON + ROW_GAP), 6)
+    for r, class in ipairs(D.CLASS_ORDER) do
+        local row = NewRow(r, #D.BLESSING_ORDER, function()
+            return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
+        end, function() return db.classLists[class] end, BlessingSpells, true)
+        row.class = class
+        row.column = r <= LEFT_ROWS and 1 or 2
+        local line = (r - 1) % LEFT_ROWS
+        row:SetPoint("TOPLEFT", INSET + (row.column - 1) * COL_W, rowsTop - line * (ICON + ROW_GAP))
+        row:SetWidth(COL_W - 8)
+    end
+    local divider = prioritiesPage:CreateTexture(nil, "ARTWORK")
+    divider:SetColorTexture(1, 0.82, 0, 0.4)
+    divider:SetSize(1, LEFT_ROWS * (ICON + ROW_GAP) - ROW_GAP)
+    divider:SetPoint("TOPLEFT", INSET + COL_W - 8, rowsTop)
+    controls.listsDivider = divider
+    measures[#measures + 1] = function() return 2 * COL_W end
+
+    UI.AddNote("LISTS_HINT", 6, 2)
+
+    -- Default restores every list, blessings and auras; Enable all switches every blessing
+    -- on again, appended after those on, the order kept (Michel, 2026-10-19)
+    local reset = UI.AddButton(prioritiesPage, "DEFAULT", function()
+        db.classLists = ns.DefaultClassLists()
+        db.auraList = { unpack(D.AURA_ORDER) }
+        RefreshLists()
+        ns.Refresh()
+    end)
+    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
+    controls.listsDefault = reset
+    local enableAll = UI.AddButton(prioritiesPage, "ENABLE_ALL", function()
+        for _, class in ipairs(D.CLASS_ORDER) do
+            local list = db.classLists[class]
+            for _, family in ipairs(D.BLESSING_ORDER) do
+                if list.off[family] then
+                    list.off[family] = nil
+                    table.insert(list.order, family)
+                end
+            end
+        end
+        RefreshLists()
+        ns.Refresh()
+    end)
+    enableAll:SetPoint("LEFT", reset, "RIGHT", 8, 0)
+    controls.enableAll = enableAll
+    UI.AddSeparator()
+
+    local auraRow = NewRow(#rows + 1, #D.AURA_ORDER, function() return L.AURA_LIST end,
+        function() return { order = db.auraList, off = {} } end,
+        function(family) return D.AURAS[family] end, false)
+    auraRow:SetPoint("TOPLEFT", INSET, Place(ICON, 6))
+    auraRow:SetWidth(2 * COL_W)
+    controls.auraRow = auraRow
+    UI.AddSeparator()
+
+    RefreshLists = function()
+        for r, row in ipairs(rows) do
+            local list = row.list()
+            row.label:SetText(row.labelText())
+            for i, family in ipairs(Shown(list)) do
+                local icon = row.icons[i]
+                icon.family = family
+                icon.tex:SetTexture(C_Spell.GetSpellTexture(row.spells(family)[1]))
+                icon.tex:SetDesaturated(list.off[family] == true)
+                local dragged = drag and drag.row == r and drag.index == i
+                icon:SetAlpha(list.off[family] and 0.5 or dragged and 0.7 or 1)
+            end
+        end
+    end
+    refreshers[#refreshers + 1] = RefreshLists
+    prioritiesPage:SetScript("OnHide", StopListDrag)
+
+    -- The overview: a scroll frame of ten rows, filled by Overview.lua
+    local OVERVIEW_H = 200
+    local scroll = CreateFrame("ScrollFrame", nil, prioritiesPage, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", INSET, Place(OVERVIEW_H, 6))
+    scroll:SetHeight(OVERVIEW_H)
+    local child = CreateFrame("Frame", nil, scroll)
+    child:SetSize(1, 1)
+    scroll:SetScrollChild(child)
+    stretchers[#stretchers + 1] = function(w) scroll:SetWidth(w - 24) end
+    ns.overviewHost = { page = prioritiesPage, scroll = scroll, child = child }
+    controls.overviewScroll = scroll
+end
+
+---------------------------------------------------------------------------
 -- Order: the bar's order by drag and drop, as in SimpleConjureBar
 ---------------------------------------------------------------------------
 local orderPage = UI.NewPage("TAB_ORDER")
@@ -394,191 +605,6 @@ do
     end)
     reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
     controls.orderDefault = reset
-end
-
----------------------------------------------------------------------------
--- Blessings: a priority list per class, dragged and switched off, and the aura list, dragged
--- (ruleset plans 2026-10-19-blessing-steering, 2026-10-19-priorities)
----------------------------------------------------------------------------
-local blessingsPage = UI.NewPage("TAB_BLESSINGS")
-
-do
-    local B = ns.Blessings
-    UI.AddNote("LISTS_HINT", 10, 2)
-
-    local ICON, ICON_GAP, LABEL_W = 24, 6, 120
-    local rows = {}
-    controls.listRows = rows
-    local RefreshLists
-    local drag -- { row, index } while dragging
-
-    -- The families a row shows: those on, in order, then those off in D.BLESSING_ORDER
-    local function Shown(list)
-        local out = { unpack(list.order) }
-        for _, family in ipairs(D.BLESSING_ORDER) do
-            if list.off[family] then out[#out + 1] = family end
-        end
-        return out
-    end
-
-    -- The slot under the cursor among the icons that are on
-    local function SlotUnderCursor(row)
-        local left = row.icons[1]:GetLeft()
-        if not left then return end
-        local cx = GetCursorPosition() / row.icons[1]:GetEffectiveScale()
-        local slot = math.floor((cx - left) / (ICON + ICON_GAP)) + 1
-        return math.max(1, math.min(#row.list().order, slot))
-    end
-
-    local function StopListDrag()
-        if not drag then return end
-        drag = nil
-        blessingsPage:SetScript("OnUpdate", nil)
-        RefreshLists()
-        ns.Refresh() -- the queue is rebuilt only once the icon is dropped
-    end
-
-    local function OnDragUpdate()
-        -- Safety net: the mouse button was released outside the window
-        if not IsMouseButtonDown("LeftButton") then StopListDrag() return end
-        local row = rows[drag.row]
-        local slot = SlotUnderCursor(row)
-        if slot and slot ~= drag.index then
-            local order = row.list().order
-            table.insert(order, slot, table.remove(order, drag.index))
-            drag.index = slot
-            RefreshLists()
-        end
-    end
-
-    -- A right click switches a blessing off, greyed after the others, or on again, appended
-    -- to the ones on. At least one stays on. Auras are only reordered (Michel, 2026-10-19).
-    local function Toggle(row, family)
-        if not row.switchable then return end
-        local list = row.list()
-        if list.off[family] then
-            list.off[family] = nil
-            table.insert(list.order, family)
-        elseif #list.order > 1 then
-            for i, f in ipairs(list.order) do
-                if f == family then table.remove(list.order, i) break end
-            end
-            list.off[family] = true
-        end
-        RefreshLists()
-        ns.Refresh()
-    end
-
-    -- A row: `list()` gives { order, off }, `spells(family)` the family's spell IDs by rank
-    local function NewRow(r, count, label, list, spells, switchable)
-        local row = CreateFrame("Frame", nil, blessingsPage)
-        row:SetHeight(ICON)
-        row:SetPoint("TOPLEFT", INSET, Place(ICON, 6))
-        row.list, row.spells, row.switchable, row.labelText = list, spells, switchable, label
-        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        row.label:SetPoint("LEFT", 4, 0)
-        row.label:SetWidth(LABEL_W)
-        row.label:SetJustifyH("LEFT")
-        row.icons = {}
-        for i = 1, count do
-            local icon = CreateFrame("Button", nil, row)
-            icon:SetSize(ICON, ICON)
-            icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
-            icon.tex = icon:CreateTexture(nil, "ARTWORK")
-            icon.tex:SetAllPoints()
-            icon.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-            icon:SetScript("OnMouseDown", function(_, btn)
-                -- Only an icon that is on moves; those off keep their place at the end
-                if btn ~= "LeftButton" or i > #row.list().order then return end
-                drag = { row = r, index = i }
-                RefreshLists()
-                blessingsPage:SetScript("OnUpdate", OnDragUpdate)
-            end)
-            icon:SetScript("OnMouseUp", function(self, btn)
-                if btn == "LeftButton" then
-                    StopListDrag()
-                elseif btn == "RightButton" then
-                    Toggle(row, self.family)
-                end
-            end)
-            -- The game's own tooltip, of the best rank known, else of rank 1 (Michel)
-            icon:SetScript("OnEnter", function(self)
-                local ids = row.spells(self.family)
-                GameTooltip:SetOwner(self, "ANCHOR_TOP")
-                GameTooltip:SetSpellByID(B.Rank(ids) or ids[1])
-                GameTooltip:Show()
-            end)
-            icon:SetScript("OnLeave", ns.HideTooltip)
-            row.icons[i] = icon
-        end
-        rows[r] = row
-        measures[#measures + 1] = function() return 4 + LABEL_W + count * (ICON + ICON_GAP) + 20 end
-        stretchers[#stretchers + 1] = function(w) row:SetWidth(w) end
-        return row
-    end
-
-    local function BlessingSpells(family) return D.BLESSINGS[family].normal end
-    for r, class in ipairs(D.CLASS_ORDER) do
-        local row = NewRow(r, #D.BLESSING_ORDER, function()
-            return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
-        end, function() return db.classLists[class] end, BlessingSpells, true)
-        row.class = class
-    end
-
-    -- Default restores every list, blessings and auras; Enable all switches every blessing
-    -- on again, appended after those on, the order kept (Michel, 2026-10-19)
-    local reset = UI.AddButton(blessingsPage, "DEFAULT", function()
-        db.classLists = ns.DefaultClassLists()
-        db.auraList = { unpack(D.AURA_ORDER) }
-        RefreshLists()
-        ns.Refresh()
-    end)
-    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
-    controls.listsDefault = reset
-    local enableAll = UI.AddButton(blessingsPage, "ENABLE_ALL", function()
-        for _, class in ipairs(D.CLASS_ORDER) do
-            local list = db.classLists[class]
-            for _, family in ipairs(D.BLESSING_ORDER) do
-                if list.off[family] then
-                    list.off[family] = nil
-                    table.insert(list.order, family)
-                end
-            end
-        end
-        RefreshLists()
-        ns.Refresh()
-    end)
-    enableAll:SetPoint("LEFT", reset, "RIGHT", 8, 0)
-    controls.enableAll = enableAll
-
-    controls.auraRow = NewRow(#rows + 1, #D.AURA_ORDER, function() return L.AURA_LIST end,
-        function() return { order = db.auraList, off = {} } end,
-        function(family) return D.AURAS[family] end, false)
-
-    RefreshLists = function()
-        for r, row in ipairs(rows) do
-            local list = row.list()
-            row.label:SetText(row.labelText())
-            for i, family in ipairs(Shown(list)) do
-                local icon = row.icons[i]
-                icon.family = family
-                icon.tex:SetTexture(C_Spell.GetSpellTexture(row.spells(family)[1]))
-                icon.tex:SetDesaturated(list.off[family] == true)
-                local dragged = drag and drag.row == r and drag.index == i
-                icon:SetAlpha(list.off[family] and 0.5 or dragged and 0.7 or 1)
-            end
-        end
-    end
-    refreshers[#refreshers + 1] = RefreshLists
-    blessingsPage:SetScript("OnHide", StopListDrag)
-
-    controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 14,
-        onChange = function() ns.Refresh() end })
-
-    -- The overview opens beside this window, both stay open (Michel, 2026-10-19)
-    local overview = UI.AddButton(blessingsPage, "BTN_OVERVIEW", function() ns.ToggleOverview() end)
-    overview:SetPoint("TOPLEFT", INSET, Place(22, 10) - 10)
-    controls.overviewButton = overview
 end
 
 ---------------------------------------------------------------------------

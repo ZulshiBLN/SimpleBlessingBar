@@ -58,7 +58,7 @@ describe("the minimap button", function()
         assert.are.equal("ANCHOR_LEFT", GameTooltip.anchor)
         assert.is_truthy(GameTooltip:GetText():find(ns.VERSION, 1, true))
         assert.are.same({ " ", L.LEFTCLICK .. "|" .. L.SETTINGS, L.RIGHTCLICK .. "|" .. L.LOCK,
-                          L.MIDDLECLICK .. "|" .. L.OVERVIEW, L.DRAG .. "|" .. L.MOVE }, lines())
+                          L.MIDDLECLICK .. "|" .. L.TAB_PRIORITIES, L.DRAG .. "|" .. L.MOVE }, lines())
     end)
 
     it("hides with the General setting, and stays hidden and in place after a login", function()

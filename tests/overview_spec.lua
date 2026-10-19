@@ -1,19 +1,21 @@
--- The overview window: members under their role, the blessings they carry, mine marked, the
--- next one faint (ruleset plan 2026-10-19-overview, phase 1).
+-- The overview at the foot of the Priorities tab: members by class, the blessings they carry,
+-- mine marked, the next one faint, a footer per paladin (ruleset plans 2026-10-19-overview,
+-- 2026-10-19-priorities).
 
 local addon = require("addon")
 
 local D = addon.load("enUS").D
 local M, K, W = D.BLESSINGS.MIGHT, D.BLESSINGS.KINGS, D.BLESSINGS.WISDOM
 
--- A paladin knowing Might 1-6, Kings, Wisdom 1 and Salvation; `world` as for addon.load
+-- A paladin knowing Might 1-6, Kings, Wisdom 1 and Salvation, the settings open on the
+-- Priorities tab; `world` as for addon.load
 local function login(world)
     world = world or {}
     local ns = addon.load("enUS", world)
     STATE.known = { [K.normal[1]] = true, [W.normal[1]] = true, [D.SALVATION] = true }
     for i = 1, 6 do STATE.known[M.normal[i]] = true end
     FIRE("PLAYER_LOGIN")
-    ns.ToggleOverview()
+    ns.OpenSettingsOn("TAB_PRIORITIES")
     return ns, ns.overview
 end
 
@@ -22,13 +24,11 @@ local function aura(id, opts)
     return { spellId = id, expirationTime = opts.expires or 3600, mine = opts.mine, source = opts.source }
 end
 
--- The shown rows: { name, role of the section, column, greyed }
+-- The shown rows: { name, class, greyed }
 local function rows(o)
     local out = {}
     for _, r in ipairs(o.rows) do
-        if r:IsShown() then
-            out[#out + 1] = { r.name:GetText(), r.role, r.column, r.greyed == true }
-        end
+        if r:IsShown() then out[#out + 1] = { r.name:GetText(), r.class, r.greyed == true } end
     end
     return out
 end
@@ -54,27 +54,31 @@ end
 local function headers(o)
     local out = {}
     for _, h in ipairs(o.headers) do
-        if h:IsShown() then out[#out + 1] = { h.role, h.column } end
+        if h:IsShown() then out[#out + 1] = h.class end
     end
     return out
 end
 
+local function className(ns, class) return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class) end
+
 describe("the overview", function()
-    it("lists every member under his role, the sections in role order", function()
-        local _, o = login({ group = "party", units = {
+    it("lists every member under his class, in class order, the game's role marked", function()
+        local ns, o = login({ group = "party", units = {
             party1 = { class = "WARRIOR", role = "TANK", name = "Grom" },
             party2 = { class = "PRIEST", name = "Anna" },
             party3 = { class = "MAGE", name = "Jaina" } } })
-        assert.are.same({ { "TANK", 1 }, { "HEALER", 1 }, { "MELEE", 1 }, { "CASTER", 1 } }, headers(o))
-        assert.are.same({ { "Grom", "TANK", 1, false }, { "Anna", "HEALER", 1, false },
-                          { "player", "MELEE", 1, false }, { "Jaina", "CASTER", 1, false } }, rows(o))
-        assert.is_true(o:IsShown())
+        local L = ns.L
+        assert.are.same({ "WARRIOR", "PALADIN", "PRIEST", "MAGE" }, headers(o))
+        assert.are.equal(className(ns, "WARRIOR"), o.headers[1]:GetText())
+        assert.are.same({ { "Grom " .. L.OV_TANK, "WARRIOR", false }, { "player", "PALADIN", false },
+                          { "Anna " .. L.OV_HEALER, "PRIEST", false }, { "Jaina", "MAGE", false } }, rows(o))
+        assert.is_true(ns.overviewHost.page:IsShown())
         assert.are.same({}, STATE.errors)
     end)
 
-    it("names a member without his second name, under the role the game reports", function()
-        local _, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK", name = "Grom", surname = "Hellscream" } } })
-        assert.are.same({ "Grom", "TANK", 1, false }, rows(o)[1])
+    it("names a member without his second name", function()
+        local _, o = login({ group = "party", units = { party1 = { class = "ROGUE", name = "Grom", surname = "Hellscream" } } })
+        assert.are.equal("Grom", row(o, "party1").name:GetText())
     end)
 
     it("shows the blessings and Salvation carried, mine bordered", function()
@@ -142,33 +146,26 @@ describe("the overview", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    it("uses one column up to 20 members, two from 21, a split section's header repeated", function()
-        local function raid(n)
-            local units = {}
-            for i = 1, n do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
-            return { group = "raid", units = units }
+    it("lists a raid of 21 in one column, taller than its scroll frame", function()
+        local units = {}
+        for i = 1, 21 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
+        local ns, o = login({ group = "raid", units = units })
+        assert.are.equal(21, #rows(o))
+        for _, r in ipairs(o.rows) do
+            if r:IsShown() then assert.are.equal(0, select(2, r:GetPoint())) end
         end
-        local _, o = login(raid(20))
-        for _, r in ipairs(rows(o)) do assert.are.equal(1, r[3]) end
-        _, o = login(raid(21))
-        local columns = {}
-        for i, r in ipairs(rows(o)) do columns[i] = r[3] end
-        for i = 1, 11 do assert.are.equal(1, columns[i]) end
-        for i = 12, 21 do assert.are.equal(2, columns[i]) end
-        assert.are.same({ { "MELEE", 1 }, { "MELEE", 2 } }, headers(o))
+        assert.is_true(o:GetHeight() > ns.overviewHost.scroll:GetHeight())
     end)
 
-    it("shows a row per class in demo mode, named by the class, only the next one faint", function()
+    it("shows a row per class in demo mode, named by the class, without marks, only the next one faint", function()
         local ns, o = login()
         SimpleBlessingBarDB.demo = true
         STATE.units.player.auras = { aura(M.normal[6], { mine = true }) }
         ns.Refresh()
         local shown = rows(o)
         assert.are.equal(#D.CLASS_ORDER, #shown)
-        local names = {}
-        for _, r in ipairs(shown) do names[r[1]] = true end
-        for _, class in ipairs(D.CLASS_ORDER) do
-            assert.is_true(names[ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)], class)
+        for i, class in ipairs(D.CLASS_ORDER) do
+            assert.are.same({ className(ns, class), class, false }, shown[i])
         end
         for _, r in ipairs(o.rows) do
             if r:IsShown() then
@@ -183,9 +180,41 @@ describe("the overview", function()
         ns.Refresh()
         assert.are.same({ MIGHT = { true, false } }, icons(row(o, "party1")))
     end)
+
+    it("follows a language switch while open", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        ns.ApplyLanguage("deDE")
+        assert.are.equal(ns.locales.deDE.CLASS_WARRIOR, o.headers[1]:GetText())
+    end)
+
+    it("explains the faint icon with its spell, a Greater one when only that fits", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", level = 30 } } })
+        STATE.known[M.greater[1]] = true
+        STATE.learned = {}
+        for i = 1, 6 do STATE.learned[M.normal[i]] = 60 end
+        STATE.learned[M.greater[1]] = 40
+        ns.Refresh()
+        local slot
+        for _, s in ipairs(row(o, "party1").slots) do if s.family == "MIGHT" then slot = s end end
+        assert.is_true(slot.faint)
+        RUNSCRIPT(slot, "OnEnter")
+        assert.are.equal(M.greater[1], GameTooltip.spell)
+    end)
+
+    it("opens no menu on a right click, on a row or on the blessing button, Shift or not", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "RightButton")
+        for _, shift in ipairs({ false, true }) do
+            STATE.shift = shift
+            RUNCLICK(ns.blessingButton, "RightButton", true)
+            RUNCLICK(ns.blessingButton, "RightButton", false)
+        end
+        assert.is_nil(STATE.menu)
+        assert.are.same({}, STATE.errors)
+    end)
 end)
 
--- The footer: per paladin in the group what he gave, and "Others" (phase 2)
+-- The footer: per paladin in the group what he gave, and "Others"
 describe("the overview's footer", function()
     local function lines(o)
         local out = {}
@@ -236,7 +265,14 @@ describe("the overview's footer", function()
         assert.are.same({ line(ns, "Zulshe", {}), line(ns, "Tyr", {}) }, lines(o))
     end)
 
-    it("widens the window to its longest line", function()
+    it("counts Mass Salvation as Salvation, and nothing from a member who is not visible", function()
+        local ns, o = login({ group = "party", units = {
+            party1 = { class = "WARRIOR", auras = { aura(D.MASS_SALVATION, { source = "player" }) } },
+            party2 = { class = "MAGE", visible = false, auras = { aura(W.normal[1], { source = "player" }) } } } })
+        assert.are.equal(line(ns, "player", { { salv(ns), 1 } }), o.footer[1]:GetText())
+    end)
+
+    it("widens the overview to its longest line", function()
         local _, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr" },
             party2 = { class = "WARRIOR", auras = { aura(M.normal[6], { source = "party1" }),
                 aura(D.SALVATION, { source = "party1" }) } },
@@ -246,7 +282,7 @@ describe("the overview's footer", function()
         for _, f in ipairs(o.footer) do
             if f:IsShown() then widest = math.max(widest, f:GetStringWidth()) end
         end
-        assert.is_true(o:GetWidth() >= widest + 2 * 22, o:GetWidth() .. " < " .. widest)
+        assert.is_true(o:GetWidth() >= widest, o:GetWidth() .. " < " .. widest)
     end)
 
     it("is not shown in demo mode", function()
@@ -257,158 +293,60 @@ describe("the overview's footer", function()
     end)
 end)
 
--- Opening and closing (phase 3)
+-- Opening: the minimap button's middle click, nothing else (ruleset plan 2026-10-19-priorities)
 describe("opening the overview", function()
-    local function fresh(world)
-        local ns = addon.load("enUS", world)
+    local function fresh()
+        local ns = addon.load("enUS")
         STATE.known = { [M.normal[1]] = true }
         FIRE("PLAYER_LOGIN")
-        return ns, ns.overview
+        return ns, ns.UI.window, ns.overviewHost.page
     end
 
-    it("toggles with /sbb overview, listed by /sbb help, and refuses in combat", function()
-        local ns, o = fresh()
-        SlashCmdList.SIMPLEBLESSINGBAR("overview")
-        assert.is_true(o:IsShown())
-        SlashCmdList.SIMPLEBLESSINGBAR("overview")
-        assert.is_false(o:IsShown())
-        SlashCmdList.SIMPLEBLESSINGBAR("help")
-        local listed = false
-        for _, l in ipairs(CHAT) do
-            if l:find("/sbb overview", 1, true) and l:find(ns.L.CMD_OVERVIEW, 1, true) then listed = true end
-        end
-        assert.is_true(listed)
-        STATE.combat = true
-        SlashCmdList.SIMPLEBLESSINGBAR("overview")
-        assert.is_false(o:IsShown())
-        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+    it("opens the settings on the Priorities tab with a middle click on the minimap button", function()
+        local ns, window, page = fresh()
+        local mb = ns.minimapButton
+        assert.is_truthy(table.concat(mb.clicks, ","):find("MiddleButtonUp", 1, true))
+        RUNSCRIPT(mb, "OnClick", "MiddleButton")
+        assert.is_true(window:IsShown())
+        assert.is_true(page:IsShown())
+        RUNSCRIPT(mb, "OnClick", "MiddleButton")
+        assert.is_false(window:IsShown())
         assert.are.same({}, STATE.errors)
     end)
 
-    it("toggles with a middle click on the minimap button, named in its tooltip, refused in combat", function()
-        local ns, o = fresh()
-        local mb = ns.minimapButton
-        assert.is_true(table.concat(mb.clicks, ","):find("MiddleButtonUp", 1, true) ~= nil)
-        RUNSCRIPT(mb, "OnClick", "MiddleButton")
-        assert.is_true(o:IsShown())
-        assert.is_false(ns.UI.window:IsShown() == true)
-        RUNSCRIPT(mb, "OnClick", "MiddleButton")
-        assert.is_false(o:IsShown())
-        RUNSCRIPT(mb, "OnEnter")
+    it("switches to the Priorities tab when the window shows another", function()
+        local ns, window, page = fresh()
+        SlashCmdList.SIMPLEBLESSINGBAR("")
+        RUNSCRIPT(ns.UI.tabs[1], "OnClick")
+        assert.is_false(page:IsShown())
+        RUNSCRIPT(ns.minimapButton, "OnClick", "MiddleButton")
+        assert.is_true(window:IsShown())
+        assert.is_true(page:IsShown())
+    end)
+
+    it("names the middle click in the minimap button's tooltip", function()
+        local ns = fresh()
+        RUNSCRIPT(ns.minimapButton, "OnEnter")
         local found = false
         for _, l in ipairs(GameTooltip.lines) do
-            if l[1] == ns.L.MIDDLECLICK and l[2] == ns.L.OVERVIEW then found = true end
+            if l[1] == ns.L.MIDDLECLICK and l[2] == ns.L.TAB_PRIORITIES then found = true end
         end
         assert.is_true(found)
+    end)
+
+    it("says why nothing opens in combat", function()
+        local ns, window = fresh()
         STATE.combat = true
-        RUNSCRIPT(mb, "OnClick", "MiddleButton")
-        assert.is_false(o:IsShown())
+        RUNSCRIPT(ns.minimapButton, "OnClick", "MiddleButton")
+        assert.is_false(window:IsShown())
         assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
     end)
 
-    it("toggles with the Blessings tab's button, beside the open settings window", function()
-        local ns, o = fresh()
-        SlashCmdList.SIMPLEBLESSINGBAR("")
-        local settings = ns.UI.window
-        settings.right, settings.top = 700, 600
-        RUNSCRIPT(ns.UI.controls.overviewButton, "OnClick")
-        assert.is_true(o:IsShown())
-        assert.is_true(settings:IsShown())
-        assert.are.same({ "TOPLEFT", UIParent, "BOTTOMLEFT", 708, 600 }, { o:GetPoint() })
-    end)
-
-    it("opens centred first, then where it was left", function()
-        local ns, o = fresh()
-        ns.ToggleOverview()
-        assert.are.equal("CENTER", (o:GetPoint()))
-        o:ClearAllPoints()
-        o:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 50, 500) -- dragged
-        ns.ToggleOverview()
-        ns.ToggleOverview()
-        assert.are.same({ "TOPLEFT", UIParent, "BOTTOMLEFT", 50, 500 }, { o:GetPoint() })
-    end)
-
-    it("closes when combat starts and opens again when it ends, if combat closed it", function()
-        local ns, o = fresh()
-        ns.ToggleOverview()
-        STATE.combat = true
-        FIRE("PLAYER_REGEN_DISABLED")
-        assert.is_false(o:IsShown())
-        STATE.combat = false
-        FIRE("PLAYER_REGEN_ENABLED")
-        assert.is_true(o:IsShown())
-        ns.ToggleOverview()
-        STATE.combat = true
-        FIRE("PLAYER_REGEN_DISABLED")
-        STATE.combat = false
-        FIRE("PLAYER_REGEN_ENABLED")
-        assert.is_false(o:IsShown())
-        assert.are.same({}, STATE.errors)
-    end)
-end)
-
--- Checked against the plan (ruleset plan 2026-10-19-overview)
-describe("the overview, beyond the first checks", function()
-    it("puts a section starting on the second column there alone, without an empty header", function()
-        local units = {}
-        for i = 1, 11 do units["raid" .. i] = { class = "WARRIOR", role = "TANK", subgroup = 1 } end
-        for i = 12, 21 do units["raid" .. i] = { class = "PRIEST", subgroup = 1 } end
-        local _, o = login({ group = "raid", units = units })
-        assert.are.same({ { "TANK", 1 }, { "HEALER", 2 } }, headers(o))
-    end)
-
-    it("follows a language switch while open", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK" } } })
-        ns.ApplyLanguage("deDE")
-        assert.are.equal(ns.locales.deDE.ROLE_TANK, o.headers[1]:GetText())
-    end)
-
-    it("counts Mass Salvation as Salvation, and nothing from a member who is not visible", function()
-        local ns, o = login({ group = "party", units = {
-            party1 = { class = "WARRIOR", auras = { aura(D.MASS_SALVATION, { source = "player" }) } },
-            party2 = { class = "MAGE", visible = false, auras = { aura(W.normal[1], { source = "player" }) } } } })
-        local L = ns.L
-        local salv = ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION")
-        assert.are.equal(L.OV_LINE:format("player", L.OV_COUNT:format(salv, 1)), o.footer[1]:GetText())
-    end)
-
-    it("explains the faint icon with its spell, a Greater one when only that fits", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", level = 30 } } })
-        STATE.known[M.greater[1]] = true
-        STATE.learned = {}
-        for i = 1, 6 do STATE.learned[M.normal[i]] = 60 end
-        STATE.learned[M.greater[1]] = 40
-        ns.Refresh()
-        local slot
-        for _, s in ipairs(row(o, "party1").slots) do if s.family == "MIGHT" then slot = s end end
-        assert.is_true(slot.faint)
-        RUNSCRIPT(slot, "OnEnter")
-        assert.are.equal(M.greater[1], GameTooltip.spell)
-    end)
-
-    it("closes with Escape and keeps no place in the client's layout", function()
-        local ns, o = login()
-        local listed = false
-        for _, name in ipairs(UISpecialFrames) do if name == o:GetName() then listed = true end end
-        assert.is_true(listed)
-        assert.is_true(o.dontSavePosition)
-        assert.is_truthy(ns)
-    end)
-
-end)
-
--- Roles by hand went with ruleset plan 2026-10-19-priorities
-describe("the overview without roles by hand", function()
-    it("opens no menu on a right click, on a row or on the blessing button, Shift or not", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
-        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "RightButton")
-        for _, shift in ipairs({ false, true }) do
-            STATE.shift = shift
-            RUNCLICK(ns.blessingButton, "RightButton", true)
-            RUNCLICK(ns.blessingButton, "RightButton", false)
-        end
-        assert.is_nil(STATE.menu)
-        assert.is_true(o:IsShown())
-        assert.are.same({}, STATE.errors)
+    it("has no chat command and no window of its own any more", function()
+        local ns = fresh()
+        SlashCmdList.SIMPLEBLESSINGBAR("overview")
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.CMD_UNKNOWN:format("|cffffd100/sbb help|r"), 1, true))
+        assert.is_nil(ns.ToggleOverview)
+        assert.is_nil(_G.SimpleBlessingBarOverview)
     end)
 end)

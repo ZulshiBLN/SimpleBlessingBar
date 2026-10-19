@@ -22,16 +22,16 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Both buttons show how many casts are left and name the next one in their tooltip. In combat
   they keep the cast that was first when the fight started; one that must wait for the end of
   combat shows no highlight, and the tooltip says so.
-- A Blessings tab: the priority list of each class, reordered by drag and drop, with
-  blessings switched off per class and "Enable all" to switch them on again; the aura list;
-  and early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
+- A Priorities tab: early renewal, 5 minutes before a blessing or Salvation of yours runs out
+  by default; the priority list of each class, reordered by drag and drop, with blessings
+  switched off per class and "Enable all" to switch them on again; the aura list; and the
+  overview.
 - A change of a list is cast at once, replacing your blessing of another kind.
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
-- An overview window: every group member under his role with the blessings and Salvation he
-  carries, yours marked, the one you would give next faint; a footer with what each paladin
-  gives. Opened with `/sbb overview`, a middle click on the minimap button or the Blessings
-  tab.
+- The overview, on the Priorities tab: every group member under his class, his role marked,
+  with the blessings and Salvation he carries, yours marked, the one you would give next faint;
+  a footer with what each paladin gives. A middle click on the minimap button opens it.
 - The aura button casts the first aura of your list that no other paladin of your group runs,
   so paladins need not agree who runs which.
 - A settings window, opened with `/sbb`, a middle click on the handle, the minimap button, the
@@ -40,7 +40,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   Reload UI. Tracking: show each of the four buttons, their highlight's color and speed, and
   the color of the blessing and Salvation buttons' count.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
-  order of the four buttons. Blessings: see above. Macros: prepared for a later version.
+  order of the four buttons. Priorities: see above. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored
   when they run low; at a vendor they are bought automatically up to a target, above a gold
   reserve.
@@ -49,4 +49,4 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - The handle's tooltip names the lock state and what each click does.
 - Demo mode plans a blessing and Salvation for every class and casts nothing; the chat says
   what a click would cast.
-- `/sbb help`, `/sbb lock`, `/sbb reset`, `/sbb bug` and `/sbb overview`.
+- `/sbb help`, `/sbb lock`, `/sbb reset` and `/sbb bug`.
