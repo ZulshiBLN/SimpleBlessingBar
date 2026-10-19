@@ -239,6 +239,19 @@ describe("the overview's footer", function()
         assert.are.same({ line(ns, "Zulshe", {}), line(ns, "Tyr", {}) }, lines(o))
     end)
 
+    it("widens the window to its longest line", function()
+        local _, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr" },
+            party2 = { class = "WARRIOR", auras = { aura(M.normal[6], { source = "party1" }),
+                aura(D.SALVATION, { source = "party1" }) } },
+            party3 = { class = "MAGE", auras = { aura(W.normal[1], { source = "party1" }),
+                aura(K.normal[1], { source = "party1" }) } } } })
+        local widest = 0
+        for _, f in ipairs(o.footer) do
+            if f:IsShown() then widest = math.max(widest, f:GetStringWidth()) end
+        end
+        assert.is_true(o:GetWidth() >= widest + 2 * 22, o:GetWidth() .. " < " .. widest)
+    end)
+
     it("is not shown in demo mode", function()
         local ns, o = login()
         SimpleBlessingBarDB.demo = true

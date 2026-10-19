@@ -223,7 +223,10 @@ local function Build()
         height = height + FOOTER_H
     end
     for i = #texts + 1, #frame.footer do frame.footer[i]:Hide() end
-    frame:SetSize(2 * INSET + column * COL_W, TITLE_H + height + INSET)
+    -- As wide as the columns, or the longest footer line: a raid's paladin can give five things
+    local width = column * COL_W
+    for i = 1, #texts do width = math.max(width, frame.footer[i]:GetStringWidth()) end
+    frame:SetSize(2 * INSET + width, TITLE_H + height + INSET)
 end
 
 frame:SetScript("OnShow", Build)
