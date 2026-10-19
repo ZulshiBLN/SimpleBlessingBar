@@ -94,18 +94,18 @@ describe("the demo raid", function()
         assert.is_true(tankFirst < SEEDS)
     end)
 
-    it("marks tanks and healers after their names", function()
-        local ns, o = demo()
-        local L = ns.L
+    it("shows tanks and healers by their role icon", function()
+        local _, o = demo()
         local rows = shown(o)
-        assert.are.equal(4, count(rows, function(r) return r.name:GetText():sub(-#L.OV_TANK - 1) == " " .. L.OV_TANK end))
-        assert.are.equal(10, count(rows, function(r) return r.name:GetText():sub(-#L.OV_HEALER - 1) == " " .. L.OV_HEALER end))
+        local function with(atlas) return count(rows, function(r) return r.roleIcon:IsShown() and r.roleIcon.atlas == atlas end) end
+        assert.are.equal(4, with("UI-LFG-RoleIcon-Tank"))
+        assert.are.equal(10, with("UI-LFG-RoleIcon-Healer"))
     end)
 
     it("has the player as a healing Paladin under his own name", function()
-        local ns, o = demo()
+        local _, o = demo()
         local me = count(shown(o), function(r)
-            return r.name:GetText() == "player " .. ns.L.OV_HEALER and r.class == "PALADIN"
+            return r.name:GetText() == "player" and r.class == "PALADIN" and r.roleIcon.atlas == "UI-LFG-RoleIcon-Healer"
         end)
         assert.are.equal(1, me)
     end)
@@ -136,7 +136,7 @@ describe("the demo raid", function()
                 assert.is_true(r.aura:IsShown())
                 local family = ns.Blessings.AURA_FAMILY[r.aura.spell]
                 assert.is_truthy(family)
-                local name = r.name:GetText():gsub(" %(H%)$", "")
+                local name = r.name:GetText()
                 if name == "player" then assert.are.equal(mine, family) end
                 assert.are.same({ ns.L.OV_FROM:format(name) }, tip(r.aura))
                 seen[#seen + 1] = family

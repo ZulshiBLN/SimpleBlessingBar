@@ -123,8 +123,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
   never given) or on again. At least one stays on. "Enable all" switches every blessing on
   again, the order kept; "Default" restores every row and the aura list.
 - **The overview** of your group in two columns, twenty members before it scrolls: sorted by
-  class, each name in its class colour, the role from the game marked "(T)" tank or "(H)"
-  healer; a name too long for its place is cut with "...". In front of a paladin's blessings
+  class, each name in its class colour, a tank or healer - the role from the game - with the
+  game's role icon before the name; a name too long for its place is cut with "...". In front of a paladin's blessings
   the aura he runs, then the blessings and the Salvation each member carries. Yours glow
   gold; the blessing you would give him next is faint, with a "+". Members out of
   range, dead or offline are dimmed. Hover an icon for the spell, who gave it - "another

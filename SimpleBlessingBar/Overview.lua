@@ -18,6 +18,10 @@ local SLOTS = { "MIGHT", "WISDOM", "KINGS", "LIGHT", "SALVATION" } -- D.BLESSING
 local MARGIN, NAME_GAP, AURA_GAP = 10, 10, 5
 local SLOTS_W = #SLOTS * (ICON + ICON_GAP)
 local FIXED_W = MARGIN + NAME_GAP + ICON + AURA_GAP + SLOTS_W + MARGIN
+-- A tank's or healer's role icon before the name, which moves in by its width and gap; the
+-- others' names keep the whole field (Michel, compared in game)
+local ROLE_SIZE, ROLE_GAP = 14, 2
+local ROLE_ATLAS = { TANK = "UI-LFG-RoleIcon-Tank", HEALER = "UI-LFG-RoleIcon-Healer" }
 
 local CLASS_RANK = {}
 for i, class in ipairs(D.CLASS_ORDER) do CLASS_RANK[class] = i end
@@ -44,13 +48,11 @@ local function Fitted(name, width)
     return name:sub(1, 2)
 end
 
--- The member's name without Forever's second name, his role marked after it - "(T)", "(H)";
--- a demo member brings his name, having no unit, one of them fitted to the field `width` wide
+-- The member's name without Forever's second name; a demo member brings his name, having no
+-- unit, one of them fitted to the field `width` wide
 local function Name(d, width)
     local name = d.name or (UnitName(d.unit))
     if d.edge == "fit" then name = Fitted(name, width) end
-    if d.role == "TANK" then return name .. " " .. L.OV_TANK end
-    if d.role == "HEALER" then return name .. " " .. L.OV_HEALER end
     return name
 end
 
@@ -91,6 +93,9 @@ local function NewRow(i)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.name:SetJustifyH("LEFT")
     row.name:SetWordWrap(false)
+    row.roleIcon = row:CreateTexture(nil, "ARTWORK")
+    row.roleIcon:SetSize(ROLE_SIZE, ROLE_SIZE)
+    row.roleIcon:SetPoint("LEFT", MARGIN, 0)
     row.aura = NewIcon(row) -- without border (Michel)
     row.slots = {}
     for s, family in ipairs(SLOTS) do
@@ -114,9 +119,7 @@ end
 local function LayRow(row, colW)
     row:SetSize(colW, ROW_H)
     local nameW = colW - FIXED_W
-    row.name:ClearAllPoints()
-    row.name:SetPoint("LEFT", MARGIN, 0)
-    row.name:SetWidth(nameW)
+    row.nameW = nameW -- the name's field; FillRow places the name in it, after a role icon
     local x = MARGIN + nameW + NAME_GAP
     row.aura:ClearAllPoints()
     row.aura:SetPoint("LEFT", x, 0)
@@ -131,6 +134,18 @@ end
 -- what he carries, or the faint next one in its family's place
 local function FillRow(row, d)
     row.unit, row.role, row.class, row.greyed, row.edge = d.unit, d.role, d.class, d.greyed, d.edge
+    local atlas = ROLE_ATLAS[d.role]
+    local indent = atlas and ROLE_SIZE + ROLE_GAP or 0
+    if atlas then
+        row.roleIcon:SetAtlas(atlas)
+        row.roleIcon:SetAlpha(d.greyed and 0.4 or 1)
+        row.roleIcon:Show()
+    else
+        row.roleIcon:Hide()
+    end
+    row.name:ClearAllPoints()
+    row.name:SetPoint("LEFT", MARGIN + indent, 0)
+    row.name:SetWidth(row.nameW - indent)
     row.name:SetText(Name(d, row.name:GetWidth()))
     row.name:SetTextColor(C_ClassColor.GetClassColor(d.class):GetRGB())
     row.name:SetAlpha(d.greyed and 0.4 or 1)

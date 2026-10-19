@@ -67,18 +67,43 @@ end
 local function x(f) return select(2, f:GetPoint()) end
 
 describe("the overview", function()
-    it("lists every member sorted by class, in group order within it, the game's role marked", function()
+    it("lists every member sorted by class, in group order within it", function()
         local ns, o = login({ group = "party", units = {
             party1 = { class = "MAGE", name = "Jaina" },
             party2 = { class = "WARRIOR", role = "TANK", name = "Grom" },
             party3 = { class = "PRIEST", name = "Anna" },
             party4 = { class = "MAGE", name = "Aegwynn" } } })
-        local L = ns.L
-        assert.are.same({ { "Grom " .. L.OV_TANK, "WARRIOR", false }, { "player", "PALADIN", false },
-                          { "Anna " .. L.OV_HEALER, "PRIEST", false }, { "Jaina", "MAGE", false },
+        assert.are.same({ { "Grom", "WARRIOR", false }, { "player", "PALADIN", false },
+                          { "Anna", "PRIEST", false }, { "Jaina", "MAGE", false },
                           { "Aegwynn", "MAGE", false } }, rows(o))
         assert.is_true(ns.overviewHost.page:IsShown())
         assert.are.same({}, STATE.errors)
+    end)
+
+    it("shows the game's role as an icon before a tank's or healer's name, which moves in", function()
+        local ns, o = login({ group = "party", units = {
+            party1 = { class = "WARRIOR", role = "TANK" }, party2 = { class = "PRIEST" }, party3 = { class = "MAGE" } } })
+        local w = colW(ns)
+        for unit, atlas in pairs({ party1 = "UI-LFG-RoleIcon-Tank", party2 = "UI-LFG-RoleIcon-Healer" }) do
+            local r = row(o, unit)
+            assert.is_true(r.roleIcon:IsShown(), unit)
+            assert.are.equal(atlas, r.roleIcon.atlas)
+            assert.are.same({ 14, 14 }, { r.roleIcon:GetWidth(), r.roleIcon:GetHeight() })
+            assert.are.equal(10, x(r.roleIcon))
+            assert.are.equal(10 + 16, x(r.name))
+            assert.are.equal(w - 146 - 16, r.name:GetWidth())
+        end
+        STATE.units.party1.range = false
+        ns.Refresh()
+        assert.are.equal(0.4, row(o, "party1").roleIcon:GetAlpha()) -- dimmed with its row
+        local mage = row(o, "party3")
+        assert.is_false(mage.roleIcon:IsShown())
+        assert.are.equal(10, x(mage.name))
+        assert.are.equal(w - 146, mage.name:GetWidth())
+        for lang, t in pairs(ns.locales) do
+            assert.is_nil(rawget(t, "OV_TANK"), lang)
+            assert.is_nil(rawget(t, "OV_HEALER"), lang)
+        end
     end)
 
     it("puts the first half, rounded up, in the left column, the rest in the right, both from the top", function()
@@ -238,9 +263,12 @@ describe("the overview", function()
     end)
 
     it("follows a language switch while open", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", role = "TANK", name = "Grom" } } })
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR",
+            auras = { aura(K.normal[1], { source = "party2" }) } }, party2 = { class = "PALADIN", name = "Tyr" } } })
         ns.ApplyLanguage("koKR")
-        assert.are.equal("Grom " .. ns.locales.koKR.OV_TANK, row(o, "party1").name:GetText())
+        local s = row(o, "party1").slots[3]
+        RUNSCRIPT(s, "OnEnter")
+        assert.are.equal(ns.locales.koKR.OV_FROM:format("Tyr"), GameTooltip.lines[1][1])
     end)
 
     it("explains the faint icon with its spell, a Greater one when only that fits", function()

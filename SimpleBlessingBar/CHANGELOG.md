@@ -30,7 +30,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
 - The overview, on the Priorities tab: every group member in two columns, sorted by class and
-  named in its colour, his role marked, a paladin's aura, the blessings and Salvation he
+  named in its colour, a tank's or healer's role icon, a paladin's aura, the blessings and Salvation he
   carries, yours glowing, the one you would give next faint. A middle click on the minimap
   button opens it.
 - The aura button casts the first aura of your list that no other paladin of your group runs,
