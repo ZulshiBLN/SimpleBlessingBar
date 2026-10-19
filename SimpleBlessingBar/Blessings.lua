@@ -83,11 +83,12 @@ end
 local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 
 -- A member's role: the one the game reports where the class can play it - a damage dealer
--- gets the class's first damage role - else the class default.
+-- gets the class's first damage role - else the class default. Demo mode puts every class on
+-- the player, so it reads no role: each class shows its default.
 function B.RoleOf(unit, class)
     local roles = D.CLASS_ROLES[class or select(2, UnitClass(unit))]
     if not roles then return end
-    local reported = UnitGroupRolesAssigned(unit)
+    local reported = not ns.IsDemo() and UnitGroupRolesAssigned(unit)
     for _, role in ipairs(roles) do
         if role == reported or (reported == "DAMAGER" and DAMAGE_ROLES[role]) then return role end
     end

@@ -105,8 +105,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
 
 **Tracking**
 - Aura and Righteous Fury: show the button or not, the highlight's color and its speed.
-- Blessings: show the button or not, the highlight's color and speed, and the color of its
-  count.
+- Blessings: show the button or not, the highlight's color and speed, and the color of the
+  count on the blessing and Salvation buttons.
 - Salvation: show the button or not, the highlight's color and its speed.
 - Flyouts: close automatically or not, and after how many seconds (1 to 5, 3 by default).
 

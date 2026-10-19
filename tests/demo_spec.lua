@@ -40,6 +40,14 @@ describe("demo mode", function()
         assert.are.same({}, STATE.errors)
     end)
 
+    it("plans every class with its default role, whatever the player's group role", function()
+        local ns, _, D = login()
+        STATE.units.player.role = "TANK"
+        demoOn(ns)
+        assert.are.equal(tostring(#D.CLASS_ORDER), ns.salvationButton.count:GetText()) -- no class defaults to tank
+        assert.are.equal(D.BLESSINGS.MIGHT.normal[#D.BLESSINGS.MIGHT.normal], ns.blessingButton:GetAttribute("spell1"))
+    end)
+
     it("reads no auras: another paladin's blessing on the player changes nothing", function()
         local ns, _, D = login()
         local might = D.BLESSINGS.MIGHT.normal

@@ -28,7 +28,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   AddOn menu or the game's Options. General: language, hide in combat, hide the minimap button,
   scale, border, background color, orientation, growth and flyout direction, demo mode, Report
   bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and speed,
-  the blessing button's count color, and the flyouts' automatic closing and its time.
+  the color of the blessing and Salvation buttons' count, and the flyouts' automatic closing and its time.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
   order of the four buttons. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored

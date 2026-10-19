@@ -89,7 +89,7 @@ D.RIGHTEOUS_FURY = 25780
 -- Reagent of every Greater Blessing
 D.SYMBOL_OF_KINGS = 21177
 
--- Demo mode's Symbol count on the class buttons; the auto-buy still reads the real bags
+-- Demo mode's Symbol count on the blessing button; the auto-buy still reads the real bags
 D.DEMO_SYMBOLS = 3
 -- Seconds after a purchase in which no new one starts: the bag count lags behind it by more
 -- than one second on Forever (ruleset decisions, 2026-10-18)

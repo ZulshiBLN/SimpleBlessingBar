@@ -72,7 +72,7 @@ function ns.HideTooltip()
 end
 
 -- The highlight ("marching ants" like spell procs in the Retail client), as in
--- SimpleConjureBar, shared by the aura, Righteous Fury and class buttons. It sits on its own
+-- SimpleConjureBar, shared by all four buttons of the bar. It sits on its own
 -- frame above the button; the animation runs (OnUpdate) only while the highlight is visible.
 -- Color and speed are settings: colorKey and speedKey name them. ns.ApplyLook colors them.
 local antsButtons = {}

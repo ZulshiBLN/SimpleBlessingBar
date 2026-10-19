@@ -106,6 +106,20 @@ describe("Greater or normal", function()
         assert.are.equal(M.normal[7], q[1].spell)
     end)
 
+    it("takes normal between equals alone", function()
+        local B = plan({}, basics(6, { M.greater[1] }), 5)
+        assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
+    end)
+
+    it("takes normal between equals in a party of five, all of one class", function()
+        local units = {}
+        for i = 1, 4 do units["party" .. i] = { class = "WARRIOR" } end
+        local B = plan({ group = "party", units = units, class = "PALADIN" }, basics(6, { M.greater[1] }), 5)
+        local q = B.PlanBlessings()
+        assert.are.equal(5, #q)
+        for _, e in ipairs(q) do assert.is_nil(e.greater) end
+    end)
+
     it("takes normal between equals in a party, even with three of a class", function()
         local B = plan({ group = "party", units = { party1 = { class = "WARRIOR" }, party2 = { class = "WARRIOR" },
                                                     party3 = { class = "WARRIOR" } } },
@@ -216,6 +230,27 @@ describe("Salvation", function()
         local B = plan({ group = "raid", units = units }, basics(6, { D.MASS_SALVATION }), 1)
         assert.are.same({ { D.MASS_SALVATION, "raid1" }, { D.REVOKE, "raid4" }, { D.SALVATION, "raid5" } },
             entries(B.PlanSalvation()))
+    end)
+
+    it("never replaces Mass Salvation with single Salvation", function()
+        local B = plan(raid("MAGE", { { auras = { aura(D.MASS_SALVATION) } }, {}, {} }), basics())
+        local q = B.PlanSalvation()
+        assert.are.same({ { D.SALVATION, "raid2" }, { D.SALVATION, "raid3" } }, entries(q))
+    end)
+
+    it("counts only members in range for Mass Salvation", function()
+        local out = { range = false }
+        local B = plan(raid("MAGE", { {}, {}, out, out, out }), basics(6, { D.MASS_SALVATION }), 1)
+        assert.are.same({ { D.SALVATION, "raid1" }, { D.SALVATION, "raid2" } }, entries(B.PlanSalvation()))
+    end)
+
+    it("does not repeat Mass Salvation for members out of range", function()
+        local function m(range, has)
+            return { range = range, auras = has and { aura(D.MASS_SALVATION, true) } or nil }
+        end
+        local B = plan(raid("MAGE", { m(nil, true), m(nil, true), m(false), m(false), m(false) }),
+            basics(6, { D.MASS_SALVATION }), 1)
+        assert.are.same({}, entries(B.PlanSalvation()))
     end)
 
     it("is nothing without Salvation learned", function()
