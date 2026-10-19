@@ -79,6 +79,7 @@ end
 function Methods:GetEffectiveScale() return 1 end
 -- A frame's top edge only where a spec sets one (frame.top)
 function Methods:GetTop() return rawget(self, "top") end
+function Methods:GetLeft() return rawget(self, "left") end
 function Methods:GetHeight() return self.h end
 function Methods:SetHeight(h) self.h = h end
 function Methods:SetScale(s) Guard(self, "SetScale"); self.scale = s end

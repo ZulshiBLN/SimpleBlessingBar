@@ -422,6 +422,154 @@ do
 end
 
 ---------------------------------------------------------------------------
+-- Blessings: a priority list per role, dragged and switched off (ruleset plan
+-- 2026-10-19-blessing-steering)
+---------------------------------------------------------------------------
+local blessingsPage = UI.NewPage("TAB_BLESSINGS")
+
+do
+    UI.AddNote("LISTS_HINT", 10, 2)
+
+    local ICON, ICON_GAP, LABEL_W = 24, 6, 120
+    local rows = {}
+    controls.listRows = rows
+    local RefreshLists
+    local drag -- { row, index } while dragging
+
+    local function FamilyName(family)
+        return ns.LocalName(C_Spell.GetSpellName(D.BLESSINGS[family].normal[1]), "BLESSING_" .. family)
+    end
+
+    -- The families of a row as shown: those on, in order, then those off in D.BLESSING_ORDER
+    local function Shown(list)
+        local out = { unpack(list.order) }
+        for _, family in ipairs(D.BLESSING_ORDER) do
+            if list.off[family] then out[#out + 1] = family end
+        end
+        return out
+    end
+
+    -- The slot under the cursor among the icons that are on
+    local function SlotUnderCursor(row)
+        local left = row.icons[1]:GetLeft()
+        if not left then return end
+        local cx = GetCursorPosition() / row.icons[1]:GetEffectiveScale()
+        local slot = math.floor((cx - left) / (ICON + ICON_GAP)) + 1
+        return math.max(1, math.min(#db.roleLists[row.role].order, slot))
+    end
+
+    local function StopListDrag()
+        if not drag then return end
+        drag = nil
+        blessingsPage:SetScript("OnUpdate", nil)
+        RefreshLists()
+        ns.Refresh() -- the queue is rebuilt only once the icon is dropped
+    end
+
+    local function OnDragUpdate()
+        -- Safety net: the mouse button was released outside the window
+        if not IsMouseButtonDown("LeftButton") then StopListDrag() return end
+        local row = rows[drag.row]
+        local slot = SlotUnderCursor(row)
+        if slot and slot ~= drag.index then
+            local order = db.roleLists[row.role].order
+            table.insert(order, slot, table.remove(order, drag.index))
+            drag.index = slot
+            RefreshLists()
+        end
+    end
+
+    -- A right click switches a family off, greyed after the others, or on again, appended to
+    -- the ones on. At least one stays on.
+    local function Toggle(role, family)
+        local list = db.roleLists[role]
+        if list.off[family] then
+            list.off[family] = nil
+            table.insert(list.order, family)
+        elseif #list.order > 1 then
+            for i, f in ipairs(list.order) do
+                if f == family then table.remove(list.order, i) break end
+            end
+            list.off[family] = true
+        end
+        RefreshLists()
+        ns.Refresh()
+    end
+
+    for r, role in ipairs(D.ROLES) do
+        local row = CreateFrame("Frame", nil, blessingsPage)
+        row:SetHeight(ICON)
+        row:SetPoint("TOPLEFT", INSET, Place(ICON, 6))
+        row.role = role
+        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        row.label:SetPoint("LEFT", 4, 0)
+        row.label:SetWidth(LABEL_W)
+        row.label:SetJustifyH("LEFT")
+        ns.SetL(row.label, "ROLE_" .. role)
+
+        row.icons = {}
+        for i = 1, #D.BLESSING_ORDER do
+            local icon = CreateFrame("Button", nil, row)
+            icon:SetSize(ICON, ICON)
+            icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
+            icon.tex = icon:CreateTexture(nil, "ARTWORK")
+            icon.tex:SetAllPoints()
+            icon.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            icon:SetScript("OnMouseDown", function(_, btn)
+                -- Only an icon that is on moves; those off keep their place at the end
+                if btn ~= "LeftButton" or i > #db.roleLists[role].order then return end
+                drag = { row = r, index = i }
+                RefreshLists()
+                blessingsPage:SetScript("OnUpdate", OnDragUpdate)
+            end)
+            icon:SetScript("OnMouseUp", function(self, btn)
+                if btn == "LeftButton" then
+                    StopListDrag()
+                elseif btn == "RightButton" then
+                    Toggle(role, self.family)
+                end
+            end)
+            icon:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_TOP")
+                GameTooltip:SetText(FamilyName(self.family))
+                GameTooltip:Show()
+            end)
+            icon:SetScript("OnLeave", ns.HideTooltip)
+            row.icons[i] = icon
+        end
+
+        rows[r] = row
+        measures[#measures + 1] = function() return 4 + LABEL_W + #D.BLESSING_ORDER * (ICON + ICON_GAP) + 20 end
+        stretchers[#stretchers + 1] = function(w) row:SetWidth(w) end
+    end
+
+    RefreshLists = function()
+        for r, row in ipairs(rows) do
+            local list = db.roleLists[row.role]
+            for i, family in ipairs(Shown(list)) do
+                local icon = row.icons[i]
+                icon.family = family
+                icon.tex:SetTexture(C_Spell.GetSpellTexture(D.BLESSINGS[family].normal[1]))
+                icon.tex:SetDesaturated(list.off[family] == true)
+                local dragged = drag and drag.row == r and drag.index == i
+                icon:SetAlpha(list.off[family] and 0.5 or dragged and 0.7 or 1)
+            end
+        end
+    end
+    refreshers[#refreshers + 1] = RefreshLists
+    blessingsPage:SetScript("OnHide", StopListDrag)
+
+    -- Restores every row
+    local reset = UI.AddButton(blessingsPage, "DEFAULT", function()
+        db.roleLists = ns.DefaultRoleLists()
+        RefreshLists()
+        ns.Refresh()
+    end)
+    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
+    controls.listsDefault = reset
+end
+
+---------------------------------------------------------------------------
 -- Macros: prepared only; which macros are worth it Michel decides in a later plan
 ---------------------------------------------------------------------------
 UI.NewPage("TAB_MACROS")

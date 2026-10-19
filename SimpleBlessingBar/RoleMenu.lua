@@ -9,11 +9,6 @@ if not ns.enabled then return end
 
 local D, L, B = ns.D, ns.L, ns.Blessings
 
-local ROLE_KEYS = {
-    TANK = "ROLE_TANK", HEALER = "ROLE_HEALER", MELEE = "ROLE_MELEE",
-    RANGED = "ROLE_RANGED", CASTER = "ROLE_CASTER",
-}
-
 -- The member the menu is for: the target when it is in the group, else the player
 local function MenuUnit()
     for _, unit in ipairs(B.Members()) do
@@ -36,7 +31,7 @@ local function OpenMenu(owner)
         root:CreateTitle(UnitName(unit))
         root:CreateRadio(L.ROLE_AUTO, function() return B.HandRole(unit) == nil end, function() pick(nil) end)
         for _, role in ipairs(roles) do
-            root:CreateRadio(L[ROLE_KEYS[role]], function() return B.HandRole(unit) == role end, pick, role)
+            root:CreateRadio(L["ROLE_" .. role], function() return B.HandRole(unit) == role end, pick, role)
         end
     end)
 end

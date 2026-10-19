@@ -8,6 +8,8 @@ local _, ns = ...
 if not ns.enabled then return end
 
 local D = ns.D
+local db
+ns.OnDBReady(function(d) db = d end)
 
 local B = {}
 ns.Blessings = B
@@ -225,10 +227,10 @@ local function Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
 
--- The first family of the unit's role list this paladin can give the unit - a normal rank or
--- the best known Greater one fits - and others have not given
+-- The first family of the unit's role list, as the player edited it, this paladin can give the
+-- unit - a normal rank or the best known Greater one fits - and others have not given
 function B.ChosenFamily(unit, class)
-    for _, family in ipairs(D.ROLE_LISTS[B.RoleOf(unit, class)]) do
+    for _, family in ipairs(db.roleLists[B.RoleOf(unit, class)].order) do
         local f = D.BLESSINGS[family]
         local greater = B.Rank(f.greater)
         if (B.RankFor(f.normal, unit) or (greater and B.Fits(greater, unit)))

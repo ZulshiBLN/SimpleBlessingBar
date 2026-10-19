@@ -32,7 +32,8 @@ describe("the settings window", function()
         sbb("")
         local names = {}
         for i, tab in ipairs(UI.tabs) do names[i] = tab:GetText() end
-        assert.are.same({ ns.L.TAB_GENERAL, ns.L.TAB_TRACKING, ns.L.TAB_SUPPLIES, ns.L.TAB_ORDER, ns.L.TAB_MACROS },
+        assert.are.same({ ns.L.TAB_GENERAL, ns.L.TAB_TRACKING, ns.L.TAB_SUPPLIES, ns.L.TAB_ORDER, ns.L.TAB_BLESSINGS,
+                          ns.L.TAB_MACROS },
             names)
         assert.is_true(UI.pages[1]:IsShown())
         RUNSCRIPT(UI.tabs[2], "OnClick")

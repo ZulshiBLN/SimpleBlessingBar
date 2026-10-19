@@ -138,6 +138,42 @@ local function ValidOrder(saved, default)
     return out
 end
 
+-- The priority lists as the player edits them: per role the families on, in order, and those
+-- switched off (ruleset plan 2026-10-19-blessing-steering). A role whose entry is damaged,
+-- or that has nothing on, gets its default; a family in neither part is appended.
+local function DefaultRoleList(role)
+    return { order = { unpack(D.ROLE_LISTS[role]) }, off = {} }
+end
+
+local function ValidRoleLists(saved)
+    local lists = {}
+    for _, role in ipairs(D.ROLES) do
+        local entry = type(saved) == "table" and saved[role]
+        if type(entry) == "table" and type(entry.order) == "table" and type(entry.off) == "table" then
+            local order, off, seen = {}, {}, {}
+            for _, family in ipairs(entry.order) do
+                if D.BLESSINGS[family] and not seen[family] then
+                    order[#order + 1] = family
+                    seen[family] = true
+                end
+            end
+            for family, v in pairs(entry.off) do
+                if D.BLESSINGS[family] and not seen[family] and v == true then off[family] = true end
+            end
+            for _, family in ipairs(D.BLESSING_ORDER) do
+                if not seen[family] and not off[family] then order[#order + 1] = family end
+            end
+            lists[role] = #order > 0 and { order = order, off = off } or DefaultRoleList(role)
+        else
+            lists[role] = DefaultRoleList(role)
+        end
+    end
+    return lists
+end
+
+-- Fresh default lists, for the Blessings tab's Default
+function ns.DefaultRoleLists() return ValidRoleLists(nil) end
+
 -- Saved variables are plain files that can be edited or damaged, so every value is checked
 -- before anything reads it.
 function ns.InitDB()
@@ -204,6 +240,9 @@ function ns.InitDB()
 
     -- Version 5 adds the supplies (the loops above) and the bar's order
     db.order = ValidOrder(db.order, D.DEFAULT_ORDER)
+
+    -- Version 7 adds the priority lists edited per role
+    db.roleLists = ValidRoleLists(db.roleLists)
 
     db.dbVersion = D.DB_VERSION
 

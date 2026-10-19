@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 6
+D.DB_VERSION = 7
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
