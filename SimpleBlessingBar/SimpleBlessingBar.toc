@@ -43,6 +43,7 @@ SelfBuffs.lua
 Queue.lua
 Flyout.lua
 RoleMenu.lua
+Overview.lua
 Merchant.lua
 Minimap.lua
 Report.lua

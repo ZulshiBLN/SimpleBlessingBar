@@ -439,3 +439,63 @@ function B.PlanSalvation(symbolsUsed)
     for _, e in ipairs(single) do queue[#queue + 1] = e end
     return queue
 end
+
+---------------------------------------------------------------------------
+-- The overview (ruleset plan 2026-10-19-overview): what a member carries, from whom, and
+-- what this paladin would give him next. Out of combat only, as the planner.
+---------------------------------------------------------------------------
+-- A member as the overview shows him: `carried` maps a blessing family, or "SALVATION" for
+-- Salvation and Mass Salvation, to { spell, mine, source, expires }; `next` is { family,
+-- spell } or nil; `greyed` when out of reach. Demo mode reads no auras.
+function B.Describe(unit, class)
+    local demo = ns.IsDemo()
+    local d = { unit = unit, class = class, role = B.RoleOf(unit, class), carried = {} }
+    d.hand = B.HandRole(unit) ~= nil -- demo rows are named by class, without the mark
+    d.visible = demo or UnitIsVisible(unit)
+    if d.visible and not demo then
+        local mine = MineOn(unit)
+        local i = 1
+        while true do
+            local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
+            if not aura then break end
+            local rank = RANKS[aura.spellId]
+            local key = rank and IS_BLESSING[rank.family] and rank.family
+                or (aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION) and "SALVATION"
+            if key then
+                d.carried[key] = { spell = aura.spellId, mine = mine[aura.auraInstanceID] == true,
+                                   source = aura.sourceUnit, expires = aura.expirationTime }
+            end
+            i = i + 1
+        end
+    end
+    local chosen = B.ChosenFamily(unit, class)
+    if chosen and not Done(chosen, MyBlessingOn(unit)) then
+        local f = D.BLESSINGS[chosen]
+        d.next = { family = chosen, spell = B.RankFor(f.normal, unit) or B.Rank(f.greater) }
+    end
+    -- With no chosen family the range test is skipped
+    d.greyed = not B.Eligible(unit) or (d.next ~= nil and not B.InRange(d.next.spell, unit))
+    if d.greyed then d.next = nil end
+    return d
+end
+
+-- The group member a source unit token stands for, or nil when the caster is not in the group
+function B.InGroup(source)
+    for _, unit in ipairs(B.Members()) do
+        if UnitIsUnit(source, unit) then return unit end
+    end
+end
+
+-- Every member in group order, described; in demo mode one per class, all on the player
+function B.Overview()
+    local list = {}
+    if ns.IsDemo() then
+        for _, class in ipairs(D.CLASS_ORDER) do list[#list + 1] = B.Describe("player", class) end
+        return list
+    end
+    for _, unit in ipairs(B.Members()) do
+        local class = select(2, UnitClass(unit))
+        if class then list[#list + 1] = B.Describe(unit, class) end
+    end
+    return list
+end

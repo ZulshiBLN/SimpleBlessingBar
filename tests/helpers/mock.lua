@@ -47,6 +47,7 @@ function Methods:Hide()
   if self.shown then self.shown = false; RUNSCRIPT(self, "OnHide") end
 end
 function Methods:IsShown() return self.shown end
+function Methods:SetShown(v) if v then self:Show() else self:Hide() end end
 function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
 function Methods:ClearAllPoints() Guard(self, "ClearAllPoints"); self.points = {} end
 function Methods:GetPoint(i) local p = self.points[i or 1]; if p then return unpack(p) end end
@@ -458,7 +459,10 @@ C_UnitAuras = {
       if a.mine or not (filter or ""):find("PLAYER") then
         n = n + 1
         -- The aura's own record serves as its instance ID: the same aura in both filters
-        if n == i then return { spellId = a.spellId, expirationTime = a.expirationTime, auraInstanceID = a } end
+        -- `source`: the caster's unit token, as sourceUnit; nil for one outside the group
+        if n == i then
+          return { spellId = a.spellId, expirationTime = a.expirationTime, auraInstanceID = a, sourceUnit = a.source }
+        end
       end
     end
   end,
