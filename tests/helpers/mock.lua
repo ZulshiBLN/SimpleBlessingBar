@@ -126,6 +126,26 @@ function Methods:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
 function Methods:SetVertexColor(r, g, b, a) self.vertexColor = { r, g, b, a } end
 function Methods:SetBlendMode(m) self.blend = m end
 function Methods:SetAtlas(a) self.atlas = a end
+-- Animation groups as the client's: they record their animations, looping and play state;
+-- the client plays them, a spec reads what was set
+function Methods:CreateAnimationGroup()
+  local group = { animations = {}, playing = false }
+  group.SetLooping = function(g, v) g.looping = v end
+  group.Play = function(g) g.playing = true end
+  group.Stop = function(g) g.playing = false end
+  group.IsPlaying = function(g) return g.playing end
+  group.CreateAnimation = function(g, kind)
+    local a = { kind = kind }
+    a.SetFlipBookRows = function(x, n) x.rows = n end
+    a.SetFlipBookColumns = function(x, n) x.columns = n end
+    a.SetFlipBookFrames = function(x, n) x.frames = n end
+    a.SetDuration = function(x, s) x.duration = s end
+    a.GetDuration = function(x) return x.duration end
+    table.insert(g.animations, a)
+    return a
+  end
+  return group
+end
 function Methods:SetFrameStrata(s) self.strata = s end
 function Methods:GetFrameStrata() return rawget(self, "strata") or "MEDIUM" end
 function Methods:SetAlpha(a) self.alpha = a end

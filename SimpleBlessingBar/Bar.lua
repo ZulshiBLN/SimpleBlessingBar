@@ -71,10 +71,11 @@ function ns.HideTooltip()
     GameTooltip:Hide()
 end
 
--- The highlight ("marching ants" like spell procs in the Retail client), as in
--- SimpleConjureBar, shared by all four buttons of the bar. It sits on its own
--- frame above the button; the animation runs (OnUpdate) only while the highlight is visible.
--- Color and speed are settings: colorKey and speedKey name them. ns.ApplyLook colors them.
+-- The highlight, shared by all four buttons of the bar: the modern client's proc glow
+-- (ruleset plan 2026-10-20-button-tips-glow; the "ants" of SimpleConjureBar before, whose
+-- names the code and the settings keep). It sits on its own frame above the button; the
+-- client plays its flipbook only while it is visible. Color and speed are settings: colorKey
+-- and speedKey name them. ns.ApplyLook colors it and sets its speed.
 local antsButtons = {}
 function ns.AttachAnts(b, colorKey, speedKey)
     local holder = CreateFrame("Frame", nil, b)
@@ -82,29 +83,21 @@ function ns.AttachAnts(b, colorKey, speedKey)
     holder:SetFrameLevel(b:GetFrameLevel() + 2)
 
     local ants = holder:CreateTexture(nil, "OVERLAY")
-    ants:SetTexture(D.ANTS_TEX)
+    ants:SetAtlas(D.GLOW_ATLAS)
     ants:SetDesaturated(true)
-    ants:SetBlendMode("ADD")
     ants:SetPoint("CENTER")
-    ants:SetSize(SIZE * 1.42, SIZE * 1.42)
+    ants:SetSize(SIZE * D.GLOW_SCALE, SIZE * D.GLOW_SCALE)
     ants:Hide()
 
-    local frame, timer = 0, 0
-    local function SetFrame(i)
-        local col, row = i % D.ANTS_COLS, math.floor(i / D.ANTS_COLS)
-        ants:SetTexCoord(col * D.ANTS_CELL, (col + 1) * D.ANTS_CELL, row * D.ANTS_CELL, (row + 1) * D.ANTS_CELL)
-    end
-    SetFrame(0)
+    local anim = ants:CreateAnimationGroup()
+    anim:SetLooping("REPEAT")
+    local flip = anim:CreateAnimation("FlipBook")
+    flip:SetFlipBookRows(D.GLOW_ROWS)
+    flip:SetFlipBookColumns(D.GLOW_COLUMNS)
+    flip:SetFlipBookFrames(D.GLOW_FRAMES)
 
-    b.ants, b.antsHolder, b.antsColorKey = ants, holder, colorKey
-    b.antsUpdate = function(_, elapsed)
-        local step = D.ANTS_STEPS[db[speedKey]]
-        timer = timer + elapsed
-        if timer < step then return end
-        frame = (frame + math.floor(timer / step)) % D.ANTS_FRAMES
-        timer = timer % step
-        SetFrame(frame)
-    end
+    b.ants, b.antsHolder, b.antsAnim, b.antsFlip = ants, holder, anim, flip
+    b.antsColorKey, b.antsSpeedKey = colorKey, speedKey
     antsButtons[#antsButtons + 1] = b
 end
 
@@ -114,10 +107,10 @@ function ns.SetAnts(b, shown)
     b.antsShown = shown
     if shown then
         b.ants:Show()
-        b.antsHolder:SetScript("OnUpdate", b.antsUpdate)
+        b.antsAnim:Play()
     else
         b.ants:Hide()
-        b.antsHolder:SetScript("OnUpdate", nil)
+        b.antsAnim:Stop()
     end
 end
 
@@ -223,8 +216,8 @@ function ns.ApplyCombatHide()
     end
 end
 
--- Background and border of the bar, the queue buttons' count color and every button's ants.
--- None of it is protected, so this works in combat too.
+-- Background and border of the bar, the queue buttons' count color and every button's glow,
+-- its color and its speed. None of it is protected, so this works in combat too.
 function ns.ApplyLook()
     local c, e = db.bg, D.BORDER_COLOR
     bar:SetBackdropColor(c.r, c.g, c.b, c.a)
@@ -234,6 +227,7 @@ function ns.ApplyLook()
     for _, b in ipairs(antsButtons) do
         local a = db[b.antsColorKey]
         b.ants:SetVertexColor(a.r, a.g, a.b, a.a)
+        b.antsFlip:SetDuration(D.GLOW_DURATIONS[db[b.antsSpeedKey]])
     end
 end
 

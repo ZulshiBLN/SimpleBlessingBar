@@ -126,14 +126,14 @@ D.BORDER_COLOR = { r = 0.4, g = 0.4, b = 0.4, a = 0.8 }
 D.HANDLE_UNLOCKED = { r = 0.41, g = 0.8, b = 0.94, a = 0.6 }
 D.HANDLE_LOCKED   = { r = 0.9, g = 0.25, b = 0.2, a = 0.6 }
 
--- "Marching ants" highlight, as in SimpleConjureBar: Blizzard flip book with 22 frames of
--- 48 px in a 256 px texture, desaturated and tinted
-D.ANTS_TEX    = "Interface\\SpellActivationOverlay\\IconAlertAnts"
-D.ANTS_FRAMES = 22
-D.ANTS_COLS   = 5
-D.ANTS_CELL   = 48 / 256
--- Seconds per frame for the speeds 1-5 of the settings; 3 is SimpleConjureBar's default
-D.ANTS_STEPS  = { 0.04, 0.02, 0.01, 0.0075, 0.005 }
+-- The buttons' glow: the modern client's proc loop, Blizzard's flipbook atlas of 6 x 5 cells,
+-- 30 frames, 1.4 times the button (Michel, seen in game; ruleset plan
+-- 2026-10-20-button-tips-glow). Desaturated and tinted by the colour setting.
+D.GLOW_ATLAS = "UI-HUD-ActionBar-Proc-Loop-Flipbook"
+D.GLOW_ROWS, D.GLOW_COLUMNS, D.GLOW_FRAMES = 6, 5, 30
+D.GLOW_SCALE = 1.4
+-- Seconds per loop for the speeds 1-5 of the settings; 3 is Blizzard's own second
+D.GLOW_DURATIONS = { 2, 1.5, 1, 0.75, 0.5 }
 D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's default gold
 
 ---------------------------------------------------------------------------

@@ -323,10 +323,11 @@ function UI.AddNumberSlider(o)
 end
 
 -- Highlight speed: 5 steps, 3 = default
+-- A highlight's speed; a change shows at once (ns.ApplyLook sets the glow's duration)
 function UI.AddSpeedSlider(key)
     return UI.AddIntSlider("OPT_ANTS_SPEED", key, D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX, function(v)
         return v == D.NUMBER_DEFAULTS[key].default and (v .. " (" .. L.DEFAULT .. ")") or tostring(v)
-    end)
+    end, ns.ApplyLook)
 end
 
 -- Centered separator line in WoW style: 2 px gold, strong in the middle, fading to the ends.

@@ -87,19 +87,18 @@ describe("the Tracking page", function()
         assert.are.same({ 0, 1, 0, 1 }, ns.blessingButton.ants.vertexColor)
     end)
 
-    it("runs the blessing button's ants at their own speed", function()
+    it("runs the blessing button's glow at its own speed", function()
         local ns, c, db, D = open()
         local b = ns.blessingButton
         assert.is_true(b.ants:IsShown()) -- the paladin and the mage lack Might
         c.blessingSpeed:SetValue(5)
         assert.are.equal(5, db.blessingAntsSpeed)
-        RUNSCRIPT(b.antsHolder, "OnUpdate", 2 * D.ANTS_STEPS[5])
-        assert.are.equal(2, b.ants.texCoord[1] / D.ANTS_CELL)
-        -- the aura button keeps the default speed: the same time is one frame there
-        RUNSCRIPT(ns.auraButton.antsHolder, "OnUpdate", D.ANTS_STEPS[3])
-        assert.are.equal(1, ns.auraButton.ants.texCoord[1] / D.ANTS_CELL)
+        assert.are.equal(D.GLOW_DURATIONS[5], b.antsFlip:GetDuration())
+        -- the aura button keeps the default speed
+        assert.are.equal(D.GLOW_DURATIONS[3], ns.auraButton.antsFlip:GetDuration())
         c.salvationSpeed:SetValue(1)
         assert.are.equal(5, db.blessingAntsSpeed)
+        assert.are.equal(D.GLOW_DURATIONS[5], b.antsFlip:GetDuration())
     end)
 
     it("hides the blessing and Salvation buttons with their toggles", function()
@@ -111,24 +110,39 @@ describe("the Tracking page", function()
         assert.is_false(ns.salvationButton:IsShown())
     end)
 
-    it("runs the ants at the speed set for the button", function()
+    it("runs the glow at the speed set for the button, at once", function()
         local ns, c, db, D = open()
-        local holder = ns.auraButton.antsHolder
-        local function frameAfter(elapsed)
-            RUNSCRIPT(holder, "OnUpdate", elapsed)
-            return ns.auraButton.ants.texCoord[1] / D.ANTS_CELL
-        end
+        local flip = ns.auraButton.antsFlip
+        assert.are.equal(1, D.GLOW_DURATIONS[3]) -- the default is Blizzard's second
+        assert.are.equal(D.GLOW_DURATIONS[3], flip:GetDuration())
         c.auraSpeed:SetValue(5)
         assert.are.equal(5, db.auraAntsSpeed)
-        assert.are.equal(2, frameAfter(2 * D.ANTS_STEPS[5]))
+        assert.are.equal(D.GLOW_DURATIONS[5], flip:GetDuration())
         c.auraSpeed:SetValue(1)
-        assert.are.equal(1, db.auraAntsSpeed)
-        assert.are.equal(2, frameAfter(D.ANTS_STEPS[1] / 2)) -- not a frame yet
-        assert.are.equal(3, frameAfter(D.ANTS_STEPS[1] / 2))
+        assert.are.equal(D.GLOW_DURATIONS[1], flip:GetDuration())
         -- the other button keeps its own speed, 3
         assert.are.equal(3, db.furyAntsSpeed)
-        RUNSCRIPT(ns.furyButton.antsHolder, "OnUpdate", D.ANTS_STEPS[3])
-        assert.are.equal(1, ns.furyButton.ants.texCoord[1] / D.ANTS_CELL)
+        assert.are.equal(D.GLOW_DURATIONS[3], ns.furyButton.antsFlip:GetDuration())
+    end)
+
+    -- Blizzard's proc loop, as Michel saw it in game (ruleset plan 2026-10-20-button-tips-glow)
+    it("glows with the client's proc loop on every button, 1.4 times the button, tinted", function()
+        local ns, _, db, D = open()
+        for _, case in ipairs({ { ns.auraButton, "auraAntsColor" }, { ns.furyButton, "furyAntsColor" },
+                                { ns.blessingButton, "blessingAntsColor" }, { ns.salvationButton, "salvationAntsColor" } }) do
+            local b, key = case[1], case[2]
+            assert.are.equal("UI-HUD-ActionBar-Proc-Loop-Flipbook", b.ants.atlas)
+            assert.are.same({ b:GetWidth() * 1.4, b:GetHeight() * 1.4 }, { b.ants:GetWidth(), b.ants:GetHeight() })
+            assert.are.same({ "CENTER" }, { b.ants:GetPoint() })
+            assert.is_true(b.ants:IsDesaturated())
+            local col = db[key]
+            assert.are.same({ col.r, col.g, col.b, col.a }, b.ants.vertexColor)
+            assert.are.equal("REPEAT", b.antsAnim.looping)
+            local flip = b.antsFlip
+            assert.are.same({ "FlipBook", 6, 5, 30 }, { flip.kind, flip.rows, flip.columns, flip.frames })
+        end
+        assert.is_nil(D.ANTS_TEX)
+        assert.is_nil(D.ANTS_STEPS)
     end)
 
     it("shows the default speed in the value text", function()

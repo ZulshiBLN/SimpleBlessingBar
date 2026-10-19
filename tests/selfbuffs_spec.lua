@@ -128,17 +128,18 @@ describe("the aura button", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    it("animates the marching ants only while they are shown", function()
+    it("plays its glow only while it is shown", function()
         local ns, D = login()
         local b = ns.auraButton
-        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
+        assert.is_false(b.antsAnim:IsPlaying())
         STATE.known = first(D.AURAS.DEVOTION, 1)
         refresh()
         assert.is_true(b.ants:IsShown())
-        assert.are.equal(b.antsUpdate, b.antsHolder:GetScript("OnUpdate"))
+        assert.is_true(b.antsAnim:IsPlaying())
         STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = true } }
         refresh()
-        assert.is_nil(b.antsHolder:GetScript("OnUpdate"))
+        assert.is_false(b.ants:IsShown())
+        assert.is_false(b.antsAnim:IsPlaying())
     end)
 
     it("keeps its spell and glow in combat", function()
