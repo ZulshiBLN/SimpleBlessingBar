@@ -394,7 +394,7 @@ do
     auraRow:SetWidth(#D.AURA_ORDER * (ICON + ICON_GAP) - ICON_GAP)
     auraRow:SetPoint("TOP", prioritiesPage, "TOP", 0, Place(ICON, 6))
     controls.auraRow = auraRow
-    Place(ICON, 6) -- an empty line between the two lists (Michel)
+    Place(6, 6) -- half a line between the two lists (Michel)
 
     -- The class rows under their title: two columns, a vertical line between them
     controls.blessingsTitle = Title("BTN_BLESSINGS")
@@ -417,7 +417,12 @@ do
     controls.listsDivider = divider
     measures[#measures + 1] = function() return 2 * COL_W end
 
-    UI.AddNote("LISTS_HINT", 6, 2)
+    -- The hint, centred (Michel)
+    local hint = prioritiesPage:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    hint:SetJustifyH("CENTER")
+    hint:SetPoint("TOP", prioritiesPage, "TOP", 0, Place(26, 6))
+    ns.SetL(hint, "LISTS_HINT")
+    controls.listsHint = hint
 
     -- Default restores every list, blessings and auras; Enable all switches every blessing
     -- on again, appended after those on, the order kept (Michel, 2026-10-19)
@@ -444,10 +449,16 @@ do
     end)
     enableAll:SetPoint("LEFT", reset, "RIGHT", 8, 0)
     controls.enableAll = enableAll
-    -- The pair centred; their widths follow the language, so it is placed again on every refresh
+    -- The pair centred, equally wide, a button's width apart (Michel); their widths follow the
+    -- language, so they are set again on every refresh
     local function CentreButtons()
+        local w = math.max(reset:GetFontString():GetStringWidth(), enableAll:GetFontString():GetStringWidth()) + 30
+        reset:SetWidth(w)
+        enableAll:SetWidth(w)
+        enableAll:ClearAllPoints()
+        enableAll:SetPoint("LEFT", reset, "RIGHT", w, 0)
         reset:ClearAllPoints()
-        reset:SetPoint("TOPLEFT", prioritiesPage, "TOP", -(reset:GetWidth() + 8 + enableAll:GetWidth()) / 2, buttonsY)
+        reset:SetPoint("TOPLEFT", prioritiesPage, "TOP", -1.5 * w, buttonsY)
     end
     CentreButtons()
     refreshers[#refreshers + 1] = CentreButtons

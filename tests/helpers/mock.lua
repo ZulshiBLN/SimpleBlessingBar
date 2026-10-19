@@ -48,6 +48,7 @@ function Methods:Hide()
 end
 function Methods:IsShown() return self.shown end
 function Methods:SetShown(v) if v then self:Show() else self:Hide() end end
+function Methods:SetJustifyH(v) self.justifyH = v end
 -- The client keeps a moved frame's place unless told not to
 function Methods:SetDontSavePosition(v) self.dontSavePosition = v end
 function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end

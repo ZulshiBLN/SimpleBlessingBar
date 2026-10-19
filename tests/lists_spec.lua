@@ -95,7 +95,10 @@ describe("the Priorities tab", function()
         local order = { top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle), top(c.listRows[1]),
                         top(c.listsDefault), top(c.overviewScroll) }
         for i = 2, #order do assert.is_true(order[i] < order[i - 1], "element " .. i) end
-        assert.is_true(top(c.auraRow) - top(c.blessingsTitle) >= 24 + 6 + 24, "an empty line between")
+        -- half a line between the lists (Michel): the row, then 18 px
+        assert.are.equal(24 + 18, top(c.auraRow) - top(c.blessingsTitle))
+        assert.is_true(top(c.listsHint) < top(c.listRows[5]))
+        assert.is_true(top(c.listsHint) > top(c.listsDefault))
         assert.is_true(top(c.listRows[1]) < top(c.blessingsTitle))
         assert.is_true(top(c.listRows[5]) > top(c.listsDefault))
         assert.are.equal(page, ns.overviewHost.page)
@@ -123,24 +126,34 @@ describe("the Priorities tab", function()
         assert.are.same({ "TOP", page, "TOP", 0 }, { point, rel, relPoint, x })
     end)
 
-    it("centres Default and Enable all as a pair, also after a language switch", function()
+    it("centres Default and Enable all, equally wide, a button's width apart, also after a language switch", function()
         local ns = login()
         local page = openTab(ns)
         local c = ns.UI.controls
         local function check()
+            local w = c.listsDefault:GetWidth()
+            assert.are.equal(w, c.enableAll:GetWidth())
+            local widest = math.max(c.listsDefault:GetFontString():GetStringWidth(), c.enableAll:GetFontString():GetStringWidth())
+            assert.are.equal(widest + 30, w)
             local point, rel, relPoint, x = c.listsDefault:GetPoint()
-            assert.are.same({ "TOPLEFT", page, "TOP" }, { point, rel, relPoint })
-            assert.are.equal(-(c.listsDefault:GetWidth() + 8 + c.enableAll:GetWidth()) / 2, x)
+            assert.are.same({ "TOPLEFT", page, "TOP", -1.5 * w }, { point, rel, relPoint, x })
+            assert.are.same({ "LEFT", c.listsDefault, "RIGHT", w, 0 }, { c.enableAll:GetPoint() })
         end
         check()
         ns.ApplyLanguage("deDE")
         check()
     end)
 
-    it("says how to use the lists in two short lines", function()
+    it("says how to use the lists in two short lines, centred", function()
         local ns = login()
-        assert.are.equal("The order in which you give blessings.\nDrag to reorder, right-click to toggle on/off",
+        local page = openTab(ns)
+        assert.are.equal("The order in which you give auras and blessings.\nDrag to reorder, right-click to toggle on/off",
             ns.L.LISTS_HINT)
+        local hint = ns.UI.controls.listsHint
+        assert.are.equal(ns.L.LISTS_HINT, hint:GetText())
+        local point, rel, relPoint, x = hint:GetPoint()
+        assert.are.same({ "TOP", page, "TOP", 0 }, { point, rel, relPoint, x })
+        assert.are.equal("CENTER", hint.justifyH)
     end)
 
     it("puts five classes in the left column and four in the right, a line between them", function()
