@@ -4,9 +4,10 @@
 -- STATE.units maps a unit token to a record. Two tokens for the same
 -- player share one record, so UnitIsUnit compares records:
 --   { class = "MAGE", connected = true, dead = false, visible = true,
---     range = true, subgroup = 1,
+--     range = true, subgroup = 1, level = 25,
 --     auras = { { spellId = 19740, expirationTime = 100, mine = true } } }
--- connected, visible and range default to true, dead to false.
+-- connected, visible and range default to true, dead to false, level to 25.
+-- STATE.learned maps a spell ID to the level it is learned at; unset, the game gives none.
 local noop = function() end
 local eventFrames = {}
 STATE = {
@@ -442,6 +443,7 @@ C_Spell = {
   IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
   GetSpellTexture = function(id) return "icon" .. id end,
   GetSpellName = function(id) return "spell" .. id end,
+  GetSpellLevelLearned = function(id) return STATE.learned and STATE.learned[id] end,
 }
 C_Item = {
   GetItemCount = function(id) return STATE.bags[id] or 0 end,
@@ -473,7 +475,7 @@ end
 -- used to be. STATE.secretName makes the name a secret value.
 UnitFullName = function() return "Zulshe", "Keshmar" end
 GetRealmName = function() return "Forever" end
-UnitLevel = function() return 25 end
+UnitLevel = function(u) local r = U(u or "player") return r and r.level or 25 end
 GetBuildInfo = function() return "1.60.1", "70450", "Oct 1 2026", 16001 end
 date = function() return "2026-10-18 12:00" end
 issecretvalue = function(v) return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar") end

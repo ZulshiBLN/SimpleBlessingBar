@@ -69,6 +69,9 @@ D.ROLE_LISTS = {
 -- In a raid, the members of a class who must lack a blessing before its Greater form, or
 -- Mass Salvation, pays (Michel, 2026-10-19)
 D.RAID_GREATER_MIN = 3
+-- The game refuses a spell on a target more than this many levels below the level the spell
+-- is learned at: "Target is too low level" (seen in game, 2026-10-19)
+D.LEVEL_GAP = 10
 
 D.AURAS = {
     DEVOTION      = { 465, 10290, 643, 10291, 1032, 10292, 10293 },

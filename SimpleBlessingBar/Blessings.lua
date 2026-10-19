@@ -58,6 +58,24 @@ function B.InRange(spell, unit)
     return UnitIsUnit(unit, "player") or C_Spell.IsSpellInRange(spell, unit) == true
 end
 
+-- Whether the game lets a spell land on a unit's level. A level the game does not give sets
+-- no limit; demo mode sets none either.
+function B.Fits(spell, unit)
+    if ns.IsDemo() then return true end
+    local learned, level = C_Spell.GetSpellLevelLearned(spell), UnitLevel(unit)
+    if not learned or learned <= 0 or not level or level <= 0 then return true end
+    return level >= learned - D.LEVEL_GAP
+end
+
+-- The highest known entry of a list ordered by rank that fits the unit, or nil
+function B.RankFor(list, unit)
+    local best
+    for _, id in ipairs(list) do
+        if B.Known(id) and B.Fits(id, unit) then best = id end
+    end
+    return best
+end
+
 ---------------------------------------------------------------------------
 -- Roles and presence (ruleset plan 2026-10-19-blessing-core)
 ---------------------------------------------------------------------------
@@ -109,13 +127,23 @@ local function MineOn(unit)
     end
 end
 
+-- The index of the best normal rank of a family this paladin knows that fits the unit, 0 for
+-- none
+local function BestFittingNormal(family, unit)
+    local best = 0
+    for i, id in ipairs(D.BLESSINGS[family].normal) do
+        if B.Known(id) and B.Fits(id, unit) then best = i end
+    end
+    return best
+end
+
 -- Whether another paladin gave the unit this family: in its Greater form, or a normal rank
--- at least this paladin's best known one. A lower rank counts as missing - casting it again
--- is worth it (Michel, 2026-10-19). Read out of combat only.
+-- at least the best one of this paladin's that fits the unit. A lower rank counts as missing
+-- - casting it again is worth it (Michel, 2026-10-19). Read out of combat only.
 function B.GivenByOthers(unit, family)
     if ns.IsDemo() then return false end -- demo mode reads no auras
     local mine = MineOn(unit)
-    local best = B.BestKnownNormal(family)
+    local best = BestFittingNormal(family, unit)
     local i = 1
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
@@ -165,11 +193,14 @@ local function Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
 
--- The first family of the unit's role list this paladin knows and others have not given
+-- The first family of the unit's role list this paladin can give the unit - a normal rank or
+-- the best known Greater one fits - and others have not given
 function B.ChosenFamily(unit, class)
     for _, family in ipairs(D.ROLE_LISTS[B.RoleOf(unit, class)]) do
         local f = D.BLESSINGS[family]
-        if (B.Rank(f.normal) or B.Rank(f.greater)) and not B.GivenByOthers(unit, family) then
+        local greater = B.Rank(f.greater)
+        if (B.RankFor(f.normal, unit) or (greater and B.Fits(greater, unit)))
+           and not B.GivenByOthers(unit, family) then
             return family
         end
     end
@@ -238,13 +269,17 @@ function B.PlanBlessings()
         local spell, greaterStrength
         if family then spell, greaterStrength = BestGreater(family) end
         if spell then
-            -- Only members in range count, so a cast that misses the others is not repeated
+            -- Only members in range count, so a cast that misses the others is not repeated.
+            -- Members it does not fit count for nothing: they get a normal one that fits.
             local lacking, target, exceptions = 0, nil, false
             for _, m in ipairs(members) do
-                if m.chosen and m.chosen ~= family then exceptions = true end
-                if B.InRange(spell, m.unit) then
-                    target = target or m.unit
-                    if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
+                m.fitsGreater = B.Fits(spell, m.unit)
+                if m.fitsGreater then
+                    if m.chosen and m.chosen ~= family then exceptions = true end
+                    if B.InRange(spell, m.unit) then
+                        target = target or m.unit
+                        if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
+                    end
                 end
             end
             -- The stronger form wins; between equals the group decides (Michel, 2026-10-19)
@@ -257,7 +292,7 @@ function B.PlanBlessings()
                     queue[#queue + 1] = { spell = spell, unit = target, greater = true, hold = exceptions }
                 end
                 for _, m in ipairs(members) do
-                    if m.chosen == family then covered[m] = true end
+                    if m.chosen == family and m.fitsGreater then covered[m] = true end
                 end
             end
         end
@@ -265,7 +300,7 @@ function B.PlanBlessings()
 
     for _, m in ipairs(order) do
         if m.chosen and not m.done and not covered[m] then
-            local spell = B.Rank(D.BLESSINGS[m.chosen].normal)
+            local spell = B.RankFor(D.BLESSINGS[m.chosen].normal, m.unit)
             if spell and B.InRange(spell, m.unit) then
                 queue[#queue + 1] = { spell = spell, unit = m.unit }
             end
@@ -309,21 +344,31 @@ function B.PlanSalvation(symbolsUsed)
     local symbols = Symbols() - (symbolsUsed or 0)
     local mass, revoke, single = {}, {}, {}
     for _, class in ipairs(classes) do
-        local lacking, tanks = {}, 0
+        -- Mass Salvation counts only the members it fits; the others get single Salvation
+        local lacking, massLacking, massTanks = {}, {}, 0
         for _, m in ipairs(byClass[class]) do
+            m.fitsMass = B.Fits(D.MASS_SALVATION, m.unit)
             if m.tank then
-                tanks = tanks + 1
-                if m.has and B.Known(D.REVOKE) then revoke[#revoke + 1] = { spell = D.REVOKE, unit = m.unit } end
+                if m.fitsMass then massTanks = massTanks + 1 end
+                if m.has and B.Known(D.REVOKE) and B.Fits(D.REVOKE, m.unit) then
+                    revoke[#revoke + 1] = { spell = D.REVOKE, unit = m.unit }
+                end
             elseif not m.has then
                 lacking[#lacking + 1] = m
+                if m.fitsMass then massLacking[#massLacking + 1] = m end
             end
         end
-        if IsInRaid() and B.Known(D.MASS_SALVATION) and symbols > 0 and #lacking >= D.RAID_GREATER_MIN + tanks then
+        local useMass = IsInRaid() and B.Known(D.MASS_SALVATION) and symbols > 0
+            and #massLacking >= D.RAID_GREATER_MIN + massTanks
+        if useMass then
             symbols = symbols - 1
-            -- `hold`: with tanks in the class, its Revokes could not follow in combat
-            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = lacking[1].unit, greater = true, hold = tanks > 0 }
-        else
-            for _, m in ipairs(lacking) do single[#single + 1] = { spell = D.SALVATION, unit = m.unit, at = m.at } end
+            -- `hold`: with tanks it reaches, their Revokes could not follow in combat
+            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = massLacking[1].unit, greater = true, hold = massTanks > 0 }
+        end
+        for _, m in ipairs(lacking) do
+            if not (useMass and m.fitsMass) and B.Fits(D.SALVATION, m.unit) then
+                single[#single + 1] = { spell = D.SALVATION, unit = m.unit, at = m.at }
+            end
         end
     end
     table.sort(single, function(a, b) return position[a.at] < position[b.at] end)
