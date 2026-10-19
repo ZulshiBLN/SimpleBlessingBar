@@ -22,7 +22,7 @@ The addon loads for paladins only.
 |---|---|---|
 | Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing | – |
-| Blessings | Cast the next blessing your group needs - highlighted while one is left | – |
+| Blessings | Cast the next blessing your group needs - highlighted while one is left | Set the role of your target, or your own (not in combat) |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
 
@@ -42,14 +42,18 @@ chosen in the settings.
   role gets it; the others take the role the game reports for them, and their class default
   where it reports none. Out of a group the game reports no role, so yours is then your class
   default, melee.
-- Each role has a priority list. A member gets the first blessing on its list that you know and
+- **A role by hand:** a right click on the blessing button opens a menu for your target if it
+  is in your group, else for you: Automatic, or a role the class can play. It holds while that
+  player stays in your group and is never saved - a feral druid reported as damage can be set
+  to tank or melee this way.
+- Each role has a priority list, which you can change on the Blessings tab. A member gets the first blessing on its list that you know and
   no other paladin has given - in its Greater form, or in a rank at least as high as your best.
   A lower rank from someone else counts as missing.
 - The game refuses a rank on a target more than ten levels below the level you learned it at.
   A low-level member therefore gets the highest rank that reaches him, and a blessing none of
   whose ranks reaches him is skipped for the next on his list.
 
-  | Role | Priority |
+  | Role | Priority (default) |
   |---|---|
   | Tank | Kings, Might, Light, Wisdom |
   | Healer | Wisdom, Kings, Light, Might |
@@ -57,8 +61,12 @@ chosen in the settings.
   | Ranged | Kings, Wisdom, Light, Might |
   | Caster | Wisdom, Kings, Light, Might |
 
-- A member is done once it carries a normal blessing of yours, or your Greater Blessing of
-  the kind chosen for it: a paladin's second blessing on the same target replaces the first.
+- **The pin** "I give only", on the Blessings tab: while set, every member gets that blessing
+  from you - whatever its role list says - unless another paladin gave it or no rank reaches
+  him. It holds until you log out, and the blessing button's tooltip names it.
+- A member is done once it carries your blessing of the kind chosen for it. One of another kind
+  is replaced - a paladin's second blessing on the same target replaces the first - so a change
+  of role, list or pin is cast at once.
 - **Greater or normal:** the stronger form you know is cast. Where both are equally strong, a
   Greater Blessing is cast only in a raid, when at least three members of a class in range lack
   it, and only while you carry a Symbol of Kings. A class gets at most one Greater Blessing from
@@ -76,12 +84,14 @@ Salvation and Greater Blessings count only the members they reach.
 
 **Both buttons** show how many casts are left; with none left, no number shows and the highlight
 stops. Hover a button to see what it casts next and on whom. Dead, offline and out-of-range
-players are left out. A blessing is renewed once it has run out.
+players are left out. A blessing, Salvation or Mass Salvation of yours is renewed when less
+than 5 minutes are left (see the Blessings tab); another paladin's counts until it runs out.
 
 **In combat** the game hides who has which buff. The blessing and Salvation buttons keep the
 cast that was first when the fight started - a Greater Blessing or Mass Salvation that would be
-followed by casts that cannot happen in combat waits for the end of it. Clicking again casts it
-again. Everything updates when combat ends.
+followed by casts that cannot happen in combat waits for the end of it; if nothing else is
+left, the button keeps its number without the highlight, and its tooltip says so. Clicking
+again casts it again. Everything updates when combat ends.
 
 ## Settings
 
@@ -120,6 +130,14 @@ closes when combat starts and opens again when combat ends. Every change takes e
 **Order**
 - Drag the rows to reorder the bar's four buttons. "Default" restores aura, Righteous Fury,
   blessings, Salvation.
+
+**Blessings**
+- I give only: follow the lists, or pin one blessing for everyone until you log out.
+- A row per role with its priority list: drag a blessing left or right to reorder it; a right
+  click switches it off for that role (greyed at the end, never given) or on again. At least one
+  stays on. "Default" restores every row.
+- Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
+  blessing has run out.
 
 **Macros** - prepared; macros follow in a later version.
 
@@ -162,7 +180,7 @@ unless you choose another in the settings.
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |
 | `Settings.lua` | Settings window, tabs, widgets, color picker |
-| `SettingsPages.lua` | The General, Tracking, Supplies, Order and Macros pages |
+| `SettingsPages.lua` | The General, Tracking, Supplies, Order, Blessings and Macros pages |
 | `Main.lua` | Startup and chat commands |
 
 Modules share code through the addon namespace (`ns`). Each file is its own Lua chunk, which keeps

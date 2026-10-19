@@ -20,7 +20,14 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Low-level members get the highest rank that reaches them; nothing is offered that the game
   would refuse with "Target is too low level".
 - Both buttons show how many casts are left and name the next one in their tooltip. In combat
-  they keep the cast that was first when the fight started.
+  they keep the cast that was first when the fight started; one that must wait for the end of
+  combat shows no highlight, and the tooltip says so.
+- A right click on the blessing button sets the role of your target, or your own, while that
+  player stays in your group.
+- A Blessings tab: the priority list of each role, reordered by drag and drop, with blessings
+  switched off per role; "I give only", pinning one blessing for everyone until logout; and
+  early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
+- A change of role, list or pin is cast at once, replacing your blessing of another kind.
 - An aura flyout: a right click on the aura button opens your auras beside it. A click on one
   selects it for the button without casting, also in combat. The flyout closes 3 seconds after
   the mouse leaves it, and a left click on any button of the bar closes it.
@@ -30,7 +37,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and speed,
   the color of the blessing and Salvation buttons' count, and the flyouts' automatic closing and its time.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
-  order of the four buttons. Macros: prepared for a later version.
+  order of the four buttons. Blessings: see below. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored
   when they run low; at a vendor they are bought automatically up to a target, above a gold
   reserve.
