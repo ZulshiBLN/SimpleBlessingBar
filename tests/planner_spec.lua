@@ -64,10 +64,17 @@ describe("my blessing for a member", function()
         assert.are.same({ K.normal[1], "party1" }, entries(q)[2])
     end)
 
-    it("is done once any normal blessing of mine is on the member", function()
-        local B = plan({ group = "party", units = { party1 = { class = "WARRIOR", auras = { aura(K.normal[1], true) } } } },
+    it("is done once my blessing of the chosen family is on the member", function()
+        local B = plan({ group = "party", units = { party1 = { class = "WARRIOR", auras = { aura(M.normal[6], true) } } } },
             basics())
         assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
+    end)
+
+    -- A change of role, list or pin is cast at once (ruleset plan 2026-10-19-blessing-steering)
+    it("replaces my blessing of another family than the chosen one", function()
+        local B = plan({ group = "party", units = { party1 = { class = "WARRIOR", auras = { aura(K.normal[1], true) } } } },
+            basics())
+        assert.are.same({ M.normal[6], "party1" }, entries((B.PlanBlessings()))[2])
     end)
 
     it("moves on when another paladin overwrote mine", function()

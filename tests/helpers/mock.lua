@@ -303,6 +303,21 @@ function MENU(dd)
   return entries
 end
 
+-- A context menu: STATE.menu = { owner =, titles = {...}, entries = as MENU's }, built when
+-- it opens. A radio's select gets its data, as the client's does.
+MenuUtil = {
+  CreateContextMenu = function(owner, gen)
+    local menu, root = { owner = owner, titles = {}, entries = {} }, {}
+    function root:CreateTitle(text) table.insert(menu.titles, text) end
+    function root:CreateRadio(text, isSelected, select, data)
+      table.insert(menu.entries, { text = text, selected = isSelected(data) and true or false,
+                                   pick = function() select(data) end })
+    end
+    gen(owner, root)
+    STATE.menu = menu
+  end,
+}
+
 -- The client's color picker: SetupColorPickerAndShow keeps the info; STATE.pickedColor is
 -- what the player has picked, { r, g, b, a }
 ColorPickerFrame = NEWOBJ("Frame")
@@ -395,6 +410,8 @@ UnitIsConnected = function(u) local r = U(u) return r ~= nil and r.connected ~= 
 UnitIsDeadOrGhost = function(u) local r = U(u) return r ~= nil and r.dead == true end
 UnitIsVisible = function(u) local r = U(u) return r ~= nil and r.visible ~= false end
 UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
+-- A player's GUID: the record's guid, else one made from the record, the same for every token
+UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
 -- The group role the game reports: the record's role, else "NONE"
 UnitName = function(u) local r = U(u) return r and (r.name or u) end
 UnitGroupRolesAssigned = function(u) local r = U(u) return r and r.role or "NONE" end

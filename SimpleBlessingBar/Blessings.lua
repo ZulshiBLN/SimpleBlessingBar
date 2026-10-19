@@ -82,13 +82,44 @@ end
 -- The game's group roles, mapped onto ours
 local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 
--- A member's role: the one the game reports where the class can play it - a damage dealer
--- gets the class's first damage role - else the class default. Demo mode puts every class on
--- the player, so it reads no role: each class shows its default.
+-- Roles set by hand, GUID -> role: kept while the member is in the group, never saved, so no
+-- player's ID reaches SavedVariables (Michel, 2026-10-19)
+local handRoles = {}
+
+function B.SetHandRole(guid, role)
+    handRoles[guid] = role
+end
+
+function B.HandRole(unit)
+    local guid = UnitGUID(unit)
+    return guid and handRoles[guid]
+end
+
+-- Forgets the roles of members no longer in the group. Out of combat only: a GUID may be
+-- secret in combat.
+function B.PruneHandRoles()
+    local present = {}
+    for _, unit in ipairs(B.Members()) do
+        local guid = UnitGUID(unit)
+        if guid then present[guid] = true end
+    end
+    for guid in pairs(handRoles) do
+        if not present[guid] then handRoles[guid] = nil end
+    end
+end
+
+-- A member's role: one set by hand, else the one the game reports, where the class can play
+-- it - a damage dealer gets the class's first damage role - else the class default. Demo mode
+-- puts every class on the player, so it reads neither: each class shows its default.
 function B.RoleOf(unit, class)
     local roles = D.CLASS_ROLES[class or select(2, UnitClass(unit))]
     if not roles then return end
-    local reported = not ns.IsDemo() and UnitGroupRolesAssigned(unit)
+    if ns.IsDemo() then return roles[1] end
+    local hand = B.HandRole(unit)
+    for _, role in ipairs(roles) do
+        if role == hand then return role end
+    end
+    local reported = UnitGroupRolesAssigned(unit)
     for _, role in ipairs(roles) do
         if role == reported or (reported == "DAMAGER" and DAMAGE_ROLES[role]) then return role end
     end
@@ -168,7 +199,7 @@ for _, list in pairs(D.ROLE_LISTS) do
     for _, family in ipairs(list) do IS_BLESSING[family] = true end
 end
 
--- This paladin's blessing on a unit: its family and whether it is the Greater form, or nil
+-- The family of this paladin's blessing on a unit, normal or Greater, or nil
 local function MyBlessingOn(unit)
     if ns.IsDemo() then return end
     local i = 1
@@ -176,7 +207,7 @@ local function MyBlessingOn(unit)
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return end
         local rank = RANKS[aura.spellId]
-        if rank and IS_BLESSING[rank.family] then return rank.family, rank.greater end
+        if rank and IS_BLESSING[rank.family] then return rank.family end
         i = i + 1
     end
 end
@@ -207,11 +238,11 @@ function B.ChosenFamily(unit, class)
     end
 end
 
--- Done for this paladin: a normal blessing of mine, or my Greater one of the chosen family.
--- My Greater one of another family is replaced by the exception.
-local function Done(chosen, mine, mineGreater)
-    if not mine then return false end
-    return not mineGreater or mine == chosen
+-- Done for this paladin: my blessing on the member, normal or Greater, is of the chosen
+-- family. One of another family is replaced, so a change of role, list or pin is cast at once
+-- (Michel, 2026-10-19).
+local function Done(chosen, mine)
+    return mine ~= nil and mine == chosen
 end
 
 -- The Greater family of a class: the one chosen for most of its members, ties by
@@ -254,9 +285,9 @@ end
 function B.PlanBlessings()
     local byClass, order = {}, {}
     for _, r in ipairs(Roster()) do
-        local mine, mineGreater = MyBlessingOn(r.unit)
+        local mine = MyBlessingOn(r.unit)
         local m = { unit = r.unit, chosen = B.ChosenFamily(r.unit, r.class), mine = mine }
-        m.done = Done(m.chosen, mine, mineGreater)
+        m.done = Done(m.chosen, mine)
         byClass[r.class] = byClass[r.class] or {}
         table.insert(byClass[r.class], m)
         order[#order + 1] = m

@@ -70,6 +70,7 @@ local function Show(b, queue, combatStart)
 end
 
 table.insert(ns.onRefresh, function(combatStart)
+    B.PruneHandRoles()
     local queue, symbolsUsed = B.PlanBlessings()
     Show(blessing, queue, combatStart)
     ns.UpdateSymbols(blessing, B.AnyGreaterKnown())

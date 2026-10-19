@@ -157,6 +157,7 @@ unless you choose another in the settings.
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
 | `Flyout.lua` | Secure header, the aura flyout, demo mode's chat output |
+| `RoleMenu.lua` | The blessing button's right-click menu: a member's role set by hand |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |
