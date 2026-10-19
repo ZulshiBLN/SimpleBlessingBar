@@ -199,6 +199,7 @@ describe("the queue buttons' tooltips and right click", function()
         assert.is_false(ns.UI.window:IsShown())
         RUNCLICK(bless, "RightButton", false)
         assert.is_true(ns.SettingsPageShown("TAB_PRIORITIES"))
+        assert.is_nil(STATE.menu) -- no menu, as before
         assert.are.same({}, STATE.casts)
         assert.are.same({}, STATE.errors)
     end)
