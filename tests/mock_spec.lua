@@ -127,3 +127,71 @@ describe("a wrapped secure click in the mock", function()
         assert.are.equal(1, seen)
     end)
 end)
+
+-- What Buff & Run relies on (ruleset plan 2026-10-20-buff-and-run): PreClick, the middle
+-- button's attributes, a macro running /click and /targetfriendplayer, friendly players and
+-- the cooldown read
+describe("the mock for Buff & Run", function()
+    local function buttons()
+        addon.load("enUS")
+        local hidden = CreateFrame("Button", "MockHidden", UIParent, "SecureActionButtonTemplate")
+        hidden:SetAttribute("type", "spell")
+        hidden:SetAttribute("spell", 19740)
+        hidden:SetAttribute("unit", "target")
+        local b = CreateFrame("Button", "MockMacro", UIParent, "SecureActionButtonTemplate")
+        b:SetAttribute("type3", "macro")
+        b:SetAttribute("macrotext3", "/click MockHidden LeftButton 1\n/targetfriendplayer")
+        return b, hidden
+    end
+
+    it("runs PreClick before the action, and the action reads attributes set there", function()
+        local b, hidden = buttons()
+        local order = {}
+        b:SetScript("PreClick", function(_, button, down)
+            order[#order + 1] = "pre " .. button .. " " .. tostring(down)
+            hidden:SetAttribute("spell", 20217)
+        end)
+        STATE.units.target = { class = "MAGE" }
+        RUNCLICK(b, "MiddleButton", true)
+        assert.are.same({ "pre MiddleButton true" }, order)
+        assert.are.same({ { spell = 20217, unit = "target" } }, STATE.casts)
+    end)
+
+    it("clicks the named button on key down, then targets the next friendly player", function()
+        local b = buttons()
+        local first, second = { class = "MAGE" }, { class = "ROGUE" }
+        STATE.units.target = first
+        STATE.friends = { second }
+        RUNCLICK(b, "MiddleButton", true)
+        assert.are.same({ { spell = 19740, unit = "target" } }, STATE.casts)
+        assert.are.equal(second, STATE.units.target)
+        assert.are.equal(1, STATE.targetedNext)
+        RUNCLICK(b, "MiddleButton", false) -- key up: no second action
+        assert.are.equal(1, STATE.targetedNext)
+    end)
+
+    it("does nothing without type3, and nothing for a /click of a button that does not exist", function()
+        local b = buttons()
+        b:SetAttribute("macrotext3", "/click Nowhere LeftButton 1")
+        RUNCLICK(b, "MiddleButton", true)
+        b:SetAttribute("type3", nil)
+        RUNCLICK(b, "MiddleButton", true)
+        assert.are.same({}, STATE.casts)
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("tells players from others, friends from foes, and reads a cooldown", function()
+        addon.load("enUS")
+        STATE.units.target = { class = "MAGE" }
+        assert.is_true(UnitIsPlayer("target"))
+        assert.is_true(UnitCanAssist("player", "target"))
+        STATE.units.target = { npc = true, hostile = true }
+        assert.is_false(UnitIsPlayer("target"))
+        assert.is_false(UnitCanAssist("player", "target"))
+        assert.are.equal(0, C_Spell.GetSpellCooldown(19740).startTime)
+        STATE.gcd = true
+        local cd = C_Spell.GetSpellCooldown(19740)
+        assert.is_true(cd.startTime > 0)
+        assert.are.equal(1.5, cd.duration)
+    end)
+end)

@@ -276,12 +276,30 @@ end
 -- wrappers that returned a message, then the insecure hooks. A spell cast
 -- is appended to STATE.casts as { spell = id, unit = token }.
 local function Attr(frame, name, button)
-  local suffix = button == "LeftButton" and "1" or button == "RightButton" and "2" or ""
+  local suffix = button == "LeftButton" and "1" or button == "RightButton" and "2"
+    or button == "MiddleButton" and "3" or ""
   local v = frame.attrs[name .. suffix]
   if v == nil then v = frame.attrs[name] end
   return v
 end
+-- A macro's lines as the client runs them, as far as the addon writes macros:
+-- "/click Name [button] [1]" clicks a named button, key down with the "1"; "/targetfriendplayer"
+-- targets the next of STATE.friends (nil when none is left) and counts in STATE.targetedNext
+local function RunMacro(text)
+  for line in (text or ""):gmatch("[^\n]+") do
+    local name, button, down = line:match("^/click%s+(%S+)%s*(%S*)%s*(%S*)")
+    if name then
+      local target = _G[name]
+      if target then RUNCLICK(target, button ~= "" and button or "LeftButton", down == "1") end
+    elseif line:match("^/targetfriendplayer") then
+      STATE.units.target = table.remove(STATE.friends or {}, 1)
+      STATE.targetedNext = (STATE.targetedNext or 0) + 1
+    end
+  end
+end
+
 function RUNCLICK(frame, button, down)
+  RUNSCRIPT(frame, "PreClick", button, down)
   local cancelled, messages = false, {}
   for i, w in ipairs(Wraps(frame, "OnClick")) do
     if w.pre then
@@ -293,9 +311,13 @@ function RUNCLICK(frame, button, down)
   end
   if not cancelled then
     local template = rawget(frame, "template")
-    if template and template:find("SecureActionButtonTemplate")
-       and (down == true) == (STATE.keyDown == true) and Attr(frame, "type", button) == "spell" then
-      STATE.casts[#STATE.casts + 1] = { spell = Attr(frame, "spell", button), unit = Attr(frame, "unit", button) }
+    if template and template:find("SecureActionButtonTemplate") and (down == true) == (STATE.keyDown == true) then
+      local kind = Attr(frame, "type", button)
+      if kind == "spell" then
+        STATE.casts[#STATE.casts + 1] = { spell = Attr(frame, "spell", button), unit = Attr(frame, "unit", button) }
+      elseif kind == "macro" then
+        RunMacro(Attr(frame, "macrotext", button))
+      end
     end
     for i, w in ipairs(Wraps(frame, "OnClick")) do
       if w.post and messages[i] ~= nil then
@@ -426,6 +448,9 @@ UnitIsConnected = function(u) local r = U(u) return r ~= nil and r.connected ~= 
 UnitIsDeadOrGhost = function(u) local r = U(u) return r ~= nil and r.dead == true end
 UnitIsVisible = function(u) local r = U(u) return r ~= nil and r.visible ~= false end
 UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
+-- A record is a player unless `npc`, friendly unless `hostile`
+UnitIsPlayer = function(u) local r = U(u) return r ~= nil and r.npc ~= true end
+UnitCanAssist = function(_, u) local r = U(u) return r ~= nil and r.hostile ~= true end
 -- A player's GUID: the record's guid, else one made from the record, the same for every token
 UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
 -- The group role the game reports: the record's role, else "NONE"
@@ -482,6 +507,11 @@ C_Spell = {
   GetSpellTexture = function(id) return "icon" .. id end,
   GetSpellName = function(id) return "spell" .. id end,
   GetSpellLevelLearned = function(id) return STATE.learned and STATE.learned[id] end,
+  -- STATE.gcd: the global cooldown runs, 1.5 s from GetTime
+  GetSpellCooldown = function()
+    if STATE.gcd then return { startTime = (STATE.now or 0) + 1, duration = 1.5 } end
+    return { startTime = 0, duration = 0 }
+  end,
 }
 C_Item = {
   GetItemCount = function(id) return STATE.bags[id] or 0 end,
