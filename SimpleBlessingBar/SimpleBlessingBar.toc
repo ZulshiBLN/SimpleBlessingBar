@@ -1,17 +1,17 @@
 ## Interface: 16001
 ## Title: SimpleBlessingBar
 ## IconTexture: Interface\Icons\Spell_Holy_SealOfWisdom
-## Notes: Paladin blessing manager: assign, coordinate and cast blessings and auras
-## Notes-deDE: Segensverwaltung für Paladine: Segen und Auren zuweisen, abstimmen und wirken
-## Notes-frFR: Gestion des bénédictions de paladin : attribuer, coordonner et lancer bénédictions et auras
-## Notes-esES: Gestor de bendiciones de paladín: asignar, coordinar y lanzar bendiciones y auras
-## Notes-esMX: Gestor de bendiciones de paladín: asignar, coordinar y lanzar bendiciones y auras
-## Notes-itIT: Gestione delle benedizioni del paladino: assegna, coordina e lancia benedizioni e aure
-## Notes-ptBR: Gerenciador de bênçãos de paladino: atribuir, coordenar e lançar bênçãos e auras
-## Notes-ruRU: Менеджер благословений паладина: назначение, согласование и наложение благословений и аур
-## Notes-koKR: 성기사 축복 관리: 축복과 오라를 배정, 조율하고 시전
-## Notes-zhCN: 圣骑士祝福管理：分配、协调并施放祝福和光环
-## Notes-zhTW: 聖騎士祝福管理：分配、協調並施放祝福和光環
+## Notes: Paladin blessing manager: blesses your group by role, coordinates with other paladins and casts auras
+## Notes-deDE: Segensverwaltung für Paladine: segnet die Gruppe nach Rolle, stimmt sich mit anderen Paladinen ab und wirkt Auren
+## Notes-frFR: Gestion des bénédictions de paladin : bénit le groupe selon les rôles, se coordonne avec les autres paladins et lance les auras
+## Notes-esES: Gestor de bendiciones de paladín: bendice al grupo según su rol, se coordina con otros paladines y lanza auras
+## Notes-esMX: Gestor de bendiciones de paladín: bendice al grupo según su rol, se coordina con otros paladines y lanza auras
+## Notes-itIT: Gestione delle benedizioni del paladino: benedice il gruppo per ruolo, si coordina con gli altri paladini e lancia aure
+## Notes-ptBR: Gerenciador de bênçãos de paladino: abençoa o grupo por função, coordena com outros paladinos e lança auras
+## Notes-ruRU: Менеджер благословений паладина: благословляет группу по ролям, согласуется с другими паладинами и накладывает ауры
+## Notes-koKR: 성기사 축복 관리: 역할에 따라 파티에 축복을 걸고, 다른 성기사와 조율하며 오라를 시전
+## Notes-zhCN: 圣骑士祝福管理：按职责为队伍施放祝福，与其他圣骑士协调并施放光环
+## Notes-zhTW: 聖騎士祝福管理：依職責為隊伍施放祝福，與其他聖騎士協調並施放光環
 ## Author: ZulshiBLN
 ## Version: 0.1.0
 ## X-License: MIT
