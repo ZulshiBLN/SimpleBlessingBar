@@ -43,6 +43,7 @@ end
 describe("the role menu", function()
     it("opens on the right button's release, for the player without a target", function()
         local ns, b = login()
+        STATE.units.player.surname = "Keshmar" -- UnitName's second value on Forever
         RUNCLICK(b, "RightButton", true)
         assert.is_nil(STATE.menu)
         RUNCLICK(b, "RightButton", false)

@@ -28,7 +28,9 @@ local function OpenMenu(owner)
     end
     MenuUtil.CreateContextMenu(owner, function(_, root)
         root:CreateTitle(L.ROLE_MENU)
-        root:CreateTitle(UnitName(unit))
+        -- The name only: UnitName's second value (Forever's second name) would be read as
+        -- the title's color
+        root:CreateTitle((UnitName(unit)))
         root:CreateRadio(L.ROLE_AUTO, function() return B.HandRole(unit) == nil end, function() pick(nil) end)
         for _, role in ipairs(roles) do
             root:CreateRadio(L["ROLE_" .. role], function() return B.HandRole(unit) == role end, pick, role)

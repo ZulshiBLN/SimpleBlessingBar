@@ -309,7 +309,11 @@ end
 MenuUtil = {
   CreateContextMenu = function(owner, gen)
     local menu, root = { owner = owner, titles = {}, entries = {} }, {}
-    function root:CreateTitle(text) table.insert(menu.titles, text) end
+    -- The client calls the color's methods: anything but a color errors there, as in game
+    function root:CreateTitle(text, color)
+      if color ~= nil and type(color) ~= "table" then error("title color is not a color", 2) end
+      table.insert(menu.titles, text)
+    end
     function root:CreateRadio(text, isSelected, select, data)
       table.insert(menu.entries, { text = text, selected = isSelected(data) and true or false,
                                    pick = function() select(data) end })
@@ -414,7 +418,9 @@ UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
 -- A player's GUID: the record's guid, else one made from the record, the same for every token
 UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
 -- The group role the game reports: the record's role, else "NONE"
-UnitName = function(u) local r = U(u) return r and (r.name or u) end
+-- Forever has no realms: the second value is the character's second name (decisions.md,
+-- 2026-10-18), here the record's `surname`
+UnitName = function(u) local r = U(u) if r then return r.name or u, r.surname end end
 UnitGroupRolesAssigned = function(u) local r = U(u) return r and r.role or "NONE" end
 
 local function countUnits(prefix)
