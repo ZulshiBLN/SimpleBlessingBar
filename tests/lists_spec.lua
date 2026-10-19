@@ -110,6 +110,18 @@ describe("the Blessings tab", function()
         assert.are.equal(K.normal[1], ns.blessingButton:GetAttribute("spell1"))
     end)
 
+    it("shows the game's tooltip of the best known rank, rank 1 when none is known", function()
+        local ns = login()
+        STATE.known[M.normal[2]] = true
+        openTab(ns)
+        local melee = row(ns, "MELEE")
+        RUNSCRIPT(melee.icons[1], "OnEnter")
+        assert.are.equal(M.normal[2], GameTooltip.spell)
+        RUNSCRIPT(melee.icons[3], "OnEnter")
+        assert.are.equal(D.BLESSINGS.LIGHT.normal[1], GameTooltip.spell)
+        assert.are.same({}, STATE.errors)
+    end)
+
     it("keeps one blessing on", function()
         local ns, db = login({ dbVersion = 7, roleLists = { MELEE = { order = { "KINGS" }, off = { MIGHT = true, LIGHT = true, WISDOM = true } } } })
         openTab(ns)

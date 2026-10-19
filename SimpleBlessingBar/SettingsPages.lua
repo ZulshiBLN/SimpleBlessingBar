@@ -541,9 +541,11 @@ do
                     Toggle(role, self.family)
                 end
             end)
+            -- The game's own tooltip, of the best rank known, else of rank 1 (Michel)
             icon:SetScript("OnEnter", function(self)
+                local normal = D.BLESSINGS[self.family].normal
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
-                GameTooltip:SetText(FamilyName(self.family))
+                GameTooltip:SetSpellByID(B.Rank(normal) or normal[1])
                 GameTooltip:Show()
             end)
             icon:SetScript("OnLeave", ns.HideTooltip)
