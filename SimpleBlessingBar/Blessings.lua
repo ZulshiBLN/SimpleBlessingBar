@@ -210,3 +210,191 @@ function B.ClassState(class, familyKey)
     state.target = state.target or soonestUnit
     return state
 end
+
+---------------------------------------------------------------------------
+-- The planner (ruleset plan 2026-10-19-blessing-core, IMPLEMENTATION "Definitions")
+-- Out of combat it decides, from what the group carries, what this paladin casts next.
+---------------------------------------------------------------------------
+-- Blessings are the families of the role lists; Salvation never counts as one
+local IS_BLESSING = {}
+for _, list in pairs(D.ROLE_LISTS) do
+    for _, family in ipairs(list) do IS_BLESSING[family] = true end
+end
+
+-- This paladin's blessing on a unit: its family and whether it is the Greater form, or nil
+local function MyBlessingOn(unit)
+    local i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
+        if not aura then return end
+        local rank = RANKS[aura.spellId]
+        if rank and IS_BLESSING[rank.family] then return rank.family, rank.greater end
+        i = i + 1
+    end
+end
+
+-- The best known Greater rank of a family: its ID and strength, or nil
+local function BestGreater(family)
+    local best, strength
+    for i, id in ipairs(D.BLESSINGS[family].greater) do
+        if B.Known(id) then best, strength = id, D.GREATER_EQUALS[family][i] end
+    end
+    return best, strength
+end
+
+local function Symbols()
+    return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
+end
+
+-- The first family of the unit's role list this paladin knows and others have not given
+function B.ChosenFamily(unit)
+    for _, family in ipairs(D.ROLE_LISTS[B.RoleOf(unit)]) do
+        local f = D.BLESSINGS[family]
+        if (B.Rank(f.normal) or B.Rank(f.greater)) and not B.GivenByOthers(unit, family) then
+            return family
+        end
+    end
+end
+
+-- Done for this paladin: a normal blessing of mine, or my Greater one of the chosen family.
+-- My Greater one of another family is replaced by the exception.
+local function Done(chosen, mine, mineGreater)
+    if not mine then return false end
+    return not mineGreater or mine == chosen
+end
+
+-- The Greater family of a class: the one chosen for most of its members, ties by
+-- D.BLESSING_ORDER
+local ORDER_INDEX = {}
+for i, family in ipairs(D.BLESSING_ORDER) do ORDER_INDEX[family] = i end
+local function GreaterFamily(members)
+    local count = {}
+    for _, m in ipairs(members) do
+        if m.chosen then count[m.chosen] = (count[m.chosen] or 0) + 1 end
+    end
+    local best
+    for family, n in pairs(count) do
+        if not best or n > count[best] or (n == count[best] and ORDER_INDEX[family] < ORDER_INDEX[best]) then
+            best = family
+        end
+    end
+    return best
+end
+
+-- The blessing queue: entries { spell, unit, greater }, Greater entries first, then normal
+-- ones in group order. Also returns the Symbols its Greater entries use. Out of combat only.
+function B.PlanBlessings()
+    local byClass, order = {}, {}
+    for _, unit in ipairs(B.Members()) do
+        local class = select(2, UnitClass(unit))
+        if class and B.Eligible(unit) then
+            local mine, mineGreater = MyBlessingOn(unit)
+            local m = { unit = unit, chosen = B.ChosenFamily(unit), mine = mine }
+            m.done = Done(m.chosen, mine, mineGreater)
+            byClass[class] = byClass[class] or {}
+            table.insert(byClass[class], m)
+            order[#order + 1] = m
+        end
+    end
+
+    local symbols = Symbols()
+    local queue, covered = {}, {}
+    for _, class in ipairs(D.CLASS_ORDER) do
+        local members = byClass[class]
+        local family = members and GreaterFamily(members)
+        local spell, greaterStrength
+        if family then spell, greaterStrength = BestGreater(family) end
+        if spell then
+            -- Only members in range count, so a cast that misses the others is not repeated
+            local lacking, target = 0, nil
+            for _, m in ipairs(members) do
+                if B.InRange(spell, m.unit) then
+                    target = target or m.unit
+                    if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
+                end
+            end
+            -- The stronger form wins; between equals the group decides (Michel, 2026-10-19)
+            local normalStrength = B.BestKnownNormal(family)
+            local useGreater = greaterStrength > normalStrength
+                or (greaterStrength == normalStrength and IsInRaid() and lacking >= D.RAID_GREATER_MIN)
+            if useGreater and (lacking == 0 or symbols > 0) then
+                if lacking > 0 then
+                    symbols = symbols - 1
+                    queue[#queue + 1] = { spell = spell, unit = target, greater = true }
+                end
+                for _, m in ipairs(members) do
+                    if m.chosen == family then covered[m] = true end
+                end
+            end
+        end
+    end
+
+    for _, m in ipairs(order) do
+        if m.chosen and not m.done and not covered[m] then
+            local spell = B.Rank(D.BLESSINGS[m.chosen].normal)
+            if spell and B.InRange(spell, m.unit) then
+                queue[#queue + 1] = { spell = spell, unit = m.unit }
+            end
+        end
+    end
+    return queue, Symbols() - symbols
+end
+
+-- Whether a unit carries Salvation or Mass Salvation, from anyone
+local function HasSalvation(unit)
+    local i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
+        if not aura then return false end
+        if aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION then return true end
+        i = i + 1
+    end
+end
+
+-- The Salvation queue: Salvation for every member whose role is not tank, Revoke for a tank
+-- carrying it from anyone. In a raid a class gets Mass Salvation when its non-tanks in range
+-- who lack it reach the threshold plus its tanks, each of whom needs a Revoke after it. Mass
+-- Salvation first, then Revoke, then single Salvation in group order. `symbolsUsed` are the
+-- Symbols the blessing queue already plans. Out of combat only.
+function B.PlanSalvation(symbolsUsed)
+    if not B.Known(D.SALVATION) then return {} end
+    local byClass, classes, position = {}, {}, {}
+    for i, unit in ipairs(B.Members()) do
+        position[unit] = i
+        local class = select(2, UnitClass(unit))
+        if class and B.Eligible(unit) and B.InRange(D.SALVATION, unit) then
+            local m = { unit = unit, tank = B.RoleOf(unit) == "TANK", has = HasSalvation(unit) }
+            if not byClass[class] then
+                byClass[class] = {}
+                classes[#classes + 1] = class
+            end
+            table.insert(byClass[class], m)
+        end
+    end
+
+    local symbols = Symbols() - (symbolsUsed or 0)
+    local mass, revoke, single = {}, {}, {}
+    for _, class in ipairs(classes) do
+        local lacking, tanks = {}, 0
+        for _, m in ipairs(byClass[class]) do
+            if m.tank then
+                tanks = tanks + 1
+                if m.has and B.Known(D.REVOKE) then revoke[#revoke + 1] = { spell = D.REVOKE, unit = m.unit } end
+            elseif not m.has then
+                lacking[#lacking + 1] = m
+            end
+        end
+        if IsInRaid() and B.Known(D.MASS_SALVATION) and symbols > 0 and #lacking >= D.RAID_GREATER_MIN + tanks then
+            symbols = symbols - 1
+            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = lacking[1].unit, greater = true }
+        else
+            for _, m in ipairs(lacking) do single[#single + 1] = { spell = D.SALVATION, unit = m.unit } end
+        end
+    end
+    table.sort(single, function(a, b) return position[a.unit] < position[b.unit] end)
+
+    local queue = mass
+    for _, e in ipairs(revoke) do queue[#queue + 1] = e end
+    for _, e in ipairs(single) do queue[#queue + 1] = e end
+    return queue
+end
