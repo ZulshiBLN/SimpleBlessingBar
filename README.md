@@ -22,7 +22,7 @@ The addon loads for paladins only.
 |---|---|---|
 | Aura | Cast the first aura of your list no other paladin runs, highest rank you know - highlighted until it runs | – |
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing and your group's role check made you tank; greyed otherwise, also alone | – |
-| Blessings | Cast the next blessing your group needs - highlighted while one is left | – |
+| Blessings | Cast the next blessing your group needs - highlighted while one is left | Open the Priorities tab |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
 
@@ -75,10 +75,12 @@ gets Revoke. In a raid, a class gets Mass Salvation when the members of it in ra
 Salvation, tanks not counted, are at least three plus the class's tanks; its tanks get Revoke
 after it. Mass Salvation costs a Symbol of Kings. Members too low for Salvation, Mass Salvation
 or Revoke - more than ten levels below the level you learned it at - are left out of it; Mass
-Salvation and Greater Blessings count only the members they reach.
+Salvation and Greater Blessings count only the members they reach. The highlight is the
+modern client's glow, as on a spell ready to use.
 
 **Both buttons** show how many casts are left; with none left, no number shows and the highlight
-stops. Hover a button to see what it casts next and on whom. Dead, offline and out-of-range
+stops. Hover a button to see what a left click casts next and on whom - the class for a
+Greater Blessing or Mass Salvation, the member otherwise. Dead, offline and out-of-range
 players are left out. A blessing, Salvation or Mass Salvation of yours is renewed when less
 than 5 minutes are left (see the Priorities tab); another paladin's counts until it runs out.
 

@@ -9,7 +9,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - The addon loads for paladins on WoW Forever and says so with its version at login, in the
   client's language. Every other class loads nothing.
 - A movable bar with an aura, a Righteous Fury, a blessing and a Salvation button. Each is
-  highlighted while it has something to cast.
+  highlighted with the modern client's glow while it has something to cast.
 - The blessing button blesses your group without any assignment: every member gets the
   first blessing on his class's priority list that no other paladin has given in
   Greater form or an equal or higher rank. Greater Blessings where they are stronger; between
@@ -19,9 +19,11 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   carrying it, and in a raid Mass Salvation to a class with enough members lacking it.
 - Low-level members get the highest rank that reaches them; nothing is offered that the game
   would refuse with "Target is too low level".
-- Both buttons show how many casts are left and name the next one in their tooltip. In combat
-  they keep the cast that was first when the fight started; one that must wait for the end of
-  combat shows no highlight, and the tooltip says so.
+- Both buttons show how many casts are left and name the next one in their tooltip, with the
+  class it reaches for a Greater Blessing or Mass Salvation. A right click on the blessing
+  button opens the Priorities tab. In combat they keep the cast that was first when the
+  fight started; one that must wait for the end of combat shows no highlight, and the
+  tooltip says so.
 - A Priorities tab: early renewal, 5 minutes before a blessing or Salvation of yours runs out
   by default; the aura list; the priority list of each class, under its class colour,
   reordered by drag and drop, with blessings switched off per class and "Enable all" to
