@@ -584,6 +584,11 @@ do
 
     controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 14,
         onChange = function() ns.Refresh() end })
+
+    -- The overview opens beside this window, both stay open (Michel, 2026-10-19)
+    local overview = UI.AddButton(blessingsPage, "BTN_OVERVIEW", function() ns.ToggleOverview() end)
+    overview:SetPoint("TOPLEFT", INSET, Place(22, 10) - 10)
+    controls.overviewButton = overview
 end
 
 ---------------------------------------------------------------------------

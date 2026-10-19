@@ -81,6 +81,7 @@ function Methods:GetEffectiveScale() return 1 end
 -- A frame's top edge only where a spec sets one (frame.top)
 function Methods:GetTop() return rawget(self, "top") end
 function Methods:GetLeft() return rawget(self, "left") end
+function Methods:GetRight() return rawget(self, "right") end
 function Methods:GetHeight() return self.h end
 function Methods:SetHeight(h) self.h = h end
 function Methods:SetScale(s) Guard(self, "SetScale"); self.scale = s end
@@ -524,6 +525,8 @@ Settings = {
 -- The cursor at STATE.cursor = { x, y }; IsMouseButtonDown answers STATE.mouseDown
 GetCursorPosition = function() local c = STATE.cursor or { 0, 0 } return c[1], c[2] end
 IsMouseButtonDown = function() return STATE.mouseDown == true end
+-- STATE.shift: the Shift key is held
+IsShiftKeyDown = function() return STATE.shift == true end
 LOCALIZED_CLASS_NAMES_MALE = {}
 for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
   LOCALIZED_CLASS_NAMES_MALE[class] = "class" .. class

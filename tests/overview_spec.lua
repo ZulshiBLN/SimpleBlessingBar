@@ -246,3 +246,111 @@ describe("the overview's footer", function()
         assert.are.same({}, lines(o))
     end)
 end)
+
+-- Opening and closing (phase 3)
+describe("opening the overview", function()
+    local function fresh(world)
+        local ns = addon.load("enUS", world)
+        STATE.known = { [M.normal[1]] = true }
+        FIRE("PLAYER_LOGIN")
+        return ns, ns.overview
+    end
+    local function click(frame, button)
+        RUNCLICK(frame, button, true)
+        RUNCLICK(frame, button, false)
+    end
+
+    it("toggles with Shift and a right click on the blessing button; without Shift it is the role menu", function()
+        local ns, o = fresh()
+        click(ns.blessingButton, "RightButton")
+        assert.is_false(o:IsShown() == true)
+        assert.is_table(STATE.menu)
+        STATE.menu = nil
+        STATE.shift = true
+        click(ns.blessingButton, "RightButton")
+        assert.is_true(o:IsShown())
+        assert.is_nil(STATE.menu)
+        click(ns.blessingButton, "RightButton")
+        assert.is_false(o:IsShown())
+    end)
+
+    it("toggles with /sbb overview, listed by /sbb help, and refuses in combat", function()
+        local ns, o = fresh()
+        SlashCmdList.SIMPLEBLESSINGBAR("overview")
+        assert.is_true(o:IsShown())
+        SlashCmdList.SIMPLEBLESSINGBAR("overview")
+        assert.is_false(o:IsShown())
+        SlashCmdList.SIMPLEBLESSINGBAR("help")
+        local listed = false
+        for _, l in ipairs(CHAT) do
+            if l:find("/sbb overview", 1, true) and l:find(ns.L.CMD_OVERVIEW, 1, true) then listed = true end
+        end
+        assert.is_true(listed)
+        STATE.combat = true
+        SlashCmdList.SIMPLEBLESSINGBAR("overview")
+        assert.is_false(o:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("toggles with a middle click on the minimap button, named in its tooltip, refused in combat", function()
+        local ns, o = fresh()
+        local mb = ns.minimapButton
+        assert.is_true(table.concat(mb.clicks, ","):find("MiddleButtonUp", 1, true) ~= nil)
+        RUNSCRIPT(mb, "OnClick", "MiddleButton")
+        assert.is_true(o:IsShown())
+        assert.is_false(ns.UI.window:IsShown() == true)
+        RUNSCRIPT(mb, "OnClick", "MiddleButton")
+        assert.is_false(o:IsShown())
+        RUNSCRIPT(mb, "OnEnter")
+        local found = false
+        for _, l in ipairs(GameTooltip.lines) do
+            if l[1] == ns.L.MIDDLECLICK and l[2] == ns.L.OVERVIEW then found = true end
+        end
+        assert.is_true(found)
+        STATE.combat = true
+        RUNSCRIPT(mb, "OnClick", "MiddleButton")
+        assert.is_false(o:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+    end)
+
+    it("toggles with the Blessings tab's button, beside the open settings window", function()
+        local ns, o = fresh()
+        SlashCmdList.SIMPLEBLESSINGBAR("")
+        local settings = ns.UI.window
+        settings.right, settings.top = 700, 600
+        RUNSCRIPT(ns.UI.controls.overviewButton, "OnClick")
+        assert.is_true(o:IsShown())
+        assert.is_true(settings:IsShown())
+        assert.are.same({ "TOPLEFT", UIParent, "BOTTOMLEFT", 708, 600 }, { o:GetPoint() })
+    end)
+
+    it("opens centred first, then where it was left", function()
+        local ns, o = fresh()
+        ns.ToggleOverview()
+        assert.are.equal("CENTER", (o:GetPoint()))
+        o:ClearAllPoints()
+        o:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 50, 500) -- dragged
+        ns.ToggleOverview()
+        ns.ToggleOverview()
+        assert.are.same({ "TOPLEFT", UIParent, "BOTTOMLEFT", 50, 500 }, { o:GetPoint() })
+    end)
+
+    it("closes when combat starts and opens again when it ends, if combat closed it", function()
+        local ns, o = fresh()
+        ns.ToggleOverview()
+        STATE.combat = true
+        FIRE("PLAYER_REGEN_DISABLED")
+        assert.is_false(o:IsShown())
+        STATE.combat = false
+        FIRE("PLAYER_REGEN_ENABLED")
+        assert.is_true(o:IsShown())
+        ns.ToggleOverview()
+        STATE.combat = true
+        FIRE("PLAYER_REGEN_DISABLED")
+        STATE.combat = false
+        FIRE("PLAYER_REGEN_ENABLED")
+        assert.is_false(o:IsShown())
+        assert.are.same({}, STATE.errors)
+    end)
+end)

@@ -26,7 +26,8 @@ local function ShowEntryTooltip(owner, anchor)
     GameTooltip:AddLine(" ")
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
-    if anchor == "ANCHOR_LEFT" then -- only the minimap button can be dragged
+    if anchor == "ANCHOR_LEFT" then -- only the minimap button opens the overview and can be dragged
+        GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.OVERVIEW, 0, 1, 0, 1, 1, 1)
         GameTooltip:AddDoubleLine(L.DRAG, L.MOVE, 0, 1, 0, 1, 1, 1)
     end
     GameTooltip:Show()
@@ -44,7 +45,7 @@ ns.minimapButton = minimapBtn
 minimapBtn:SetSize(31, 31)
 minimapBtn:SetFrameStrata("MEDIUM")
 minimapBtn:SetFrameLevel(8)
-minimapBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+minimapBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
 minimapBtn:RegisterForDrag("LeftButton")
 minimapBtn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
 
@@ -91,7 +92,10 @@ end
 minimapBtn:SetScript("OnDragStart", function(self) self:SetScript("OnUpdate", OnMinimapDrag) end)
 minimapBtn:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
 
-minimapBtn:SetScript("OnClick", function(_, button) Click(button) end)
+-- A middle click opens the overview; the AddOn compartment keeps its two clicks
+minimapBtn:SetScript("OnClick", function(_, button)
+    if button == "MiddleButton" then ns.ToggleOverviewOrSay() else Click(button) end
+end)
 minimapBtn:SetScript("OnEnter", function(self) ShowEntryTooltip(self, "ANCHOR_LEFT") end)
 minimapBtn:SetScript("OnLeave", ns.HideTooltip)
 

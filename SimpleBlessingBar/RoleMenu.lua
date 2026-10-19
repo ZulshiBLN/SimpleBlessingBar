@@ -41,5 +41,7 @@ end
 -- On the right button's release, out of combat; the secure attributes stay untouched
 ns.blessingButton:HookScript("OnClick", function(self, mouseButton, down)
     if mouseButton ~= "RightButton" or down or InCombatLockdown() then return end
+    -- With Shift the overview (Overview.lua, loaded after this file, called at click time)
+    if IsShiftKeyDown() then ns.ToggleOverview() return end
     OpenMenu(self)
 end)

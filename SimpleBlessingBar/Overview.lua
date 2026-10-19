@@ -242,3 +242,28 @@ function ns.ToggleOverview()
     end
     frame:Show()
 end
+
+-- From a chat command or the minimap button: in combat it says why nothing opens
+function ns.ToggleOverviewOrSay()
+    if InCombatLockdown() then ns.Print(L.NOT_IN_COMBAT) return end
+    ns.ToggleOverview()
+end
+
+-- Combat start closes the window; combat end opens it again if combat closed it
+do
+    local reopenAfterCombat = false
+    local events = CreateFrame("Frame")
+    events:RegisterEvent("PLAYER_REGEN_DISABLED")
+    events:RegisterEvent("PLAYER_REGEN_ENABLED")
+    events:SetScript("OnEvent", function(_, event)
+        if event == "PLAYER_REGEN_DISABLED" then
+            if frame:IsShown() then
+                reopenAfterCombat = true
+                frame:Hide()
+            end
+        elseif reopenAfterCombat then
+            reopenAfterCombat = false
+            frame:Show()
+        end
+    end)
+end
