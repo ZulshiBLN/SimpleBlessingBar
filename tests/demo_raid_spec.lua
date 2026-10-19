@@ -150,31 +150,73 @@ describe("the demo raid", function()
         assert.are.same(want, seen)
     end)
 
-    it("gives everyone Kings, Light and Might or Wisdom by class, each from one other Paladin", function()
-        local ns, o = demo()
-        local givers = {}
+    -- Members and tanks per class, from the shown rows
+    local function classSizes(o)
+        local size, tanks = {}, {}
         for _, r in ipairs(shown(o)) do
-            local might = WISDOM_CLASSES[r.class] and "WISDOM" or "MIGHT"
-            for _, family in ipairs({ "KINGS", "LIGHT", might }) do
-                local s = slot(r, family)
-                assert.is_true(s:IsShown(), r.class .. " " .. family)
-                assert.is_false(s.faint == true)
-                assert.is_false(s.mine == true)
-                local from = tip(s)[1]
-                givers[family == "WISDOM" and "MIGHT" or family] = givers[family == "WISDOM" and "MIGHT" or family] or from
-                assert.are.equal(givers[family == "WISDOM" and "MIGHT" or family], from)
-            end
+            size[r.class] = (size[r.class] or 0) + 1
+            if r.role == "TANK" then tanks[r.class] = (tanks[r.class] or 0) + 1 end
         end
-        local L = ns.L
-        assert.are_not.equal(givers.KINGS, givers.LIGHT)
-        assert.are_not.equal(givers.KINGS, givers.MIGHT)
-        assert.are_not.equal(givers.LIGHT, givers.MIGHT)
-        for _, g in pairs(givers) do assert.are_not.equal(L.OV_FROM:format("player"), g) end
-    end)
+        return size, tanks
+    end
 
-    it("gives Salvation, mine, to every non-tank but three, who show it faint as my next", function()
+    -- The rank the planner would give a class of `n`: Greater from three on, else the best
+    -- normal one
+    local function rankFor(family, n)
+        local f = D.BLESSINGS[family]
+        return n >= D.RAID_GREATER_MIN and f.greater[#f.greater] or f.normal[#f.normal]
+    end
+
+    it("gives each member the first of his class's list from me, the rest from one other Paladin each", function()
         for seed = 1, SEEDS do
             local ns, o = demo(seed)
+            local L, lists = ns.L, SimpleBlessingBarDB.classLists
+            local size = classSizes(o)
+            local givers = {}
+            for _, r in ipairs(shown(o)) do
+                local first = lists[r.class].order[1]
+                local s = slot(r, first)
+                assert.is_true(s:IsShown() and s.mine == true, r.class .. " " .. first)
+                assert.are.equal(L.OV_FROM:format("player"), tip(s)[1])
+                assert.are.equal(rankFor(first, size[r.class]), s.spell)
+                local might = WISDOM_CLASSES[r.class] and "WISDOM" or "MIGHT"
+                for _, family in ipairs({ "KINGS", "LIGHT", might }) do
+                    if family ~= first then
+                        s = slot(r, family)
+                        assert.is_true(s:IsShown(), r.class .. " " .. family)
+                        assert.is_false(s.faint == true or s.mine == true)
+                        assert.are.equal(rankFor(family, size[r.class]), s.spell)
+                        local key = family == "WISDOM" and "MIGHT" or family
+                        givers[key] = givers[key] or tip(s)[1]
+                        assert.are.equal(givers[key], tip(s)[1])
+                    end
+                end
+            end
+            assert.are_not.equal(givers.KINGS, givers.LIGHT)
+            assert.are_not.equal(givers.KINGS, givers.MIGHT)
+            assert.are_not.equal(givers.LIGHT, givers.MIGHT)
+            for _, g in pairs(givers) do assert.are_not.equal(L.OV_FROM:format("player"), g) end
+        end
+    end)
+
+    it("follows a change of a class's list at once", function()
+        local ns, o = demo()
+        local warrior = SimpleBlessingBarDB.classLists.WARRIOR
+        table.insert(warrior.order, 1, "WISDOM")
+        ns.Refresh()
+        for _, r in ipairs(shown(o)) do
+            if r.class == "WARRIOR" then
+                local s = slot(r, "WISDOM")
+                assert.is_true(s:IsShown() and s.mine == true)
+                assert.is_true(slot(r, "MIGHT"):IsShown())
+            end
+        end
+    end)
+
+    it("gives Salvation, mine, to every non-tank but three, who show it faint as my next; Mass Salvation as the planner", function()
+        for seed = 1, SEEDS do
+            local ns, o = demo(seed)
+            local size, tanks = classSizes(o)
             local lacking = 0
             for _, r in ipairs(shown(o)) do
                 local s = slot(r, "SALVATION")
@@ -190,9 +232,16 @@ describe("the demo raid", function()
                     assert.is_true(s:IsShown())
                     assert.is_true(s.mine)
                     assert.are.same(ns.L.OV_FROM:format("player"), tip(s)[1])
+                    local t = tanks[r.class] or 0
+                    local mass = size[r.class] - t >= D.RAID_GREATER_MIN + t
+                    assert.are.equal(mass and D.MASS_SALVATION or D.SALVATION, s.spell, r.class)
                 end
             end
             assert.are.equal(3, lacking)
+            -- a member shown lacking it does not carry it either
+            for _, d in ipairs(ns.Blessings.Overview()) do
+                if d.next then assert.is_nil(d.carried.SALVATION) end
+            end
         end
     end)
 
@@ -237,19 +286,20 @@ describe("the demo raid", function()
         assert.are_not.equal(first, names())
     end)
 
-    it("lets my Salvation glow, no other icon", function()
+    it("lets mine glow - the list's first and Salvation - no other icon", function()
         local _, o = demo()
         local glowing = 0
         for _, r in ipairs(shown(o)) do
+            local first = SimpleBlessingBarDB.classLists[r.class].order[1]
             for _, s in ipairs(r.slots) do
                 if s:IsShown() and s.glow:IsShown() then
                     glowing = glowing + 1
-                    assert.are.equal("SALVATION", s.family)
+                    assert.is_true(s.family == "SALVATION" or s.family == first)
                     assert.is_false(s.faint == true)
                 end
             end
         end
-        assert.are.equal(40 - 4 - 3, glowing)
+        assert.are.equal(40 + 40 - 4 - 3, glowing)
     end)
 
     -- The two names at the field's edge: a 12-letter one, cut where the field is narrower, and
