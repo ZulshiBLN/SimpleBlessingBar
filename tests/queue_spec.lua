@@ -117,3 +117,29 @@ describe("the blessing and Salvation buttons", function()
         assert.are.equal(ns.L.QUEUE_EMPTY, GameTooltip.lines[1][1])
     end)
 end)
+
+-- A queue holding only held entries at combat start casts nothing until combat ends (ruleset
+-- plan 2026-10-19-blessing-steering, phase 5)
+describe("a queue holding only held entries at combat start", function()
+    -- A raid of warriors, one a tank without Salvation: Mass Salvation is the only entry,
+    -- held because its Revoke could not follow in combat
+    local function raid()
+        local units = { raid1 = { class = "WARRIOR", role = "TANK", subgroup = 1 } }
+        for i = 2, 5 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
+        return { group = "raid", units = units }
+    end
+
+    it("keeps its count, without ants or a cast, and says it waits", function()
+        local ns, _, salv = login(raid(), { D.MASS_SALVATION }, 1)
+        ns.Refresh()
+        assert.are.equal(D.MASS_SALVATION, salv:GetAttribute("spell1"))
+        assert.is_true(salv.ants:IsShown())
+        ns.Refresh(true)
+        assert.is_nil(salv:GetAttribute("spell1"))
+        assert.are.equal("1", salv.count:GetText())
+        assert.is_false(salv.ants:IsShown())
+        RUNSCRIPT(salv, "OnEnter")
+        assert.are.equal(ns.L.QUEUE_HELD, GameTooltip.lines[1][1])
+        assert.are.same({}, STATE.errors)
+    end)
+end)

@@ -23,7 +23,8 @@ local function ShowTooltip(b)
         GameTooltip:AddLine(UnitName(head.unit), 1, 1, 1)
     else
         GameTooltip:SetText(b.title())
-        GameTooltip:AddLine(L.QUEUE_EMPTY, 1, 1, 1)
+        -- Entries left but none to cast: every one held at combat start
+        GameTooltip:AddLine(b.left > 0 and L.QUEUE_HELD or L.QUEUE_EMPTY, 1, 1, 1)
     end
     -- A pin explains why only one blessing comes
     if b == ns.blessingButton and B.pin then
@@ -63,14 +64,16 @@ end
 -- only; in demo mode no secure action, the click prints instead (Flyout.lua).
 local function Show(b, queue, combatStart)
     local head = Head(queue, combatStart)
-    b.head = head
+    b.head, b.left = head, #queue
     SetAttr(b, "type1", (head and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", head and head.spell)
     SetAttr(b, "unit1", head and head.unit)
     b.icon:SetTexture(C_Spell.GetSpellTexture(head and head.spell or b.idleSpell))
     b.icon:SetDesaturated(not head)
     b.count:SetText(#queue > 0 and tostring(#queue) or "")
-    ns.SetAnts(b, #queue > 0)
+    -- No ants while nothing can be cast, also with held entries left (ruleset plan
+    -- 2026-10-19-blessing-steering)
+    ns.SetAnts(b, head ~= nil)
 end
 
 table.insert(ns.onRefresh, function(combatStart)
