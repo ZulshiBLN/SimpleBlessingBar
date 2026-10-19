@@ -40,6 +40,7 @@ Core.lua
 Blessings.lua
 Bar.lua
 SelfBuffs.lua
+Queue.lua
 Flyout.lua
 Merchant.lua
 Minimap.lua

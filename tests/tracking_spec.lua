@@ -54,10 +54,12 @@ describe("the Tracking page", function()
             for _, layout in ipairs({ { false, false }, { false, true }, { true, false }, { true, true } }) do
                 db.vertical, db.growRev = layout[1], layout[2]
                 ns.Refresh()
-                -- the remaining self buff takes the first place, the classes follow without a gap
+                -- the remaining self buff takes the first place, the blessing button follows
+                -- without a gap
+                local step = D.SIZE + D.GAP
                 assert.are.equal(D.PAD, math.abs(select(4, other:GetPoint()) + select(5, other:GetPoint())))
-                local p = ns.classButtons.PALADIN
-                assert.are.equal(D.PAD + D.SIZE + D.GAP, math.abs(select(4, p:GetPoint()) + select(5, p:GetPoint())))
+                local b = ns.blessingButton
+                assert.are.equal(D.PAD + step, math.abs(select(4, b:GetPoint()) + select(5, b:GetPoint())))
             end
             check(c[key], true)
             assert.is_true(button:IsShown())

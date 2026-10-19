@@ -395,6 +395,7 @@ UnitIsDeadOrGhost = function(u) local r = U(u) return r ~= nil and r.dead == tru
 UnitIsVisible = function(u) local r = U(u) return r ~= nil and r.visible ~= false end
 UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
 -- The group role the game reports: the record's role, else "NONE"
+UnitName = function(u) local r = U(u) return r and (r.name or u) end
 UnitGroupRolesAssigned = function(u) local r = U(u) return r and r.role or "NONE" end
 
 local function countUnits(prefix)

@@ -194,7 +194,10 @@ table.insert(ns.onRefresh, function()
     ns.FillFlyout(auraFly, entries)
 end)
 
-header:WrapScript(ns.furyButton, "OnClick", CLOSE)
+-- Buttons without a flyout: their click closes every open flyout too
+for _, b in ipairs({ ns.furyButton, ns.blessingButton, ns.salvationButton }) do
+    header:WrapScript(b, "OnClick", CLOSE)
+end
 
 -- The auto-close time and demo mode reach the snippets as data, never in their text (code.md)
 table.insert(ns.onRefresh, function()
@@ -236,7 +239,7 @@ end)
 -- Demo mode: a left click on a main button says what it would cast
 ---------------------------------------------------------------------------
 -- Spell ID -> its name key, and whether it is a Greater Blessing (the keys name the normal form)
-local NAME_KEYS = { [D.RIGHTEOUS_FURY] = { key = "RIGHTEOUS_FURY" } }
+local NAME_KEYS = { [D.RIGHTEOUS_FURY] = { key = "RIGHTEOUS_FURY" }, [D.REVOKE] = { key = "REVOKE" } }
 for family, f in pairs(D.BLESSINGS) do
     for _, id in ipairs(f.normal) do NAME_KEYS[id] = { key = "BLESSING_" .. family } end
     for _, id in ipairs(f.greater) do NAME_KEYS[id] = { key = "BLESSING_" .. family, greater = true } end
@@ -244,6 +247,8 @@ end
 for family, list in pairs(D.AURAS) do
     for _, id in ipairs(list) do NAME_KEYS[id] = { key = "AURA_" .. family } end
 end
+-- Mass Salvation has a name of its own on Forever, not "Greater Blessing of Salvation"
+NAME_KEYS[D.MASS_SALVATION] = { key = "MASS_SALVATION" }
 
 local function DemoClick(b, mouseButton, down)
     if down or mouseButton ~= "LeftButton" or not ns.IsDemo() then return end
@@ -258,5 +263,7 @@ end
 
 -- Set after every main button's wrap: wrapping replaces the click script, and a hook set
 -- earlier would be lost.
-for _, b in ipairs({ ns.auraButton, ns.furyButton }) do b:HookScript("OnClick", DemoClick) end
+for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do
+    b:HookScript("OnClick", DemoClick)
+end
 for _, class in ipairs(D.CLASS_ORDER) do ns.classButtons[class]:HookScript("OnClick", DemoClick) end

@@ -119,6 +119,10 @@ locales.enUS = {
     REPORT_STEP3 = "3. Paste it as a new issue on GitHub:",
     CLOSE = "Close",
     CMD_BUG = "Open the bug report window",
+    BTN_BLESSINGS = "Blessings",
+    QUEUE_EMPTY = "Nothing left to cast",
+    MASS_SALVATION = "Mass Salvation",
+    REVOKE = "Revoke",
 }
 
 locales.deDE = {
@@ -232,6 +236,10 @@ locales.deDE = {
     REPORT_STEP3 = "3. Als neues Issue auf GitHub einfügen:",
     CLOSE = "Schließen",
     CMD_BUG = "Fenster für Fehlerberichte öffnen",
+    BTN_BLESSINGS = "Segen",
+    QUEUE_EMPTY = "Nichts mehr zu wirken",
+    MASS_SALVATION = "Massenrettung",
+    REVOKE = "Widerrufen",
 }
 
 locales.frFR = {
@@ -345,6 +353,10 @@ locales.frFR = {
     REPORT_STEP3 = "3. Collez-le dans un nouveau ticket sur GitHub :",
     CLOSE = "Fermer",
     CMD_BUG = "Ouvrir la fenêtre de rapport de bug",
+    BTN_BLESSINGS = "Bénédictions",
+    QUEUE_EMPTY = "Plus rien à lancer",
+    MASS_SALVATION = "Salut collectif",
+    REVOKE = "Révoquer",
 }
 
 locales.esES = {
@@ -458,6 +470,10 @@ locales.esES = {
     REPORT_STEP3 = "3. Pégalo como nuevo issue en GitHub:",
     CLOSE = "Cerrar",
     CMD_BUG = "Abrir la ventana de informe de errores",
+    BTN_BLESSINGS = "Bendiciones",
+    QUEUE_EMPTY = "Nada más que lanzar",
+    MASS_SALVATION = "Salvación en masa",
+    REVOKE = "Revocar",
 }
 
 -- Spanish (Mexico): like esES; holds only what differs
@@ -575,6 +591,10 @@ locales.itIT = {
     REPORT_STEP3 = "3. Incollalo come nuova issue su GitHub:",
     CLOSE = "Chiudi",
     CMD_BUG = "Apri la finestra di segnalazione bug",
+    BTN_BLESSINGS = "Benedizioni",
+    QUEUE_EMPTY = "Niente altro da lanciare",
+    MASS_SALVATION = "Salvezza di massa",
+    REVOKE = "Revoca",
 }
 
 locales.ptBR = {
@@ -688,6 +708,10 @@ locales.ptBR = {
     REPORT_STEP3 = "3. Cole como nova issue no GitHub:",
     CLOSE = "Fechar",
     CMD_BUG = "Abrir a janela de relatório de bugs",
+    BTN_BLESSINGS = "Bênçãos",
+    QUEUE_EMPTY = "Nada mais a lançar",
+    MASS_SALVATION = "Salvação em Massa",
+    REVOKE = "Revogar",
 }
 
 locales.ruRU = {
@@ -801,6 +825,10 @@ locales.ruRU = {
     REPORT_STEP3 = "3. Вставьте его как новый issue на GitHub:",
     CLOSE = "Закрыть",
     CMD_BUG = "Открыть окно отчёта об ошибке",
+    BTN_BLESSINGS = "Благословения",
+    QUEUE_EMPTY = "Больше нечего применять",
+    MASS_SALVATION = "Массовое спасение",
+    REVOKE = "Отмена",
 }
 
 locales.koKR = {
@@ -914,6 +942,10 @@ locales.koKR = {
     REPORT_STEP3 = "3. GitHub에 새 이슈로 붙여넣으세요:",
     CLOSE = "닫기",
     CMD_BUG = "버그 신고 창 열기",
+    BTN_BLESSINGS = "축복",
+    QUEUE_EMPTY = "더 이상 시전할 것이 없음",
+    MASS_SALVATION = "집단 구원",
+    REVOKE = "철회",
 }
 
 locales.zhCN = {
@@ -1027,6 +1059,10 @@ locales.zhCN = {
     REPORT_STEP3 = "3. 在 GitHub 上粘贴为新的 issue：",
     CLOSE = "关闭",
     CMD_BUG = "打开错误报告窗口",
+    BTN_BLESSINGS = "祝福",
+    QUEUE_EMPTY = "没有需要施放的了",
+    MASS_SALVATION = "群体拯救",
+    REVOKE = "撤销",
 }
 
 locales.zhTW = {
@@ -1140,6 +1176,10 @@ locales.zhTW = {
     REPORT_STEP3 = "3. 在 GitHub 上貼成新的 issue：",
     CLOSE = "關閉",
     CMD_BUG = "開啟錯誤回報視窗",
+    BTN_BLESSINGS = "祝福",
+    QUEUE_EMPTY = "沒有需要施放的了",
+    MASS_SALVATION = "群體拯救",
+    REVOKE = "撤銷",
 }
 
 local client = GetLocale()

@@ -33,7 +33,7 @@ read_globals = {
     "C_CurrencyInfo", "C_MerchantFrame", "GetMerchantNumItems", "GetMerchantItemID", "GetMerchantItemMaxStack",
     "BuyMerchantItem", "GetMoney", "GetTime", "GetCursorPosition", "IsMouseButtonDown", "LOCALIZED_CLASS_NAMES_MALE",
     "Minimap", "Settings", "UnitFullName", "GetRealmName", "UnitLevel", "GetBuildInfo", "date", "issecretvalue",
-    "BugGrabber", "UnitGroupRolesAssigned",
+    "BugGrabber", "UnitGroupRolesAssigned", "UnitName",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
 }

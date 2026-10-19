@@ -167,13 +167,15 @@ D.AUTOCLOSE_MIN, D.AUTOCLOSE_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
     showAura = true, showFury = true, flyoutAutoClose = true,
-    autoBuy = false, hideMinimap = false,
+    autoBuy = false, hideMinimap = false, showBlessing = true, showSalvation = true,
 }
 D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
     auraAntsColor = D.ANTS_COLOR,
     furyAntsColor = D.ANTS_COLOR,
     classAntsColor = D.ANTS_COLOR,
+    blessingAntsColor = D.ANTS_COLOR,
+    salvationAntsColor = D.ANTS_COLOR,
     countColor    = { r = 1, g = 1, b = 1, a = 1 },
     -- The Symbol count at or below the warning threshold, and at 0: SimpleConjureBar's
     symbolWarnColor = { r = 1, g = 0.6, b = 0.1, a = 1 },
@@ -184,6 +186,8 @@ D.NUMBER_DEFAULTS = {
     auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     classAntsSpeed      = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    blessingAntsSpeed   = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
+    salvationAntsSpeed  = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },
     symbolWarn          = { default = 5, min = 0, max = 20, integer = true },   -- 0 = no warning
     symbolAmount        = { default = 20, min = 0, max = 100, integer = true }, -- target in the bags

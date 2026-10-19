@@ -238,6 +238,7 @@ function ns.ApplyLook()
     end
     local n = db.countColor
     for _, b in pairs(ns.classButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
+    for _, b in ipairs(ns.queueButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
     for _, b in ipairs(antsButtons) do
         local a = db[b.antsColorKey]
         b.ants:SetVertexColor(a.r, a.g, a.b, a.a)
@@ -333,6 +334,7 @@ local function UpdateSymbols(b, shown)
     b.symbols:SetText(tostring(n))
     b.symbols:SetTextColor(c.r, c.g, c.b, c.a)
 end
+ns.UpdateSymbols = UpdateSymbols
 
 local function Update(b, family)
     local state = family and B.ClassState(b.class, family) or { castable = false, count = 0 }
@@ -356,8 +358,11 @@ end
 -- Refresh
 ---------------------------------------------------------------------------
 -- Other buttons on the bar refresh with it: functions added here run after the class
--- buttons, out of combat only.
+-- buttons, out of combat only. They get `combatStart`, true for the refresh right before the
+-- lockdown.
 ns.onRefresh = {}
+-- The blessing and Salvation buttons (Queue.lua), placed right after Righteous Fury's place
+ns.queueButtons = {}
 
 -- Flyout direction: the player's fixed choice, or SimpleConjureBar's rule - a horizontal bar
 -- opens up in the lower half of the screen and down in the upper; a vertical bar opens right
@@ -405,7 +410,7 @@ end
 -- Reads the group out of combat and writes everything to the buttons. In combat it does
 -- nothing: aura data is unreadable then and the buttons are protected.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
-function ns.Refresh()
+function ns.Refresh(combatStart)
     if not db or InCombatLockdown() then return end
     ns.attrPending = false
 
@@ -414,6 +419,9 @@ function ns.Refresh()
     local own = { AURA = { ns.auraButton, "showAura" }, FURY = { ns.furyButton, "showFury" } }
     for _, entry in pairs(own) do
         if db[entry[2]] then entry[1]:Show() else entry[1]:Hide() end
+    end
+    for _, q in ipairs(ns.queueButtons) do
+        if db[q.showKey] then q:Show() else q:Hide() end
     end
     -- Demo mode shows every class, without reading the roster
     local present = {}
@@ -445,12 +453,17 @@ function ns.Refresh()
         elseif db[own[key][2]] then
             shown[#shown + 1] = own[key][1]
         end
+        if key == "FURY" then
+            for _, q in ipairs(ns.queueButtons) do
+                if db[q.showKey] then shown[#shown + 1] = q end
+            end
+        end
     end
     -- A drag in progress keeps its own anchor; it re-anchors when it ends
     if not handle.moving then ns.ReAnchor() end
     Arrange(shown)
     ns.flyDir = ComputeFlyDir()
-    for _, fn in ipairs(ns.onRefresh) do fn() end
+    for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
 end
 
 -- Several events arrive together (a raid's UNIT_AURA); they share one refresh.
@@ -475,7 +488,7 @@ events:SetScript("OnEvent", function(_, event)
         -- Fires right before the lockdown: the last moment to stop a drag and to write
         -- the freshest state.
         StopDrag()
-        ns.Refresh()
+        ns.Refresh(true)
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Counts were frozen in combat and changes may wait: always refresh at its end
         if ns.barPending then

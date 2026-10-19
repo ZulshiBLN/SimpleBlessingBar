@@ -281,8 +281,10 @@ local function GreaterFamily(members)
     return best
 end
 
--- The blessing queue: entries { spell, unit, greater }, Greater entries first, then normal
--- ones in group order. Also returns the Symbols its Greater entries use. Out of combat only.
+-- The blessing queue: entries { spell, unit, greater, hold }, Greater entries first, then
+-- normal ones in group order. `hold`: a Greater entry for a class with exceptions, which must
+-- not come first at combat start - the exceptions after it could not follow in combat. Also
+-- returns the Symbols its Greater entries use. Out of combat only.
 function B.PlanBlessings()
     local byClass, order = {}, {}
     for _, unit in ipairs(B.Members()) do
@@ -306,8 +308,9 @@ function B.PlanBlessings()
         if family then spell, greaterStrength = BestGreater(family) end
         if spell then
             -- Only members in range count, so a cast that misses the others is not repeated
-            local lacking, target = 0, nil
+            local lacking, target, exceptions = 0, nil, false
             for _, m in ipairs(members) do
+                if m.chosen and m.chosen ~= family then exceptions = true end
                 if B.InRange(spell, m.unit) then
                     target = target or m.unit
                     if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
@@ -320,7 +323,7 @@ function B.PlanBlessings()
             if useGreater and (lacking == 0 or symbols > 0) then
                 if lacking > 0 then
                     symbols = symbols - 1
-                    queue[#queue + 1] = { spell = spell, unit = target, greater = true }
+                    queue[#queue + 1] = { spell = spell, unit = target, greater = true, hold = exceptions }
                 end
                 for _, m in ipairs(members) do
                     if m.chosen == family then covered[m] = true end
@@ -386,7 +389,8 @@ function B.PlanSalvation(symbolsUsed)
         end
         if IsInRaid() and B.Known(D.MASS_SALVATION) and symbols > 0 and #lacking >= D.RAID_GREATER_MIN + tanks then
             symbols = symbols - 1
-            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = lacking[1].unit, greater = true }
+            -- `hold`: with tanks in the class, its Revokes could not follow in combat
+            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = lacking[1].unit, greater = true, hold = tanks > 0 }
         else
             for _, m in ipairs(lacking) do single[#single + 1] = { spell = D.SALVATION, unit = m.unit } end
         end

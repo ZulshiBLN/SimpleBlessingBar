@@ -51,9 +51,12 @@ describe("the look", function()
         local step = D.SIZE + D.GAP
         assert.are.equal(D.PAD, select(4, ns.auraButton:GetPoint()))
         assert.are.equal(D.PAD + step, select(4, ns.furyButton:GetPoint()))
-        assert.are.equal(D.PAD + 2 * step, select(4, ns.classButtons.PALADIN:GetPoint()))
-        assert.are.equal(D.PAD + 3 * step, select(4, ns.classButtons.MAGE:GetPoint()))
-        assert.are.equal(D.PAD + 4 * step - D.GAP + D.PAD, ns.bar:GetWidth())
+        -- the blessing and Salvation buttons right after Righteous Fury
+        assert.are.equal(D.PAD + 2 * step, select(4, ns.blessingButton:GetPoint()))
+        assert.are.equal(D.PAD + 3 * step, select(4, ns.salvationButton:GetPoint()))
+        assert.are.equal(D.PAD + 4 * step, select(4, ns.classButtons.PALADIN:GetPoint()))
+        assert.are.equal(D.PAD + 5 * step, select(4, ns.classButtons.MAGE:GetPoint()))
+        assert.are.equal(D.PAD + 6 * step - D.GAP + D.PAD, ns.bar:GetWidth())
         -- the flyout's icons start inside its padding
         local icon = ns.flyouts.AURA.icons[1]
         assert.are.equal(D.PAD, select(5, icon:GetPoint()))
