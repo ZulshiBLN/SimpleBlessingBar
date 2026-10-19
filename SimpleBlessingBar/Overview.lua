@@ -40,7 +40,24 @@ ns.SetL(title, "OVERVIEW")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", -6, -6)
 
-frame.rows, frame.headers = {}, {}
+frame.rows, frame.headers, frame.footer = {}, {}, {}
+
+local FOOTER_H = 16
+
+-- A footer line: the name, then what was given and how often, in D.BLESSING_ORDER, Salvation
+-- last; "-" for nothing
+local function FooterText(name, counts)
+    local pieces = {}
+    for _, key in ipairs(SLOTS) do
+        local n = counts[key]
+        if n then
+            local label = key == "SALVATION"
+                and ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION") or B.FamilyName(key)
+            pieces[#pieces + 1] = L.OV_COUNT:format(label, n)
+        end
+    end
+    return L.OV_LINE:format(name, #pieces > 0 and table.concat(pieces, L.OV_SEP) or L.OV_NONE)
+end
 
 -- The member's name without Forever's second name; a class name in demo mode
 local function Name(d)
@@ -177,6 +194,29 @@ local function Build()
     for i = nRows + 1, #frame.rows do frame.rows[i]:Hide() end
     for i = nHeaders + 1, #frame.headers do frame.headers[i]:Hide() end
     height = math.max(height, y)
+
+    -- The footer: per paladin in the group, then Others if any; none in demo mode
+    local texts = {}
+    if not ns.IsDemo() then
+        local lines, others = B.Footer(members)
+        for _, l in ipairs(lines) do texts[#texts + 1] = FooterText((UnitName(l.unit)), l.counts) end
+        if next(others) then texts[#texts + 1] = FooterText(L.OV_OTHERS, others) end
+    end
+    height = height + (#texts > 0 and 8 or 0)
+    for i, text in ipairs(texts) do
+        local f = frame.footer[i]
+        if not f then
+            f = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            f:SetJustifyH("LEFT")
+            frame.footer[i] = f
+        end
+        f:ClearAllPoints()
+        f:SetPoint("TOPLEFT", INSET, -TITLE_H - height)
+        f:SetText(text)
+        f:Show()
+        height = height + FOOTER_H
+    end
+    for i = #texts + 1, #frame.footer do frame.footer[i]:Hide() end
     frame:SetSize(2 * INSET + column * COL_W, TITLE_H + height + INSET)
 end
 

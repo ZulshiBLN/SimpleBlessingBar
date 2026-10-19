@@ -187,3 +187,62 @@ describe("the overview", function()
         assert.are.same({ MIGHT = { true, false } }, icons(row(o, "party1")))
     end)
 end)
+
+-- The footer: per paladin in the group what he gave, and "Others" (phase 2)
+describe("the overview's footer", function()
+    local function lines(o)
+        local out = {}
+        for _, f in ipairs(o.footer) do
+            if f:IsShown() then out[#out + 1] = f:GetText() end
+        end
+        return out
+    end
+
+    local function line(ns, name, parts)
+        local L = ns.L
+        local pieces = {}
+        for _, p in ipairs(parts) do pieces[#pieces + 1] = L.OV_COUNT:format(p[1], p[2]) end
+        return L.OV_LINE:format(name, #pieces > 0 and table.concat(pieces, L.OV_SEP) or L.OV_NONE)
+    end
+
+    local function fam(ns, family) return ns.Blessings.FamilyName(family) end
+    local function salv(ns) return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION") end
+
+    it("names each paladin, me first, with what each gave, Salvation last", function()
+        local ns, o = login({ group = "party", units = {
+            player = { class = "PALADIN", auras = { aura(M.normal[1], { source = "party1" }) } },
+            party1 = { class = "PALADIN", name = "Tyr" },
+            party2 = { class = "WARRIOR", auras = { aura(M.normal[6], { mine = true, source = "player" }),
+                aura(K.normal[1], { source = "party1" }), aura(D.SALVATION, { mine = true, source = "player" }) } },
+            party3 = { class = "MAGE", auras = { aura(W.normal[1], { source = "party1" }) } } } })
+        assert.are.same({
+            line(ns, "player", { { fam(ns, "MIGHT"), 1 }, { salv(ns), 1 } }),
+            line(ns, "Tyr", { { fam(ns, "MIGHT"), 1 }, { fam(ns, "WISDOM"), 1 }, { fam(ns, "KINGS"), 1 } }),
+        }, lines(o))
+    end)
+
+    it("shows a paladin who gave nothing with '-', and Others only when someone outside gave", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr" },
+            party2 = { class = "WARRIOR" } } })
+        assert.are.same({ line(ns, "player", {}), line(ns, "Tyr", {}) }, lines(o))
+        STATE.units.party2.auras = { aura(K.normal[1]), aura(K.normal[1], { source = "target" }) }
+        STATE.units.target = { class = "PALADIN" } -- a paladin outside the group
+        ns.Refresh()
+        assert.are.equal(line(ns, ns.L.OV_OTHERS, { { fam(ns, "KINGS"), 1 } }), lines(o)[3])
+    end)
+
+    it("puts me first in a raid, wherever I stand in it", function()
+        local ns, o = login({ group = "raid", units = { raid1 = { class = "PALADIN", name = "Tyr", subgroup = 1 } } })
+        STATE.units.raid2 = STATE.units.player
+        STATE.units.player.subgroup, STATE.units.player.name = 1, "Zulshe"
+        ns.Refresh()
+        assert.are.same({ line(ns, "Zulshe", {}), line(ns, "Tyr", {}) }, lines(o))
+    end)
+
+    it("is not shown in demo mode", function()
+        local ns, o = login()
+        SimpleBlessingBarDB.demo = true
+        ns.Refresh()
+        assert.are.same({}, lines(o))
+    end)
+end)

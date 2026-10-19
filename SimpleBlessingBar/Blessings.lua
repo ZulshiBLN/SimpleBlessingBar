@@ -499,3 +499,26 @@ function B.Overview()
     end
     return list
 end
+
+-- The overview's footer from described members: a line per paladin in the group, the player
+-- first, each { unit, counts }, and the counts of casters outside the group. A count is per
+-- member carrying it; Salvation and Mass Salvation count together as "SALVATION".
+function B.Footer(members)
+    local lines, others = {}, {}
+    for _, unit in ipairs(B.Members()) do
+        if select(2, UnitClass(unit)) == "PALADIN" then
+            table.insert(lines, UnitIsUnit(unit, "player") and 1 or #lines + 1, { unit = unit, counts = {} })
+        end
+    end
+    for _, d in ipairs(members) do
+        for key, c in pairs(d.carried) do
+            local counts = others
+            local giver = c.source and B.InGroup(c.source)
+            for _, l in ipairs(lines) do
+                if giver and UnitIsUnit(giver, l.unit) then counts = l.counts end
+            end
+            counts[key] = (counts[key] or 0) + 1
+        end
+    end
+    return lines, others
+end
