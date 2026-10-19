@@ -175,20 +175,17 @@ describe("the demo raid", function()
     it("gives Salvation, mine, to every non-tank but three, who show it faint as my next", function()
         for seed = 1, SEEDS do
             local ns, o = demo(seed)
-            local members = {}
-            for _, d in ipairs(ns.Blessings.Overview()) do members[d.name] = d end
             local lacking = 0
             for _, r in ipairs(shown(o)) do
-                local d = members[(r.name:GetText():gsub(" %(%a%)$", ""))]
                 local s = slot(r, "SALVATION")
-                if d.role == "TANK" then
+                if r.role == "TANK" then
                     assert.is_false(s:IsShown())
                 elseif s.faint then
                     lacking = lacking + 1
                     assert.are.equal(D.SALVATION, s.spell)
                     assert.are.equal("+", s.plus:GetText())
                     assert.is_false(r.greyed == true)
-                    assert.are_not.equal("player", d.name)
+                    assert.is_nil(r.name:GetText():find("^player"))
                 else
                     assert.is_true(s:IsShown())
                     assert.is_true(s.mine)
@@ -238,6 +235,50 @@ describe("the demo raid", function()
         assert.are.equal(first, names())
         ns = demo(2)
         assert.are_not.equal(first, names())
+    end)
+
+    it("lets my Salvation glow, no other icon", function()
+        local _, o = demo()
+        local glowing = 0
+        for _, r in ipairs(shown(o)) do
+            for _, s in ipairs(r.slots) do
+                if s:IsShown() and s.glow:IsShown() then
+                    glowing = glowing + 1
+                    assert.are.equal("SALVATION", s.family)
+                    assert.is_false(s.faint == true)
+                end
+            end
+        end
+        assert.are.equal(40 - 4 - 3, glowing)
+    end)
+
+    -- The two names at the field's edge: a 12-letter one, cut where the field is narrower, and
+    -- the longest part of it that fits (the mock measures 7 px a letter)
+    local function edges(o)
+        local cut, fit
+        for _, r in ipairs(shown(o)) do
+            if r.edge == "cut" then cut = r.name:GetText() end
+            if r.edge == "fit" then fit = r.name:GetText() end
+        end
+        return cut, fit
+    end
+
+    it("fits two names to the name field, following the window's width", function()
+        local ns, o = demo()
+        for _, st in ipairs(ns.UI.stretchers) do st(400) end
+        local field = ns.overview.rows[1].name:GetWidth()
+        assert.is_true(field < 84, field)
+        local cut, fit = edges(o)
+        assert.are.equal(12, #cut)
+        assert.is_true(#cut * 7 > field)
+        assert.are.equal(math.floor(field / 7), #fit)
+        assert.are.equal(cut:sub(1, #fit), fit)
+        for _, st in ipairs(ns.UI.stretchers) do st(600) end
+        field = ns.overview.rows[1].name:GetWidth()
+        assert.is_true(field >= 84, field)
+        local cut2, fit2 = edges(o)
+        assert.are.equal(cut, cut2)
+        assert.are.equal(cut, fit2)
     end)
 
     it("passes no made-up unit to the client", function()

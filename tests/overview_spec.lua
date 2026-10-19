@@ -44,7 +44,7 @@ local function icons(r)
     local out = {}
     for _, s in ipairs(r.slots) do
         if s:IsShown() then
-            assert.are.equal(s.mine == true, s.border:IsShown(), s.family) -- the gold border marks mine
+            assert.are.equal(s.mine == true, s.glow:IsShown(), s.family) -- the glow marks mine
             out[s.family] = { s.mine == true, s.faint == true }
         end
     end
@@ -145,12 +145,19 @@ describe("the overview", function()
         assert.are.equal("Grom", row(o, "party1").name:GetText())
     end)
 
-    it("shows the blessings and Salvation carried, mine bordered", function()
+    it("shows the blessings and Salvation carried, mine glowing", function()
         local _, o = login({ group = "party", units = { party1 = { class = "WARRIOR", auras = {
             aura(M.normal[6], { mine = true }), aura(K.normal[1], { source = "party2" }), aura(D.SALVATION, { mine = true }) } },
             party2 = { class = "PALADIN" } } })
-        assert.are.same({ MIGHT = { true, false }, KINGS = { false, false }, SALVATION = { true, false } },
-            icons(row(o, "party1")))
+        local r = row(o, "party1")
+        assert.are.same({ MIGHT = { true, false }, KINGS = { false, false }, SALVATION = { true, false } }, icons(r))
+        -- the action button's gold border, 1.8 times the icon, centred; no yellow border any more
+        local glow = r.slots[1].glow
+        assert.are.equal("Interface\\Buttons\\UI-ActionButton-Border", glow:GetTexture())
+        assert.are.same({ 16 * 1.8, 16 * 1.8 }, { glow:GetWidth(), glow:GetHeight() })
+        assert.are.same({ "CENTER" }, { glow:GetPoint() })
+        assert.are.equal("ADD", glow.blend)
+        for _, s in ipairs(r.slots) do assert.is_nil(s.border) end
     end)
 
     it("shows the next blessing faint, also over another's lower rank", function()

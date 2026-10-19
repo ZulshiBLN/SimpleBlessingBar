@@ -96,10 +96,17 @@ local function MakeRaid()
     end
     Shuffle(members)
 
-    -- Names: the player's own, one of 2 letters, the rest 3 to 12
-    local taken, paladins, two = {}, {}, false
+    -- Names: the player's own; two damage dealers at the name field's edge, sharing a 12-letter
+    -- name - one shows it whole, cut where the field is narrower, the other the longest part
+    -- that fits (the overview fits it); one of 2 letters; the rest 3 to 12
+    local taken, paladins, two, edges = {}, {}, false, 0
+    local edge = MakeName(12, taken)
     for _, m in ipairs(members) do
         if m.class == "PALADIN" then paladins[#paladins + 1] = m end
+        if DAMAGE_ROLES[m.role] and edges < 2 then
+            edges = edges + 1
+            m.name, m.edge = edge, edges == 1 and "cut" or "fit"
+        end
     end
     local me = paladins[1]
     me.name, me.isPlayer = (UnitName("player")), true
@@ -159,7 +166,7 @@ function ns.DemoRaid()
     raid = raid or MakeRaid()
     local now, list = GetTime(), {}
     for _, m in ipairs(raid) do
-        local d = { name = m.name, class = m.class, role = m.role, greyed = m.greyed, carried = {} }
+        local d = { name = m.name, class = m.class, role = m.role, greyed = m.greyed, edge = m.edge, carried = {} }
         for family, c in pairs(m.carried) do
             d.carried[family] = { spell = c.spell, by = c.by, mine = c.mine, expires = now + c.left * 60 }
         end

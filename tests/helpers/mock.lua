@@ -124,6 +124,7 @@ function Methods:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a 
 function Methods:SetTexCoord(...) self.texCoord = { ... } end
 function Methods:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
 function Methods:SetVertexColor(r, g, b, a) self.vertexColor = { r, g, b, a } end
+function Methods:SetBlendMode(m) self.blend = m end
 function Methods:SetFrameStrata(s) self.strata = s end
 function Methods:GetFrameStrata() return rawget(self, "strata") or "MEDIUM" end
 function Methods:SetAlpha(a) self.alpha = a end

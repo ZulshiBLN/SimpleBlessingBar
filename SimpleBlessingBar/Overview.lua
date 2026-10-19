@@ -1,7 +1,8 @@
 -- SimpleBlessingBar - the overview, at the foot of the Priorities tab
 -- Members sorted by class in two columns, names in class colour, a paladin's aura, the
--- blessings and Salvation they carry, mine bordered, the one this paladin would give next
--- faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities, 2026-10-19-tab-layout).
+-- blessings and Salvation they carry, mine glowing, the one this paladin would give next
+-- faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities, 2026-10-19-tab-layout,
+-- 2026-10-19-demo-raid). In demo mode a made-up raid (Demo.lua).
 -- Built out of combat from the planner's reads, when the tab is shown, on every refresh while
 -- it is and when the window's width changes. Loaded after SettingsPages.lua, which makes the
 -- scroll frame it fills.
@@ -11,7 +12,7 @@ if not ns.enabled then return end
 
 local D, L, B = ns.D, ns.L, ns.Blessings
 
-local ROW_H, ICON, ICON_GAP = 20, 16, 3
+local ROW_H, ICON, ICON_GAP, GLOW = 20, 16, 3, 1.8
 local SLOTS = { "MIGHT", "WISDOM", "KINGS", "LIGHT", "SALVATION" } -- D.BLESSING_ORDER, Salvation last
 -- A row (Michel): 10 px, the name, 10 px, the aura, 5 px, the slots, 10 px to the column's edge
 local MARGIN, NAME_GAP, AURA_GAP = 10, 10, 5
@@ -29,10 +30,25 @@ frame.rows = {}
 frame.divider = frame:CreateTexture(nil, "ARTWORK")
 frame.divider:SetColorTexture(1, 0.82, 0, 0.4)
 
+-- Measures a text as the client draws it unbounded: a font string of the rows' font without a
+-- width, never shown, so the client does not truncate the measure
+local measure = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+measure:Hide()
+
+-- The longest part of `name`, at least 2 letters, no wider than `width`
+local function Fitted(name, width)
+    for n = #name, 3, -1 do
+        measure:SetText(name:sub(1, n))
+        if measure:GetStringWidth() <= width then return name:sub(1, n) end
+    end
+    return name:sub(1, 2)
+end
+
 -- The member's name without Forever's second name, his role marked after it - "(T)", "(H)";
--- a demo member brings his name, having no unit
-local function Name(d)
+-- a demo member brings his name, having no unit, one of them fitted to the field `width` wide
+local function Name(d, width)
     local name = d.name or (UnitName(d.unit))
+    if d.edge == "fit" then name = Fitted(name, width) end
     if d.role == "TANK" then return name .. " " .. L.OV_TANK end
     if d.role == "HEALER" then return name .. " " .. L.OV_HEALER end
     return name
@@ -80,10 +96,12 @@ local function NewRow(i)
     for s, family in ipairs(SLOTS) do
         local slot = NewIcon(row)
         slot.family = family
-        slot.border = slot:CreateTexture(nil, "BACKGROUND")
-        slot.border:SetPoint("TOPLEFT", -2, 2)
-        slot.border:SetPoint("BOTTOMRIGHT", 2, -2)
-        slot.border:SetColorTexture(1, 0.82, 0, 1)
+        -- Mine glow with the action button's gold border (Michel, compared in game)
+        slot.glow = slot:CreateTexture(nil, "OVERLAY")
+        slot.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+        slot.glow:SetBlendMode("ADD")
+        slot.glow:SetSize(ICON * GLOW, ICON * GLOW)
+        slot.glow:SetPoint("CENTER")
         slot.plus = slot:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
         slot.plus:SetPoint("BOTTOMRIGHT", 2, -2)
         row.slots[s] = slot
@@ -112,8 +130,8 @@ end
 -- Writes a member into a row: his name in his class colour, the aura he runs, then per slot
 -- what he carries, or the faint next one in its family's place
 local function FillRow(row, d)
-    row.unit, row.role, row.class, row.greyed = d.unit, d.role, d.class, d.greyed
-    row.name:SetText(Name(d))
+    row.unit, row.role, row.class, row.greyed, row.edge = d.unit, d.role, d.class, d.greyed, d.edge
+    row.name:SetText(Name(d, row.name:GetWidth()))
     row.name:SetTextColor(C_ClassColor.GetClassColor(d.class):GetRGB())
     row.name:SetAlpha(d.greyed and 0.4 or 1)
     local aura = row.aura
@@ -137,7 +155,7 @@ local function FillRow(row, d)
         if faint or carried then
             slot.tex:SetTexture(C_Spell.GetSpellTexture(slot.spell))
             slot.tex:SetAlpha(faint and 0.35 or (d.greyed and 0.4 or 1))
-            slot.border:SetShown(slot.mine == true)
+            slot.glow:SetShown(slot.mine == true)
             slot.plus:SetText(faint and "+" or "")
             slot:Show()
         else
