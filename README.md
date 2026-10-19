@@ -131,9 +131,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
   blessing has run out.
 - **Auras:** the aura list - drag an aura left or right to reorder it.
 - **Blessings:** a row per class, named in its class colour, with its priority list, in two
-  columns: drag a blessing left
-  or right to reorder it; a right click switches it off for that class (greyed at the end,
-  never given) or on again. At least one stays on. "Enable all" switches every blessing on
+  columns: drag a blessing left or right to reorder it; a right click switches it off for
+  that class (greyed at the end, never given) or on again. At least one stays on. "Enable all" switches every blessing on
   again, the order kept; "Default" restores every row and the aura list.
 - **The overview** of your group in two columns, twenty members before it scrolls: sorted by
   class, each name in its class colour, a tank or healer - the role from the game - with the
