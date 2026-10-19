@@ -208,11 +208,6 @@ local function Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
 
--- A family's name in the addon's language
-function B.FamilyName(family)
-    return ns.LocalName(C_Spell.GetSpellName(D.BLESSINGS[family].normal[1]), "BLESSING_" .. family)
-end
-
 -- The first family of the unit's class list, as the player edited it, this paladin can give
 -- the unit - a normal rank or the best known Greater one fits - and others have not given
 -- (ruleset plan 2026-10-19-priorities: lists by class, roles no longer choose)
@@ -412,7 +407,8 @@ end
 ---------------------------------------------------------------------------
 -- A member as the overview shows him: `carried` maps a blessing family, or "SALVATION" for
 -- Salvation and Mass Salvation, to { spell, mine, source, expires }; `next` is { family,
--- spell } or nil; `greyed` when out of reach. Demo mode reads no auras.
+-- spell } or nil; `greyed` when out of reach; `aura`, for a paladin, the aura he runs himself
+-- as { spell, source, expires = 0 }. Demo mode reads no auras.
 function B.Describe(unit, class)
     local demo = ns.IsDemo()
     local d = { unit = unit, class = class, role = B.RoleOf(unit, class), carried = {} }
@@ -423,6 +419,11 @@ function B.Describe(unit, class)
         while true do
             local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
             if not aura then break end
+            local id, source = aura.spellId, aura.sourceUnit
+            if class == "PALADIN" and not issecretvalue(id) and B.AURA_FAMILY[id]
+               and source and UnitIsUnit(source, unit) then
+                d.aura = { spell = id, source = source, expires = 0 }
+            end
             local rank = RANKS[aura.spellId]
             local key = rank and IS_BLESSING[rank.family] and rank.family
                 or (aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION) and "SALVATION"
@@ -463,29 +464,6 @@ function B.Overview()
         if class then list[#list + 1] = B.Describe(unit, class) end
     end
     return list
-end
-
--- The overview's footer from described members: a line per paladin in the group, the player
--- first, each { unit, counts }, and the counts of casters outside the group. A count is per
--- member carrying it; Salvation and Mass Salvation count together as "SALVATION".
-function B.Footer(members)
-    local lines, others = {}, {}
-    for _, unit in ipairs(B.Members()) do
-        if select(2, UnitClass(unit)) == "PALADIN" then
-            table.insert(lines, UnitIsUnit(unit, "player") and 1 or #lines + 1, { unit = unit, counts = {} })
-        end
-    end
-    for _, d in ipairs(members) do
-        for key, c in pairs(d.carried) do
-            local counts = others
-            local giver = c.source and B.InGroup(c.source)
-            for _, l in ipairs(lines) do
-                if giver and UnitIsUnit(giver, l.unit) then counts = l.counts end
-            end
-            counts[key] = (counts[key] or 0) + 1
-        end
-    end
-    return lines, others
 end
 
 ---------------------------------------------------------------------------

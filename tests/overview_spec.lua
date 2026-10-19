@@ -1,6 +1,6 @@
--- The overview at the foot of the Priorities tab: members by class, the blessings they carry,
--- mine marked, the next one faint, a footer per paladin (ruleset plans 2026-10-19-overview,
--- 2026-10-19-priorities).
+-- The overview at the foot of the Priorities tab: members sorted by class in two columns,
+-- names in class colour, a paladin's aura, the blessings they carry, mine marked, the next one
+-- faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities, 2026-10-19-tab-layout).
 
 local addon = require("addon")
 
@@ -51,29 +51,95 @@ local function icons(r)
     return out
 end
 
-local function headers(o)
+-- A column's width: half the scroll frame's
+local function colW(ns) return math.floor(ns.overviewHost.scroll:GetWidth() / 2) end
+
+-- The shown rows' places: { x, y } each
+local function places(o)
     local out = {}
-    for _, h in ipairs(o.headers) do
-        if h:IsShown() then out[#out + 1] = h.class end
+    for _, r in ipairs(o.rows) do
+        if r:IsShown() then out[#out + 1] = { select(2, r:GetPoint()) } end
     end
     return out
 end
 
+-- An element's x offset in its row
+local function x(f) return select(2, f:GetPoint()) end
+
 local function className(ns, class) return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class) end
 
 describe("the overview", function()
-    it("lists every member under his class, in class order, the game's role marked", function()
+    it("lists every member sorted by class, in group order within it, the game's role marked", function()
         local ns, o = login({ group = "party", units = {
-            party1 = { class = "WARRIOR", role = "TANK", name = "Grom" },
-            party2 = { class = "PRIEST", name = "Anna" },
-            party3 = { class = "MAGE", name = "Jaina" } } })
+            party1 = { class = "MAGE", name = "Jaina" },
+            party2 = { class = "WARRIOR", role = "TANK", name = "Grom" },
+            party3 = { class = "PRIEST", name = "Anna" },
+            party4 = { class = "MAGE", name = "Aegwynn" } } })
         local L = ns.L
-        assert.are.same({ "WARRIOR", "PALADIN", "PRIEST", "MAGE" }, headers(o))
-        assert.are.equal(className(ns, "WARRIOR"), o.headers[1]:GetText())
         assert.are.same({ { "Grom " .. L.OV_TANK, "WARRIOR", false }, { "player", "PALADIN", false },
-                          { "Anna " .. L.OV_HEALER, "PRIEST", false }, { "Jaina", "MAGE", false } }, rows(o))
+                          { "Anna " .. L.OV_HEALER, "PRIEST", false }, { "Jaina", "MAGE", false },
+                          { "Aegwynn", "MAGE", false } }, rows(o))
         assert.is_true(ns.overviewHost.page:IsShown())
         assert.are.same({}, STATE.errors)
+    end)
+
+    it("puts the first half, rounded up, in the left column, the rest in the right, both from the top", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" }, party2 = { class = "MAGE" },
+                                                        party3 = { class = "ROGUE" }, party4 = { class = "DRUID" } } })
+        local w = colW(ns)
+        assert.are.same({ { 0, 0 }, { 0, -20 }, { 0, -40 }, { w, 0 }, { w, -20 } }, places(o))
+        assert.are.equal(w, o.rows[1]:GetWidth())
+    end)
+
+    it("draws a line between the columns, as high as the longer one", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" }, party2 = { class = "MAGE" } } })
+        local line = o.divider
+        assert.is_true(line:IsShown())
+        assert.are.same({ "TOPLEFT", colW(ns), 0 }, { line:GetPoint() })
+        assert.are.same({ 1, 40 }, { line:GetWidth(), line:GetHeight() })
+    end)
+
+    it("colours each name by its class, a greyed one dimmed", function()
+        local _, o = login({ group = "party", units = { party1 = { class = "WARRIOR", range = false },
+                                                        party2 = { class = "MAGE" } } })
+        for _, unit in ipairs({ "party1", "party2", "player" }) do
+            local r = row(o, unit)
+            local want = { C_ClassColor.GetClassColor(r.class):GetRGB() }
+            assert.are.same(want, { unpack(r.name.textColor, 1, 3) }, unit)
+        end
+        assert.are.equal(0.4, row(o, "party1").name:GetAlpha())
+        assert.are.equal(1, row(o, "party2").name:GetAlpha())
+    end)
+
+    it("lays a row out: 10 px, the name unwrapped, 10 px, the aura, 5 px, the slots, 10 px", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        local w, r = colW(ns), row(o, "party1")
+        assert.are.equal(10, x(r.name))
+        assert.are.equal(w - 146, r.name:GetWidth())
+        assert.is_false(r.name:GetWordWrap())
+        assert.are.equal(10 + r.name:GetWidth() + 10, x(r.aura))
+        assert.are.equal(x(r.aura) + 16 + 5, x(r.slots[1]))
+        for s = 2, 5 do assert.are.equal(x(r.slots[1]) + (s - 1) * 19, x(r.slots[s])) end
+        assert.are.equal(w - 10, x(r.slots[5]) + 19)
+    end)
+
+    it("follows the window's width", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        for _, st in ipairs(ns.UI.stretchers) do st(600) end
+        assert.are.equal(288, colW(ns))
+        assert.are.equal(288 - 146, row(o, "party1").name:GetWidth())
+        assert.are.equal(288, select(2, o.divider:GetPoint()))
+    end)
+
+    it("has no footer, no class titles and no texts for them any more", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "PALADIN" } } })
+        assert.is_nil(o.footer)
+        assert.is_nil(o.headers)
+        assert.is_nil(ns.Blessings.Footer)
+        assert.is_nil(ns.Blessings.FamilyName)
+        for _, key in ipairs({ "OV_OTHERS", "OV_LINE", "OV_COUNT", "OV_SEP", "OV_NONE" }) do
+            for lang, t in pairs(ns.locales) do assert.is_nil(rawget(t, key), lang .. " " .. key) end
+        end
     end)
 
     it("names a member without his second name", function()
@@ -146,15 +212,17 @@ describe("the overview", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    it("lists a raid of 21 in one column, taller than its scroll frame", function()
+    it("shows twenty members without scrolling, the 21st makes it scroll", function()
         local units = {}
-        for i = 1, 21 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
+        for i = 1, 20 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
         local ns, o = login({ group = "raid", units = units })
+        assert.are.equal(20, #rows(o))
+        assert.are.equal(ns.overviewHost.scroll:GetHeight(), o:GetHeight())
+        STATE.units.raid21 = { class = "WARRIOR", subgroup = 1 }
+        ns.Refresh()
         assert.are.equal(21, #rows(o))
-        for _, r in ipairs(o.rows) do
-            if r:IsShown() then assert.are.equal(0, select(2, r:GetPoint())) end
-        end
         assert.is_true(o:GetHeight() > ns.overviewHost.scroll:GetHeight())
+        assert.are.equal(2 * colW(ns), o:GetWidth())
     end)
 
     it("shows a row per class in demo mode, named by the class, without marks, only the next one faint", function()
@@ -182,9 +250,11 @@ describe("the overview", function()
     end)
 
     it("follows a language switch while open", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        local ns, o = login()
+        SimpleBlessingBarDB.demo = true
+        ns.Refresh()
         ns.ApplyLanguage("deDE")
-        assert.are.equal(ns.locales.deDE.CLASS_WARRIOR, o.headers[1]:GetText())
+        assert.are.equal(ns.locales.deDE.CLASS_WARRIOR, rows(o)[1][1])
     end)
 
     it("explains the faint icon with its spell, a Greater one when only that fits", function()
@@ -214,82 +284,71 @@ describe("the overview", function()
     end)
 end)
 
--- The footer: per paladin in the group what he gave, and "Others"
-describe("the overview's footer", function()
-    local function lines(o)
-        local out = {}
-        for _, f in ipairs(o.footer) do
-            if f:IsShown() then out[#out + 1] = f:GetText() end
-        end
-        return out
-    end
+-- The aura slot: in front of a paladin's blessings, the aura he runs himself
+-- (ruleset plan 2026-10-19-tab-layout)
+describe("the overview's aura slot", function()
+    local DEV, RET = D.AURAS.DEVOTION[7], D.AURAS.RETRIBUTION[1]
 
-    local function line(ns, name, parts)
-        local L = ns.L
-        local pieces = {}
-        for _, p in ipairs(parts) do pieces[#pieces + 1] = L.OV_COUNT:format(p[1], p[2]) end
-        return L.OV_LINE:format(name, #pieces > 0 and table.concat(pieces, L.OV_SEP) or L.OV_NONE)
-    end
-
-    local function fam(ns, family) return ns.Blessings.FamilyName(family) end
-    local function salv(ns) return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION") end
-
-    it("names each paladin, me first, with what each gave, Salvation last", function()
-        local ns, o = login({ group = "party", units = {
-            player = { class = "PALADIN", auras = { aura(M.normal[1], { source = "party1" }) } },
-            party1 = { class = "PALADIN", name = "Tyr" },
-            party2 = { class = "WARRIOR", auras = { aura(M.normal[6], { mine = true, source = "player" }),
-                aura(K.normal[1], { source = "party1" }), aura(D.SALVATION, { mine = true, source = "player" }) } },
-            party3 = { class = "MAGE", auras = { aura(W.normal[1], { source = "party1" }) } } } })
-        assert.are.same({
-            line(ns, "player", { { fam(ns, "MIGHT"), 1 }, { salv(ns), 1 } }),
-            line(ns, "Tyr", { { fam(ns, "MIGHT"), 1 }, { fam(ns, "WISDOM"), 1 }, { fam(ns, "KINGS"), 1 } }),
-        }, lines(o))
+    it("shows the aura a paladin runs, without border, not the one another gives him", function()
+        local _, o = login({ group = "party", units = {
+            player = { class = "PALADIN", auras = { aura(DEV, { source = "player", mine = true }),
+                                                    aura(RET, { source = "party1" }) } },
+            party1 = { class = "PALADIN", auras = { aura(RET, { source = "party1" }),
+                                                    aura(DEV, { source = "player" }) } } } })
+        local mine, his = row(o, "player").aura, row(o, "party1").aura
+        assert.is_true(mine:IsShown())
+        assert.are.equal(DEV, mine.spell)
+        assert.are.equal("icon" .. DEV, mine.tex:GetTexture())
+        assert.is_nil(mine.border)
+        assert.is_true(his:IsShown())
+        assert.are.equal(RET, his.spell)
     end)
 
-    it("shows a paladin who gave nothing with '-', and Others only when someone outside gave", function()
-        local ns, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr" },
-            party2 = { class = "WARRIOR" } } })
-        assert.are.same({ line(ns, "player", {}), line(ns, "Tyr", {}) }, lines(o))
-        STATE.units.party2.auras = { aura(K.normal[1]), aura(K.normal[1], { source = "target" }) }
-        STATE.units.target = { class = "PALADIN" } -- a paladin outside the group
+    it("leaves the slot empty for every other class and a paladin without aura, his own blessing aside", function()
+        local _, o = login({ group = "party", units = {
+            player = { class = "PALADIN" },
+            party1 = { class = "WARRIOR", auras = { aura(DEV, { source = "party1" }) } },
+            party2 = { class = "PALADIN", auras = { aura(M.normal[1], { source = "party2" }) } } } })
+        assert.is_false(row(o, "party1").aura:IsShown())
+        assert.is_false(row(o, "player").aura:IsShown())
+        assert.is_false(row(o, "party2").aura:IsShown())
+    end)
+
+    it("hides a secret aura", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "PALADIN",
+            auras = { aura(DEV, { source = "party1" }) } } } })
+        assert.is_true(row(o, "party1").aura:IsShown())
+        STATE.secrets = { [DEV] = true }
         ns.Refresh()
-        assert.are.equal(line(ns, ns.L.OV_OTHERS, { { fam(ns, "KINGS"), 1 } }), lines(o)[3])
+        assert.is_false(row(o, "party1").aura:IsShown())
     end)
 
-    it("puts me first in a raid, wherever I stand in it", function()
-        local ns, o = login({ group = "raid", units = { raid1 = { class = "PALADIN", name = "Tyr", subgroup = 1 } } })
-        STATE.units.raid2 = STATE.units.player
-        STATE.units.player.subgroup, STATE.units.player.name = 1, "Zulshe"
-        ns.Refresh()
-        assert.are.same({ line(ns, "Zulshe", {}), line(ns, "Tyr", {}) }, lines(o))
+    it("dims the aura of a greyed paladin and shows none for one out of sight", function()
+        local _, o = login({ group = "party", units = {
+            party1 = { class = "PALADIN", range = false, auras = { aura(DEV, { source = "party1" }) } },
+            party2 = { class = "PALADIN", visible = false, auras = { aura(RET, { source = "party2" }) } } } })
+        assert.are.equal(0.4, row(o, "party1").aura.tex:GetAlpha())
+        assert.is_false(row(o, "party2").aura:IsShown())
     end)
 
-    it("counts Mass Salvation as Salvation, and nothing from a member who is not visible", function()
-        local ns, o = login({ group = "party", units = {
-            party1 = { class = "WARRIOR", auras = { aura(D.MASS_SALVATION, { source = "player" }) } },
-            party2 = { class = "MAGE", visible = false, auras = { aura(W.normal[1], { source = "player" }) } } } })
-        assert.are.equal(line(ns, "player", { { salv(ns), 1 } }), o.footer[1]:GetText())
+    it("explains the aura as the other icons, without minutes", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr",
+            auras = { aura(DEV, { source = "party1" }) } } } })
+        RUNSCRIPT(row(o, "party1").aura, "OnEnter")
+        local lines = {}
+        for _, l in ipairs(GameTooltip.lines) do lines[#lines + 1] = l[1] end
+        assert.are.equal(DEV, GameTooltip.spell)
+        assert.are.same({ ns.L.OV_FROM:format("Tyr") }, lines)
     end)
 
-    it("widens the overview to its longest line", function()
-        local _, o = login({ group = "party", units = { party1 = { class = "PALADIN", name = "Tyr" },
-            party2 = { class = "WARRIOR", auras = { aura(M.normal[6], { source = "party1" }),
-                aura(D.SALVATION, { source = "party1" }) } },
-            party3 = { class = "MAGE", auras = { aura(W.normal[1], { source = "party1" }),
-                aura(K.normal[1], { source = "party1" }) } } } })
-        local widest = 0
-        for _, f in ipairs(o.footer) do
-            if f:IsShown() then widest = math.max(widest, f:GetStringWidth()) end
-        end
-        assert.is_true(o:GetWidth() >= widest, o:GetWidth() .. " < " .. widest)
-    end)
-
-    it("is not shown in demo mode", function()
+    it("shows no aura in demo mode", function()
         local ns, o = login()
+        STATE.units.player.auras = { aura(DEV, { source = "player" }) }
         SimpleBlessingBarDB.demo = true
         ns.Refresh()
-        assert.are.same({}, lines(o))
+        for _, r in ipairs(o.rows) do
+            if r:IsShown() then assert.is_false(r.aura:IsShown()) end
+        end
     end)
 end)
 

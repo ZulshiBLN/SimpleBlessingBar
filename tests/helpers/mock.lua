@@ -49,6 +49,9 @@ end
 function Methods:IsShown() return self.shown end
 function Methods:SetShown(v) if v then self:Show() else self:Hide() end end
 function Methods:SetJustifyH(v) self.justifyH = v end
+-- A font string wraps its text unless told not to
+function Methods:SetWordWrap(v) self.wordWrap = v end
+function Methods:GetWordWrap() return rawget(self, "wordWrap") ~= false end
 -- The client keeps a moved frame's place unless told not to
 function Methods:SetDontSavePosition(v) self.dontSavePosition = v end
 function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
@@ -519,6 +522,16 @@ LOCALIZED_CLASS_NAMES_MALE = {}
 for _, class in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
   LOCALIZED_CLASS_NAMES_MALE[class] = "class" .. class
 end
+-- A class colour different for every class, so a spec can tell them apart
+C_ClassColor = {
+  GetClassColor = function(class)
+    local n = 0
+    for i, c in ipairs({ "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }) do
+      if c == class then n = i end
+    end
+    return { GetRGB = function() return n / 10, 1 - n / 10, 0.5 end }
+  end,
+}
 GetMoney = function() return STATE.money or 0 end
 GetTime = function() return STATE.now or 0 end
 C_CurrencyInfo = { GetCoinTextureString = function(copper) return copper .. "c" end }

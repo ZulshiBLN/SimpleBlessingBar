@@ -1,38 +1,33 @@
 -- SimpleBlessingBar - the overview, at the foot of the Priorities tab
--- Members by class, the blessings and Salvation they carry, mine bordered, the one this
--- paladin would give next faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities).
--- Built out of combat from the planner's reads, when the tab is shown and on every refresh
--- while it is. Loaded after SettingsPages.lua, which makes the scroll frame it fills.
+-- Members sorted by class in two columns, names in class colour, a paladin's aura, the
+-- blessings and Salvation they carry, mine bordered, the one this paladin would give next
+-- faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities, 2026-10-19-tab-layout).
+-- Built out of combat from the planner's reads, when the tab is shown, on every refresh while
+-- it is and when the window's width changes. Loaded after SettingsPages.lua, which makes the
+-- scroll frame it fills.
 
 local _, ns = ...
 if not ns.enabled then return end
 
 local D, L, B = ns.D, ns.L, ns.Blessings
 
-local ROW_H, HEADER_H, ICON, ICON_GAP, NAME_W = 20, 18, 16, 3, 150
+local ROW_H, ICON, ICON_GAP = 20, 16, 3
 local SLOTS = { "MIGHT", "WISDOM", "KINGS", "LIGHT", "SALVATION" } -- D.BLESSING_ORDER, Salvation last
-local COL_W = NAME_W + #SLOTS * (ICON + ICON_GAP) + 10
-local FOOTER_H = 16
+-- A row (Michel): 10 px, the name, 10 px, the aura, 5 px, the slots, 10 px to the column's edge
+local MARGIN, NAME_GAP, AURA_GAP = 10, 10, 5
+local SLOTS_W = #SLOTS * (ICON + ICON_GAP)
+local FIXED_W = MARGIN + NAME_GAP + ICON + AURA_GAP + SLOTS_W + MARGIN
+
+local CLASS_RANK = {}
+for i, class in ipairs(D.CLASS_ORDER) do CLASS_RANK[class] = i end
 
 local host = ns.overviewHost
 local frame = host.child
 ns.overview = frame
-frame.rows, frame.headers, frame.footer = {}, {}, {}
-
--- A footer line: the name, then what was given and how often, in D.BLESSING_ORDER, Salvation
--- last; "-" for nothing
-local function FooterText(name, counts)
-    local pieces = {}
-    for _, key in ipairs(SLOTS) do
-        local n = counts[key]
-        if n then
-            local label = key == "SALVATION"
-                and ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION") or B.FamilyName(key)
-            pieces[#pieces + 1] = L.OV_COUNT:format(label, n)
-        end
-    end
-    return L.OV_LINE:format(name, #pieces > 0 and table.concat(pieces, L.OV_SEP) or L.OV_NONE)
-end
+frame.rows = {}
+-- The line between the columns, as between the class lists
+frame.divider = frame:CreateTexture(nil, "ARTWORK")
+frame.divider:SetColorTexture(1, 0.82, 0, 0.4)
 
 local function ClassName(class)
     return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
@@ -63,50 +58,74 @@ local function ShowIconTooltip(slot)
     GameTooltip:Show()
 end
 
+local function NewIcon(row)
+    local slot = CreateFrame("Frame", nil, row)
+    slot:SetSize(ICON, ICON)
+    slot.tex = slot:CreateTexture(nil, "ARTWORK")
+    slot.tex:SetAllPoints()
+    slot.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    slot:EnableMouse(true)
+    slot:SetScript("OnEnter", ShowIconTooltip)
+    slot:SetScript("OnLeave", ns.HideTooltip)
+    return slot
+end
+
 local function NewRow(i)
     local row = CreateFrame("Frame", nil, frame)
-    row:SetSize(COL_W, ROW_H)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", 4, 0)
-    row.name:SetWidth(NAME_W - 4)
     row.name:SetJustifyH("LEFT")
+    row.name:SetWordWrap(false)
+    row.aura = NewIcon(row) -- without border (Michel)
     row.slots = {}
     for s, family in ipairs(SLOTS) do
-        local slot = CreateFrame("Frame", nil, row)
-        slot:SetSize(ICON, ICON)
-        slot:SetPoint("LEFT", NAME_W + (s - 1) * (ICON + ICON_GAP), 0)
+        local slot = NewIcon(row)
         slot.family = family
         slot.border = slot:CreateTexture(nil, "BACKGROUND")
         slot.border:SetPoint("TOPLEFT", -2, 2)
         slot.border:SetPoint("BOTTOMRIGHT", 2, -2)
         slot.border:SetColorTexture(1, 0.82, 0, 1)
-        slot.tex = slot:CreateTexture(nil, "ARTWORK")
-        slot.tex:SetAllPoints()
-        slot.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
         slot.plus = slot:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
         slot.plus:SetPoint("BOTTOMRIGHT", 2, -2)
-        slot:EnableMouse(true)
-        slot:SetScript("OnEnter", ShowIconTooltip)
-        slot:SetScript("OnLeave", ns.HideTooltip)
         row.slots[s] = slot
     end
     frame.rows[i] = row
     return row
 end
 
-local function NewHeader(i)
-    local h = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    h:SetJustifyH("LEFT")
-    frame.headers[i] = h
-    return h
+-- Places a row's parts for a column `colW` wide: the name takes what the rest leaves
+local function LayRow(row, colW)
+    row:SetSize(colW, ROW_H)
+    local nameW = colW - FIXED_W
+    row.name:ClearAllPoints()
+    row.name:SetPoint("LEFT", MARGIN, 0)
+    row.name:SetWidth(nameW)
+    local x = MARGIN + nameW + NAME_GAP
+    row.aura:ClearAllPoints()
+    row.aura:SetPoint("LEFT", x, 0)
+    x = x + ICON + AURA_GAP
+    for s, slot in ipairs(row.slots) do
+        slot:ClearAllPoints()
+        slot:SetPoint("LEFT", x + (s - 1) * (ICON + ICON_GAP), 0)
+    end
 end
 
--- Writes a member into a row: his name, then per slot what he carries, or the faint next one
--- in its family's place
+-- Writes a member into a row: his name in his class colour, the aura he runs, then per slot
+-- what he carries, or the faint next one in its family's place
 local function FillRow(row, d)
     row.unit, row.role, row.class, row.greyed = d.unit, d.role, d.class, d.greyed
     row.name:SetText(Name(d))
+    row.name:SetTextColor(C_ClassColor.GetClassColor(d.class):GetRGB())
     row.name:SetAlpha(d.greyed and 0.4 or 1)
+    local aura = row.aura
+    aura.carried = d.aura
+    if d.aura then
+        aura.spell = d.aura.spell
+        aura.tex:SetTexture(C_Spell.GetSpellTexture(aura.spell))
+        aura.tex:SetAlpha(d.greyed and 0.4 or 1)
+        aura:Show()
+    else
+        aura:Hide()
+    end
     for _, slot in ipairs(row.slots) do
         local carried, faint = d.carried[slot.family], d.next and d.next.family == slot.family
         slot.carried, slot.faint, slot.mine = nil, nil, nil
@@ -128,74 +147,43 @@ local function FillRow(row, d)
     row:Show()
 end
 
--- Sections by class in D.CLASS_ORDER, one column; the footer below the rows, inside the
--- scroll frame
+-- Members sorted by class in D.CLASS_ORDER, in group order within a class; the first half,
+-- rounded up, in the left column, the rest in the right, both from the top
 local function Build()
     local members = B.Overview()
-    local byClass = {}
-    for _, d in ipairs(members) do
-        byClass[d.class] = byClass[d.class] or {}
-        table.insert(byClass[d.class], d)
-    end
+    for i, d in ipairs(members) do d.index = i end
+    table.sort(members, function(a, b)
+        if a.class ~= b.class then return CLASS_RANK[a.class] < CLASS_RANK[b.class] end
+        return a.index < b.index
+    end)
 
-    local nRows, nHeaders, y = 0, 0, 0
-    for _, class in ipairs(D.CLASS_ORDER) do
-        local list = byClass[class]
-        if list then
-            nHeaders = nHeaders + 1
-            local h = frame.headers[nHeaders] or NewHeader(nHeaders)
-            h.class = class
-            h:SetText(ClassName(class))
-            h:ClearAllPoints()
-            h:SetPoint("TOPLEFT", 0, -y)
-            h:Show()
-            y = y + HEADER_H
-            for _, d in ipairs(list) do
-                nRows = nRows + 1
-                local row = frame.rows[nRows] or NewRow(nRows)
-                row:ClearAllPoints()
-                row:SetPoint("TOPLEFT", 0, -y)
-                FillRow(row, d)
-                y = y + ROW_H
-            end
-        end
+    local colW = math.floor(host.scroll:GetWidth() / 2)
+    local left = math.ceil(#members / 2)
+    for i, d in ipairs(members) do
+        local row = frame.rows[i] or NewRow(i)
+        local column, line = 0, i - 1
+        if i > left then column, line = 1, i - left - 1 end
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", column * colW, -line * ROW_H)
+        LayRow(row, colW)
+        FillRow(row, d)
     end
-    for i = nRows + 1, #frame.rows do frame.rows[i]:Hide() end
-    for i = nHeaders + 1, #frame.headers do frame.headers[i]:Hide() end
+    for i = #members + 1, #frame.rows do frame.rows[i]:Hide() end
 
-    -- The footer: per paladin in the group, then Others if any; none in demo mode
-    local texts = {}
-    if not ns.IsDemo() then
-        local lines, others = B.Footer(members)
-        for _, l in ipairs(lines) do texts[#texts + 1] = FooterText((UnitName(l.unit)), l.counts) end
-        if next(others) then texts[#texts + 1] = FooterText(L.OV_OTHERS, others) end
-    end
-    y = y + (#texts > 0 and 8 or 0)
-    for i, text in ipairs(texts) do
-        local f = frame.footer[i]
-        if not f then
-            f = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-            f:SetJustifyH("LEFT")
-            frame.footer[i] = f
-        end
-        f:ClearAllPoints()
-        f:SetPoint("TOPLEFT", 0, -y)
-        f:SetText(text)
-        f:Show()
-        y = y + FOOTER_H
-    end
-    for i = #texts + 1, #frame.footer do frame.footer[i]:Hide() end
-    -- As wide as a row, or the longest footer line: a raid's paladin can give five things
-    local width = COL_W
-    for i = 1, #texts do width = math.max(width, frame.footer[i]:GetStringWidth()) end
-    frame:SetSize(width, y)
+    frame.divider:ClearAllPoints()
+    frame.divider:SetPoint("TOPLEFT", colW, 0)
+    frame.divider:SetSize(1, left * ROW_H)
+    frame:SetSize(2 * colW, left * ROW_H)
 end
 
--- Built when the tab shows, on every refresh while it does, and on a language switch: its
--- class names and footer texts are set here, not through ns.SetL
+-- Built when the tab shows, on every refresh while it does, on a language switch - its class
+-- names are set here, not through ns.SetL - and when the window's width changes. The scroll
+-- frame's own stretcher, registered before this one, has set its width by then; before the
+-- window's first layout it has none, and the layout builds it.
 local function BuildIfShown()
-    if host.page:IsShown() then Build() end
+    if host.page:IsShown() and (host.scroll:GetWidth() or 0) > 0 then Build() end
 end
-host.page:HookScript("OnShow", Build)
+host.page:HookScript("OnShow", BuildIfShown)
 table.insert(ns.onRefresh, BuildIfShown)
 ns.OnLanguageChanged(BuildIfShown)
+table.insert(ns.UI.stretchers, BuildIfShown)

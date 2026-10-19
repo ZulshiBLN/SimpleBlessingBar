@@ -377,7 +377,7 @@ do
         return row
     end
 
-    -- A gold title centred over the page, as the overview's class titles (ruleset plan
+    -- A gold title centred over the page, in the game's normal font (ruleset plan
     -- 2026-10-19-tab-layout)
     local function Title(key)
         local t = prioritiesPage:CreateFontString(nil, "OVERLAY", "GameFontNormal")
