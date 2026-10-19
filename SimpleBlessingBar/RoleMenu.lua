@@ -17,9 +17,11 @@ local function MenuUnit()
     return "player"
 end
 
--- Built at every opening, so it follows a language switch and the group as it is now
-local function OpenMenu(owner)
-    local unit = MenuUnit()
+-- Built at every opening, so it follows a language switch and the group as it is now. For
+-- `unit`, else as the blessing button chooses: the target in the group, or the player. The
+-- overview opens it for a row's member.
+function ns.OpenRoleMenu(owner, unit)
+    unit = unit or MenuUnit()
     local guid, roles = UnitGUID(unit), D.CLASS_ROLES[select(2, UnitClass(unit))]
     if not guid or not roles then return end
     local function pick(role)
@@ -43,5 +45,5 @@ ns.blessingButton:HookScript("OnClick", function(self, mouseButton, down)
     if mouseButton ~= "RightButton" or down or InCombatLockdown() then return end
     -- With Shift the overview (Overview.lua, loaded after this file, called at click time)
     if IsShiftKeyDown() then ns.ToggleOverview() return end
-    OpenMenu(self)
+    ns.OpenRoleMenu(self)
 end)

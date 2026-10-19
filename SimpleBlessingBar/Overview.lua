@@ -89,6 +89,12 @@ local function NewRow(i)
     row.name:SetPoint("LEFT", 4, 0)
     row.name:SetWidth(NAME_W - 4)
     row.name:SetJustifyH("LEFT")
+    -- A right click opens the role menu for this member; not in demo mode, where every row
+    -- is the player
+    row:SetScript("OnMouseUp", function(self, button)
+        if button ~= "RightButton" or ns.IsDemo() or InCombatLockdown() then return end
+        ns.OpenRoleMenu(self, self.unit)
+    end)
     row.slots = {}
     for s, family in ipairs(SLOTS) do
         local slot = CreateFrame("Frame", nil, row)

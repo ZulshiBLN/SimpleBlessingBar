@@ -354,3 +354,36 @@ describe("opening the overview", function()
         assert.are.same({}, STATE.errors)
     end)
 end)
+
+-- The role menu from a row (phase 4)
+describe("a right click on an overview row", function()
+    local function entry(text)
+        for _, e in ipairs(STATE.menu.entries) do
+            if e.text == text then return e end
+        end
+    end
+
+    it("opens the role menu for that member; Tank moves him under Tank with Kings faint", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR", name = "Grom",
+            auras = { aura(M.normal[6]) } } } })
+        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "RightButton")
+        assert.are.same({ ns.L.ROLE_MENU, "Grom" }, STATE.menu.titles)
+        entry(ns.L.ROLE_TANK).pick()
+        local r = row(o, "party1")
+        assert.are.same({ "Grom *", "TANK" }, { r.name:GetText(), r.role })
+        assert.are.same({ MIGHT = { false, false }, KINGS = { false, true } }, icons(r))
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("opens nothing in demo mode, nor for a left click", function()
+        local ns, o = login({ group = "party", units = { party1 = { class = "WARRIOR" } } })
+        RUNSCRIPT(row(o, "party1"), "OnMouseUp", "LeftButton")
+        assert.is_nil(STATE.menu)
+        SimpleBlessingBarDB.demo = true
+        ns.Refresh()
+        for _, r in ipairs(o.rows) do
+            if r:IsShown() then RUNSCRIPT(r, "OnMouseUp", "RightButton") end
+        end
+        assert.is_nil(STATE.menu)
+    end)
+end)
