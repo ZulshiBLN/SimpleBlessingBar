@@ -14,18 +14,30 @@ local function SalvationName()
     return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION")
 end
 
--- The queue's head as the game's tooltip, with its target; an empty queue says so
+-- Whom the head reaches: the class for a Greater Blessing or Mass Salvation, which reach all
+-- of it, else the member (ruleset plan 2026-10-20-button-tips-glow)
+local function Target(head)
+    if head.greater then
+        local class = select(2, UnitClass(head.unit))
+        return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
+    end
+    return (UnitName(head.unit))
+end
+
+-- The queue's head as the game's tooltip, with what a left click reaches; an empty queue says
+-- so. The blessing button names its right click too.
 local function ShowTooltip(b)
     GameTooltip:SetOwner(b, "ANCHOR_TOP")
     local head = b.head
     if head then
         GameTooltip:SetSpellByID(head.spell)
-        GameTooltip:AddLine(UnitName(head.unit), 1, 1, 1)
+        GameTooltip:AddDoubleLine(L.LEFTCLICK, Target(head), 1, 1, 1)
     else
         GameTooltip:SetText(b.title())
         -- Entries left but none to cast: every one held at combat start
         GameTooltip:AddLine(b.left > 0 and L.QUEUE_HELD or L.QUEUE_EMPTY, 1, 1, 1)
     end
+    if b.rightClickText then GameTooltip:AddDoubleLine(L.RIGHTCLICK, b.rightClickText(), 1, 1, 1) end
     GameTooltip:Show()
 end
 
@@ -44,6 +56,15 @@ local blessing = NewQueueButton("SimpleBlessingBarBlessing", "blessingAntsColor"
 local salvation = NewQueueButton("SimpleBlessingBarSalvation", "salvationAntsColor",
     "salvationAntsSpeed", D.SALVATION, SalvationName)
 ns.blessingButton, ns.salvationButton = blessing, salvation
+
+-- A right click on the blessing button opens the lists that steer it, on its release; it
+-- casts nothing, as no type2 is set. Not in combat, as the minimap button's middle click.
+blessing.rightClickText = function() return L.SET_PRIORITIES end
+blessing:HookScript("OnClick", function(_, mouseButton, down)
+    if mouseButton ~= "RightButton" or down then return end
+    if InCombatLockdown() then ns.Print(L.NOT_IN_COMBAT) return end
+    ns.OpenSettingsOn("TAB_PRIORITIES")
+end)
 
 -- The blessing button shows the Symbols of Kings in its centre
 blessing.symbols = blessing:CreateFontString(nil, "OVERLAY", "NumberFontNormal")

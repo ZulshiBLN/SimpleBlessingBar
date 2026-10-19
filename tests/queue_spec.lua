@@ -144,3 +144,70 @@ describe("a queue holding only held entries at combat start", function()
         assert.are.same({}, STATE.errors)
     end)
 end)
+
+-- The tooltips name the class for a Greater Blessing or Mass Salvation, the member otherwise;
+-- a right click on the blessing button opens the priorities (ruleset plan
+-- 2026-10-20-button-tips-glow)
+describe("the queue buttons' tooltips and right click", function()
+    local function tip(b)
+        RUNSCRIPT(b, "OnEnter")
+        local out = {}
+        for i, l in ipairs(GameTooltip.lines) do out[i] = { l[1], l[2] } end
+        return out
+    end
+
+    local function className(ns, class) return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class) end
+
+    it("name the member for a normal blessing and Salvation, with the clicks", function()
+        local ns, bless, salv = login({ group = "party", units = { party1 = { class = "MAGE", name = "Jaina" } } })
+        local L = ns.L
+        assert.are.equal(M.normal[6], bless:GetAttribute("spell1"))
+        assert.are.same({ { L.LEFTCLICK, "player" }, { L.RIGHTCLICK, L.SET_PRIORITIES } }, tip(bless))
+        assert.are.equal(D.SALVATION, salv:GetAttribute("spell1"))
+        assert.are.same({ { L.LEFTCLICK, "player" } }, tip(salv)) -- the player first, then Jaina
+        STATE.units.player.auras = { aura(D.SALVATION, true) }
+        ns.Refresh()
+        assert.are.same({ { L.LEFTCLICK, "Jaina" } }, tip(salv))
+    end)
+
+    it("name the class for a Greater Blessing and Mass Salvation", function()
+        local units = {}
+        for i = 1, 4 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
+        local ns, bless, salv = login({ group = "raid", units = units }, { M.greater[1], D.MASS_SALVATION }, 5)
+        local L = ns.L
+        assert.are.equal(M.greater[1], bless:GetAttribute("spell1"))
+        assert.are.same({ L.LEFTCLICK, className(ns, "WARRIOR") }, tip(bless)[1])
+        assert.are.equal(D.MASS_SALVATION, salv:GetAttribute("spell1"))
+        assert.are.same({ { L.LEFTCLICK, className(ns, "WARRIOR") } }, tip(salv))
+    end)
+
+    it("name the right click on the blessing button also with nothing to cast", function()
+        local ns, bless = login()
+        STATE.units.player.auras = { aura(M.normal[6], true) }
+        ns.Refresh()
+        local lines = tip(bless)
+        assert.are.equal(ns.L.BTN_BLESSINGS, GameTooltip:GetText())
+        assert.are.same({ ns.L.RIGHTCLICK, ns.L.SET_PRIORITIES }, lines[#lines])
+    end)
+
+    it("open the Priorities tab on a right click on the blessing button, casting nothing", function()
+        local ns, bless, salv = login({ group = "party", units = { party1 = { class = "MAGE" } } })
+        assert.is_nil(bless:GetAttribute("type2"))
+        RUNCLICK(salv, "RightButton", false)
+        assert.is_false(ns.UI.window:IsShown())
+        RUNCLICK(bless, "RightButton", true) -- the press does nothing; the release opens
+        assert.is_false(ns.UI.window:IsShown())
+        RUNCLICK(bless, "RightButton", false)
+        assert.is_true(ns.SettingsPageShown("TAB_PRIORITIES"))
+        assert.are.same({}, STATE.casts)
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("say why the priorities do not open in combat", function()
+        local ns, bless = login()
+        STATE.combat = true
+        RUNCLICK(bless, "RightButton", false)
+        assert.is_false(ns.UI.window:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+    end)
+end)
