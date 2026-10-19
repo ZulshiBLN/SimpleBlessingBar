@@ -56,9 +56,9 @@ local function Update()
     ns.SetAnts(aura, family ~= nil and not OwnAuraUp(family))
 
     -- Righteous Fury matters to a tank only: the role the game reports - a group's role
-    -- check sets it - never one set by hand; alone the game reports none (Michel, 2026-10-19)
+    -- check sets it; alone the game reports none (Michel, 2026-10-19). Demo mode reads no role.
     local known = B.Known(D.RIGHTEOUS_FURY)
-    local tank = UnitGroupRolesAssigned("player") == "TANK"
+    local tank = not ns.IsDemo() and UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
     fury.icon:SetDesaturated(not (known and tank))
     ns.SetAnts(fury, known and tank and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))

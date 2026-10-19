@@ -222,6 +222,15 @@ describe("the Righteous Fury button", function()
         assert.is_false(b.icon:IsDesaturated())
     end)
 
+    it("is greyed without ants in demo mode, also for a tank", function()
+        local ns = addon.load("enUS", { group = "party", units = { player = { class = "PALADIN", role = "TANK" } } })
+        FIRE("PLAYER_LOGIN")
+        SimpleBlessingBarDB.demo = true
+        ns.Refresh()
+        assert.is_false(ns.furyButton.ants:IsShown())
+        assert.is_true(ns.furyButton.icon:IsDesaturated())
+    end)
+
     it("is not highlighted and has no action while it is not learned", function()
         local ns = login()
         assert.is_false(ns.furyButton.ants:IsShown())

@@ -228,7 +228,7 @@ function B.ChosenFamily(unit, class)
 end
 
 -- Done for this paladin: my blessing on the member, normal or Greater, is of the chosen
--- family. One of another family is replaced, so a change of role, list or pin is cast at once
+-- family. One of another family is replaced, so a change of list is cast at once
 -- (Michel, 2026-10-19).
 local function Done(chosen, mine)
     return mine ~= nil and mine == chosen

@@ -308,25 +308,6 @@ function MENU(dd)
   return entries
 end
 
--- A context menu: STATE.menu = { owner =, titles = {...}, entries = as MENU's }, built when
--- it opens. A radio's select gets its data, as the client's does.
-MenuUtil = {
-  CreateContextMenu = function(owner, gen)
-    local menu, root = { owner = owner, titles = {}, entries = {} }, {}
-    -- The client calls the color's methods: anything but a color errors there, as in game
-    function root:CreateTitle(text, color)
-      if color ~= nil and type(color) ~= "table" then error("title color is not a color", 2) end
-      table.insert(menu.titles, text)
-    end
-    function root:CreateRadio(text, isSelected, select, data)
-      table.insert(menu.entries, { text = text, selected = isSelected(data) and true or false,
-                                   pick = function() select(data) end })
-    end
-    gen(owner, root)
-    STATE.menu = menu
-  end,
-}
-
 -- The client's color picker: SetupColorPickerAndShow keeps the info; STATE.pickedColor is
 -- what the player has picked, { r, g, b, a }
 ColorPickerFrame = NEWOBJ("Frame")

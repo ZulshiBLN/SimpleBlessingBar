@@ -44,7 +44,7 @@ local function raid(class, members)
 end
 
 describe("my blessing for a member", function()
-    it("is the first known blessing of the role's list, alone", function()
+    it("is the first known blessing of the class's list, alone", function()
         local B = plan({}, basics())
         assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
     end)
@@ -71,7 +71,7 @@ describe("my blessing for a member", function()
         assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
     end)
 
-    -- A change of role, list or pin is cast at once (ruleset plan 2026-10-19-blessing-steering)
+    -- A change of a list is cast at once (ruleset plan 2026-10-19-blessing-steering)
     it("replaces my blessing of another family than the chosen one", function()
         local B = plan({ group = "party", units = { party1 = { class = "WARRIOR", auras = { aura(K.normal[1], true) } } } },
             basics())

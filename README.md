@@ -176,7 +176,7 @@ unless you choose another in the settings.
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |
 | `Settings.lua` | Settings window, tabs, widgets, color picker |
-| `SettingsPages.lua` | The General, Tracking, Supplies, Order, Blessings and Macros pages |
+| `SettingsPages.lua` | The General, Tracking, Supplies, Priorities, Order and Macros pages |
 | `Main.lua` | Startup and chat commands |
 
 Modules share code through the addon namespace (`ns`). Each file is its own Lua chunk, which keeps
