@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 5
+D.DB_VERSION = 6
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
@@ -26,12 +26,9 @@ D.BLESSINGS = {
     MIGHT     = { normal = { 19740, 19834, 19835, 19836, 19837, 19838, 25291 }, greater = { 25782, 25916 } },
     WISDOM    = { normal = { 19742, 19850, 19852, 19853, 19854, 25290 }, greater = { 25894, 25918 } },
     KINGS     = { normal = { 20217 }, greater = { 25898 } },
-    -- The normal Salvation reads "target party member" in game; Mass Salvation names the
-    -- whole raid or group. The addon limits only the normal one to the paladin's party.
-    SALVATION = { normal = { D.SALVATION }, greater = { D.MASS_SALVATION }, normalPartyOnly = true },
     LIGHT     = { normal = { 19977, 19978, 19979 }, greater = { 25890 } },
 }
-D.BLESSING_ORDER = { "MIGHT", "WISDOM", "KINGS", "SALVATION", "LIGHT" }
+D.BLESSING_ORDER = { "MIGHT", "WISDOM", "KINGS", "LIGHT" }
 
 -- The normal rank each Greater rank equals in strength, by index into the normal list: read
 -- in game on Forever (Might 112/133 AP, Wisdom 36/40 mana, Light 400/115; ruleset decisions
@@ -95,20 +92,15 @@ D.DEMO_SYMBOLS = 3
 -- than one second on Forever (ruleset decisions, 2026-10-18)
 D.BUY_LOCK = 3
 
--- Class buttons appear in this order, each only while the class is in the group
+-- The classes, in the order the planner walks them and demo mode shows them
 D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 
--- The bar's default order: the aura and Righteous Fury buttons, then the class buttons as one
--- block; the order inside the block defaults to D.CLASS_ORDER (Michel, 2026-10-18)
-D.DEFAULT_ORDER = { "AURA", "FURY", "CLASSES" }
+-- The bar's default order: aura, Righteous Fury, blessing, Salvation (ruleset plan
+-- 2026-10-19-blessing-core)
+D.DEFAULT_ORDER = { "AURA", "FURY", "BLESSING", "SALVATION" }
 
 -- Where the bug report tells players to paste it
 D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SimpleBlessingBar/issues"
-
--- Demo mode's sample counts per class; a 0 shows a class whose members all have the blessing
-D.DEMO_COUNTS = {
-    WARRIOR = 2, PALADIN = 0, HUNTER = 1, ROGUE = 3, PRIEST = 1, SHAMAN = 2, MAGE = 0, WARLOCK = 4, DRUID = 1,
-}
 
 ---------------------------------------------------------------------------
 -- Look: SimpleConjureBar's, so both addons read as one family
@@ -173,7 +165,6 @@ D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
     auraAntsColor = D.ANTS_COLOR,
     furyAntsColor = D.ANTS_COLOR,
-    classAntsColor = D.ANTS_COLOR,
     blessingAntsColor = D.ANTS_COLOR,
     salvationAntsColor = D.ANTS_COLOR,
     countColor    = { r = 1, g = 1, b = 1, a = 1 },
@@ -185,7 +176,6 @@ D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
     auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
-    classAntsSpeed      = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     blessingAntsSpeed   = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     salvationAntsSpeed  = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     flyoutAutoCloseTime = { default = D.FLYOUT_AUTOHIDE, min = D.AUTOCLOSE_MIN, max = D.AUTOCLOSE_MAX, integer = true },

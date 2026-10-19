@@ -103,7 +103,7 @@ describe("the blessing and Salvation buttons", function()
         db.showSalvation = false
         ns.Refresh()
         assert.is_false(salv:IsShown())
-        assert.are.equal(D.PAD + 2 * step, select(4, ns.classButtons.PALADIN:GetPoint()))
+        assert.are.equal(D.PAD + 2 * step - D.GAP + D.PAD, ns.bar:GetWidth())
     end)
 
     it("show the head's spell and target in the tooltip, or that nothing is left", function()

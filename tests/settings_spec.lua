@@ -12,11 +12,10 @@ local function copy(t)
 end
 
 describe("settings", function()
-    it("start with no assignment, the default aura, unlocked and no position", function()
+    it("start with the default aura, unlocked and no position", function()
         local ns = addon.load("enUS")
         ns.InitDB()
         local db = SimpleBlessingBarDB
-        assert.are.same({}, db.assign)
         assert.are.equal(ns.D.DEFAULT_AURA, db.aura)
         assert.is_false(db.locked)
         assert.is_nil(db.point)
@@ -28,30 +27,18 @@ describe("settings", function()
         ns.InitDB()
         local once = copy(SimpleBlessingBarDB)
         assert.are.equal(ns.D.DB_VERSION, once.dbVersion)
-        assert.is_table(once.assign)
         ns.InitDB()
         assert.are.same(once, SimpleBlessingBarDB)
     end)
 
-    it("keep valid assignments and drop invalid ones", function()
-        local ns = addon.load("enUS", { db = { dbVersion = 2, assign = {
-            WARRIOR = "MIGHT",        -- valid
-            BOGUS = "MIGHT",          -- no such class
-            MAGE = "SANCTUARY",       -- not in the game
-            PRIEST = 5,               -- not a family name
-        } } })
-        ns.InitDB()
-        assert.are.same({ WARRIOR = "MIGHT" }, SimpleBlessingBarDB.assign)
-    end)
-
-    it("replace a damaged assignment table, aura, lock and position", function()
+    it("replace a damaged aura, lock and position", function()
         local ns = addon.load("enUS", { db = {
             dbVersion = 2, assign = "x", aura = "FOO", locked = "yes",
             point = "CENTER", rel = "CENTER", x = 0 / 0, y = 10,
         } })
         ns.InitDB()
         local db = SimpleBlessingBarDB
-        assert.are.same({}, db.assign)
+        assert.is_nil(db.assign) -- version 6 drops the class assignments
         assert.are.equal(ns.D.DEFAULT_AURA, db.aura)
         assert.is_false(db.locked)
         assert.is_nil(db.point)
@@ -77,7 +64,6 @@ describe("settings version 3", function()
         for key, default in pairs(D.BOOL_DEFAULTS) do assert.are.equal(default, db[key], key) end
         for key, n in pairs(D.NUMBER_DEFAULTS) do assert.are.equal(n.default, db[key], key) end
         for key, color in pairs(D.COLOR_DEFAULTS) do assert.are.same(color, db[key], key) end
-        assert.are.same({ WARRIOR = "MIGHT" }, db.assign)
         local once = copy(db)
         ns.InitDB()
         assert.are.same(once, SimpleBlessingBarDB)
@@ -137,23 +123,16 @@ describe("settings version 5", function()
         assert.are.same(once, SimpleBlessingBarDB)
     end)
 
-    it("repair both orders: unknown keys and doubles out, missing ones appended", function()
-        local ns = addon.load("enUS", { db = { dbVersion = 5,
-            order = { "CLASSES", "BOGUS", "CLASSES", 7 },
-            classOrder = { "MAGE", "DEATHKNIGHT", "MAGE", "WARRIOR" },
-        } })
+    it("repair the order: unknown keys and doubles out, missing ones appended", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 6, order = { "SALVATION", "BOGUS", "SALVATION", 7 } } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
-        assert.are.same({ "CLASSES", "AURA", "FURY" }, db.order)
-        assert.are.same({ "MAGE", "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "WARLOCK", "DRUID" },
-            db.classOrder)
+        assert.are.same({ "SALVATION", "AURA", "FURY", "BLESSING" }, SimpleBlessingBarDB.order)
         for _, bad in ipairs({ "x", 5 }) do
-            ns = addon.load("enUS", { db = { dbVersion = 5, order = bad, classOrder = bad } })
+            ns = addon.load("enUS", { db = { dbVersion = 6, order = bad } })
             ns.InitDB()
             assert.are.same(D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
             assert.are_not.equal(ns.D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
-            assert.are.same(D.CLASS_ORDER, SimpleBlessingBarDB.classOrder)
         end
     end)
 
@@ -170,6 +149,51 @@ describe("settings version 5", function()
         assert.are.equal(0, db.goldReserve)
         assert.is_false(db.autoBuy)
         assert.are.same({ r = 1, g = 0, b = 0, a = 1 }, db.symbolZeroColor)
+    end)
+end)
+
+-- Version 6 (ruleset plan 2026-10-19-blessing-core, IMPLEMENTATION "Definitions")
+describe("settings version 6", function()
+    local function v5()
+        return { dbVersion = 5, order = { "CLASSES", "AURA", "FURY" },
+            classOrder = { "MAGE", "WARRIOR" }, assign = { WARRIOR = "MIGHT" },
+            classAntsColor = { r = 0, g = 1, b = 0, a = 1 }, classAntsSpeed = 5 }
+    end
+
+    it("migrate a version 5 file: the class block becomes blessing and Salvation, twice without change", function()
+        local ns = addon.load("enUS", { db = v5() })
+        ns.InitDB()
+        local db = SimpleBlessingBarDB
+        assert.are.equal(ns.D.DB_VERSION, db.dbVersion)
+        assert.are.same({ "BLESSING", "SALVATION", "AURA", "FURY" }, db.order)
+        assert.are.same({ r = 0, g = 1, b = 0, a = 1 }, db.blessingAntsColor)
+        assert.are.equal(5, db.blessingAntsSpeed)
+        assert.is_nil(db.classAntsColor)
+        assert.is_nil(db.classAntsSpeed)
+        assert.is_nil(db.assign)
+        assert.is_nil(db.classOrder)
+        local once = copy(db)
+        ns.InitDB()
+        assert.are.same(once, SimpleBlessingBarDB)
+    end)
+
+    it("migrate a file without a version", function()
+        local saved = v5()
+        saved.dbVersion = nil
+        local ns = addon.load("enUS", { db = saved })
+        ns.InitDB()
+        assert.are.same({ "BLESSING", "SALVATION", "AURA", "FURY" }, SimpleBlessingBarDB.order)
+        assert.is_nil(SimpleBlessingBarDB.assign)
+    end)
+
+    it("leave a version 6 file's blessing ants as they are", function()
+        local saved = v5()
+        saved.dbVersion = 6
+        saved.order = nil
+        saved.blessingAntsSpeed = 2
+        local ns = addon.load("enUS", { db = saved })
+        ns.InitDB()
+        assert.are.equal(2, SimpleBlessingBarDB.blessingAntsSpeed)
     end)
 end)
 

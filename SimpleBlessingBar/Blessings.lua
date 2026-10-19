@@ -1,5 +1,6 @@
 -- SimpleBlessingBar - blessing logic
--- Which rank to cast, who in the group lacks a blessing, and whom a class button targets.
+-- Which rank to cast, roles, what others gave, and the planner behind the blessing and
+-- Salvation buttons (ruleset plan 2026-10-19-blessing-core).
 -- Runs out of combat only: aura data returns nothing in combat (ruleset research
 -- 2026-10-18-paladin-facts, section 3), so the callers freeze its results there.
 
@@ -25,34 +26,13 @@ function B.Rank(list)
     return best
 end
 
--- The spell a class button casts for a blessing family: the Greater form when known and a
--- Symbol of Kings is in the bags (in demo mode: assumed), otherwise the highest known normal
--- rank. Returns the spell ID and whether it is a Greater Blessing, or nil when nothing is known.
-function B.CastSpell(familyKey)
-    local family = D.BLESSINGS[familyKey]
-    if not family then return end
-    local greater = B.Rank(family.greater)
-    if greater and (ns.IsDemo() or C_Item.GetItemCount(D.SYMBOL_OF_KINGS) > 0) then return greater, true end
-    local normal = B.Rank(family.normal)
-    if normal then return normal, false end
-end
-
--- Whether any Greater Blessing is known - only then is a Symbol of Kings of use
+-- Whether any Greater Blessing or Mass Salvation is known - only then is a Symbol of Kings
+-- of use
 function B.AnyGreaterKnown()
     for _, family in ipairs(D.BLESSING_ORDER) do
         if B.Rank(D.BLESSINGS[family].greater) then return true end
     end
-    return false
-end
-
--- The blessing families the paladin knows in any rank or form, in flyout order
-function B.KnownFamilies()
-    local list = {}
-    for _, family in ipairs(D.BLESSING_ORDER) do
-        local f = D.BLESSINGS[family]
-        if B.Rank(f.normal) or B.Rank(f.greater) then list[#list + 1] = family end
-    end
-    return list
+    return B.Known(D.MASS_SALVATION)
 end
 
 -- The group's unit tokens: alone the player, in a party the player and party1-4, in a raid
@@ -68,23 +48,6 @@ function B.Members()
         end
     end
     return units
-end
-
--- The units in the paladin's own party: everyone outside a raid, the own subgroup in one
-function B.PartySet()
-    local set = {}
-    if not IsInRaid() then
-        for _, unit in ipairs(B.Members()) do set[unit] = true end
-        return set
-    end
-    local mine
-    for i = 1, GetNumGroupMembers() do
-        if UnitIsUnit("raid" .. i, "player") then mine = select(3, GetRaidRosterInfo(i)) end
-    end
-    for i = 1, GetNumGroupMembers() do
-        if select(3, GetRaidRosterInfo(i)) == mine then set["raid" .. i] = true end
-    end
-    return set
 end
 
 function B.Eligible(unit)
@@ -103,8 +66,8 @@ local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 
 -- A member's role: the one the game reports where the class can play it - a damage dealer
 -- gets the class's first damage role - else the class default.
-function B.RoleOf(unit)
-    local roles = D.CLASS_ROLES[select(2, UnitClass(unit))]
+function B.RoleOf(unit, class)
+    local roles = D.CLASS_ROLES[class or select(2, UnitClass(unit))]
     if not roles then return end
     local reported = UnitGroupRolesAssigned(unit)
     for _, role in ipairs(roles) do
@@ -137,6 +100,7 @@ end
 -- The aura instances on a unit this paladin cast ("HELPFUL|PLAYER")
 local function MineOn(unit)
     local mine, i = {}, 1
+    if ns.IsDemo() then return mine end
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return mine end
@@ -149,6 +113,7 @@ end
 -- at least this paladin's best known one. A lower rank counts as missing - casting it again
 -- is worth it (Michel, 2026-10-19). Read out of combat only.
 function B.GivenByOthers(unit, family)
+    if ns.IsDemo() then return false end -- demo mode reads no auras
     local mine = MineOn(unit)
     local best = B.BestKnownNormal(family)
     local i = 1
@@ -164,53 +129,6 @@ function B.GivenByOthers(unit, family)
     end
 end
 
--- This paladin's aura of the family on the unit, normal or Greater, any rank; another
--- paladin's blessing is not returned ("HELPFUL|PLAYER").
-function B.AuraOf(unit, familyKey)
-    local family = D.BLESSINGS[familyKey]
-    local ids = {}
-    for _, id in ipairs(family.normal) do ids[id] = true end
-    for _, id in ipairs(family.greater) do ids[id] = true end
-    local i = 1
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
-        if not aura then return end
-        if ids[aura.spellId] then return aura end
-        i = i + 1
-    end
-end
-
--- The state of one class button: { castable, spell, greater, count, target }.
--- count: eligible members of the class lacking the blessing. target: the first lacking
--- member in range; else the member in range whose blessing ends first; else nil.
--- In demo mode: the sample count of D.DEMO_COUNTS and the player as target, without reading
--- auras or units.
-function B.ClassState(class, familyKey)
-    local spell, greater = B.CastSpell(familyKey)
-    if not spell then return { castable = false, count = 0 } end
-    if ns.IsDemo() then
-        return { castable = true, spell = spell, greater = greater, count = D.DEMO_COUNTS[class], target = "player" }
-    end
-
-    local party = (D.BLESSINGS[familyKey].normalPartyOnly and not greater) and B.PartySet() or nil
-    local state = { castable = true, spell = spell, greater = greater, count = 0 }
-    local soonest, soonestUnit
-    for _, unit in ipairs(B.Members()) do
-        if select(2, UnitClass(unit)) == class and B.Eligible(unit) and (not party or party[unit]) then
-            local aura = B.AuraOf(unit, familyKey)
-            local inRange = B.InRange(spell, unit)
-            if not aura then
-                state.count = state.count + 1
-                if inRange and not state.target then state.target = unit end
-            elseif inRange and (not soonest or aura.expirationTime < soonest) then
-                soonest, soonestUnit = aura.expirationTime, unit
-            end
-        end
-    end
-    state.target = state.target or soonestUnit
-    return state
-end
-
 ---------------------------------------------------------------------------
 -- The planner (ruleset plan 2026-10-19-blessing-core, IMPLEMENTATION "Definitions")
 -- Out of combat it decides, from what the group carries, what this paladin casts next.
@@ -223,6 +141,7 @@ end
 
 -- This paladin's blessing on a unit: its family and whether it is the Greater form, or nil
 local function MyBlessingOn(unit)
+    if ns.IsDemo() then return end
     local i = 1
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
@@ -247,8 +166,8 @@ local function Symbols()
 end
 
 -- The first family of the unit's role list this paladin knows and others have not given
-function B.ChosenFamily(unit)
-    for _, family in ipairs(D.ROLE_LISTS[B.RoleOf(unit)]) do
+function B.ChosenFamily(unit, class)
+    for _, family in ipairs(D.ROLE_LISTS[B.RoleOf(unit, class)]) do
         local f = D.BLESSINGS[family]
         if (B.Rank(f.normal) or B.Rank(f.greater)) and not B.GivenByOthers(unit, family) then
             return family
@@ -281,22 +200,34 @@ local function GreaterFamily(members)
     return best
 end
 
+-- The members the planner works on: { unit, class }. Demo mode shows every class, with its
+-- default role and no auras, every entry on the player.
+local function Roster()
+    local list = {}
+    if ns.IsDemo() then
+        for _, class in ipairs(D.CLASS_ORDER) do list[#list + 1] = { unit = "player", class = class } end
+        return list
+    end
+    for _, unit in ipairs(B.Members()) do
+        local class = select(2, UnitClass(unit))
+        if class and B.Eligible(unit) then list[#list + 1] = { unit = unit, class = class } end
+    end
+    return list
+end
+
 -- The blessing queue: entries { spell, unit, greater, hold }, Greater entries first, then
 -- normal ones in group order. `hold`: a Greater entry for a class with exceptions, which must
 -- not come first at combat start - the exceptions after it could not follow in combat. Also
 -- returns the Symbols its Greater entries use. Out of combat only.
 function B.PlanBlessings()
     local byClass, order = {}, {}
-    for _, unit in ipairs(B.Members()) do
-        local class = select(2, UnitClass(unit))
-        if class and B.Eligible(unit) then
-            local mine, mineGreater = MyBlessingOn(unit)
-            local m = { unit = unit, chosen = B.ChosenFamily(unit), mine = mine }
-            m.done = Done(m.chosen, mine, mineGreater)
-            byClass[class] = byClass[class] or {}
-            table.insert(byClass[class], m)
-            order[#order + 1] = m
-        end
+    for _, r in ipairs(Roster()) do
+        local mine, mineGreater = MyBlessingOn(r.unit)
+        local m = { unit = r.unit, chosen = B.ChosenFamily(r.unit, r.class), mine = mine }
+        m.done = Done(m.chosen, mine, mineGreater)
+        byClass[r.class] = byClass[r.class] or {}
+        table.insert(byClass[r.class], m)
+        order[#order + 1] = m
     end
 
     local symbols = Symbols()
@@ -345,6 +276,7 @@ end
 
 -- Whether a unit carries Salvation or Mass Salvation, from anyone
 local function HasSalvation(unit)
+    if ns.IsDemo() then return false end
     local i = 1
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
@@ -362,16 +294,15 @@ end
 function B.PlanSalvation(symbolsUsed)
     if not B.Known(D.SALVATION) then return {} end
     local byClass, classes, position = {}, {}, {}
-    for i, unit in ipairs(B.Members()) do
-        position[unit] = i
-        local class = select(2, UnitClass(unit))
-        if class and B.Eligible(unit) and B.InRange(D.SALVATION, unit) then
-            local m = { unit = unit, tank = B.RoleOf(unit) == "TANK", has = HasSalvation(unit) }
-            if not byClass[class] then
-                byClass[class] = {}
-                classes[#classes + 1] = class
+    for i, r in ipairs(Roster()) do
+        position[r] = i
+        if B.InRange(D.SALVATION, r.unit) then
+            local m = { unit = r.unit, tank = B.RoleOf(r.unit, r.class) == "TANK", has = HasSalvation(r.unit), at = r }
+            if not byClass[r.class] then
+                byClass[r.class] = {}
+                classes[#classes + 1] = r.class
             end
-            table.insert(byClass[class], m)
+            table.insert(byClass[r.class], m)
         end
     end
 
@@ -392,10 +323,10 @@ function B.PlanSalvation(symbolsUsed)
             -- `hold`: with tanks in the class, its Revokes could not follow in combat
             mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = lacking[1].unit, greater = true, hold = tanks > 0 }
         else
-            for _, m in ipairs(lacking) do single[#single + 1] = { spell = D.SALVATION, unit = m.unit } end
+            for _, m in ipairs(lacking) do single[#single + 1] = { spell = D.SALVATION, unit = m.unit, at = m.at } end
         end
     end
-    table.sort(single, function(a, b) return position[a.unit] < position[b.unit] end)
+    table.sort(single, function(a, b) return position[a.at] < position[b.at] end)
 
     local queue = mass
     for _, e in ipairs(revoke) do queue[#queue + 1] = e end

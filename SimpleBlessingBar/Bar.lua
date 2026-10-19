@@ -1,18 +1,15 @@
 -- SimpleBlessingBar - the bar
--- Handle, position and lock; one secure button per class in the group. Targets, ranks and
--- counts come from Blessings.lua out of combat; in combat nothing is rewritten and the
--- buttons keep what they had (ruleset plan 2026-10-18-class-blessing-bar).
+-- Handle, position and lock, the look, and the layout of its four buttons: aura, Righteous
+-- Fury, blessing and Salvation (ruleset plan 2026-10-19-blessing-core). Out of combat the
+-- refresh writes everything; in combat nothing is rewritten and the buttons keep what they
+-- had.
 
 local _, ns = ...
 if not ns.enabled then return end
 
-local D, L, B = ns.D, ns.L, ns.Blessings
-local SetAttr = ns.SetAttr
+local D, L = ns.D, ns.L
 
 local SIZE, GAP, PAD = D.SIZE, D.GAP, D.PAD
--- Square class icons, cut like spell icons. The character creation sprite carries its own
--- round frame and looked like a classic button beside the others (Michel, 2026-10-18).
-local CLASS_ICON = "Interface\\Icons\\ClassIcon_"
 
 local db
 ns.OnDBReady(function(d) db = d end)
@@ -226,7 +223,7 @@ function ns.ApplyCombatHide()
     end
 end
 
--- Background and border of the bar and of every flyout, the class buttons' count color and
+-- Background and border of the bar and of every flyout, the queue buttons' count color and
 -- every button's ants. None of it is protected, so this works in combat too.
 function ns.ApplyLook()
     local c, e = db.bg, D.BORDER_COLOR
@@ -237,7 +234,6 @@ function ns.ApplyLook()
         f:SetBackdropBorderColor(e.r, e.g, e.b, db.showBorder and e.a or 0)
     end
     local n = db.countColor
-    for _, b in pairs(ns.classButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
     for _, b in ipairs(ns.queueButtons) do b.count:SetTextColor(n.r, n.g, n.b, n.a) end
     for _, b in ipairs(antsButtons) do
         local a = db[b.antsColorKey]
@@ -286,40 +282,8 @@ end
 handle:SetScript("OnMouseUp", StopDrag)
 
 ---------------------------------------------------------------------------
--- Class buttons
+-- The Symbol count, shown on the blessing button (Queue.lua)
 ---------------------------------------------------------------------------
-local buttons = {}
-ns.classButtons = buttons
-
--- The class is the button's icon; the assigned blessing sits small in the top right corner,
--- the count bottom right where SimpleConjureBar keeps its counts.
-for _, class in ipairs(D.CLASS_ORDER) do
-    local b = ns.CreateSecureButton("SimpleBlessingBarClass" .. class, bar)
-    b.classIcon = b.icon
-    b.classIcon:SetTexture(CLASS_ICON .. class)
-    b.blessIcon = b:CreateTexture(nil, "ARTWORK")
-    b.blessIcon:SetSize(SIZE / 2 - 2, SIZE / 2 - 2)
-    b.blessIcon:SetPoint("TOPRIGHT", b, "TOPRIGHT", -1, -1)
-    b.blessIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    b:SetScript("OnEnter", ns.ShowSpellTooltip)
-    b:SetScript("OnLeave", ns.HideTooltip)
-    ns.AttachAnts(b, "classAntsColor", "classAntsSpeed")
-    -- The Symbols of Kings in the bags, centred above the icons (Michel, 2026-10-18)
-    b.symbols = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    b.symbols:SetPoint("CENTER", 0, 0)
-    b.class = class
-    b:Hide()
-    buttons[class] = b
-end
-
--- Left click only: right click stays free for the flyout. In demo mode the button keeps its
--- spell (tooltip, the demo print) but gets no secure action, so it casts nothing.
-local function SetAction(b, spell, unit)
-    SetAttr(b, "type1", (spell and not ns.IsDemo()) and "spell" or nil)
-    SetAttr(b, "spell1", spell)
-    SetAttr(b, "unit1", spell and unit or nil)
-end
-
 -- The Symbol count: white, the warning color at or below the threshold, the empty color at 0
 local WHITE = { r = 1, g = 1, b = 1, a = 1 }
 local function UpdateSymbols(b, shown)
@@ -336,32 +300,13 @@ local function UpdateSymbols(b, shown)
 end
 ns.UpdateSymbols = UpdateSymbols
 
-local function Update(b, family)
-    local state = family and B.ClassState(b.class, family) or { castable = false, count = 0 }
-    if state.castable and state.target then
-        SetAction(b, state.spell, state.target)
-    else
-        SetAction(b, nil)
-    end
-    local icon = family and (state.spell or D.BLESSINGS[family].normal[1])
-    b.blessIcon:SetTexture(icon and C_Spell.GetSpellTexture(icon) or nil)
-    b.classIcon:SetDesaturated(not state.castable)
-    b.blessIcon:SetDesaturated(not state.castable)
-    -- The count and the ants show only while members lack the blessing; a 0 shows nothing
-    local lacking = state.castable and state.count > 0
-    b.count:SetText(lacking and tostring(state.count) or "")
-    ns.SetAnts(b, lacking)
-    UpdateSymbols(b, state.castable and B.Rank(D.BLESSINGS[family].greater) ~= nil)
-end
-
 ---------------------------------------------------------------------------
 -- Refresh
 ---------------------------------------------------------------------------
--- Other buttons on the bar refresh with it: functions added here run after the class
--- buttons, out of combat only. They get `combatStart`, true for the refresh right before the
--- lockdown.
+-- The buttons refresh with the bar: functions added here run after the layout, out of combat
+-- only. They get `combatStart`, true for the refresh right before the lockdown.
 ns.onRefresh = {}
--- The blessing and Salvation buttons (Queue.lua), placed right after Righteous Fury's place
+-- The blessing and Salvation buttons (Queue.lua)
 ns.queueButtons = {}
 
 -- Flyout direction: the player's fixed choice, or SimpleConjureBar's rule - a horizontal bar
@@ -414,49 +359,20 @@ function ns.Refresh(combatStart)
     if not db or InCombatLockdown() then return end
     ns.attrPending = false
 
-    -- The aura and Righteous Fury buttons, each if the settings show it, and the classes in
-    -- the group as one block, in the order set on the Order page. A hidden button leaves no gap.
-    local own = { AURA = { ns.auraButton, "showAura" }, FURY = { ns.furyButton, "showFury" } }
-    for _, entry in pairs(own) do
-        if db[entry[2]] then entry[1]:Show() else entry[1]:Hide() end
-    end
-    for _, q in ipairs(ns.queueButtons) do
-        if db[q.showKey] then q:Show() else q:Hide() end
-    end
-    -- Demo mode shows every class, without reading the roster
-    local present = {}
-    if ns.IsDemo() then
-        for _, class in ipairs(D.CLASS_ORDER) do present[class] = true end
-    else
-        for _, unit in ipairs(B.Members()) do
-            local class = select(2, UnitClass(unit))
-            if class then present[class] = true end
-        end
-    end
-    local classes = {}
-    for _, class in ipairs(db.classOrder) do
-        local b = buttons[class]
-        if present[class] then
-            classes[#classes + 1] = b
-            b:Show()
-            Update(b, db.assign[class])
-        elseif b:IsShown() then
-            SetAction(b, nil)
-            ns.SetAnts(b, false)
-            b:Hide()
-        end
-    end
+    -- The four buttons in the order set on the Order page, each if the settings show it. A
+    -- hidden button leaves no gap.
+    local byKey = {
+        AURA = { ns.auraButton, "showAura" }, FURY = { ns.furyButton, "showFury" },
+        BLESSING = { ns.blessingButton, "showBlessing" }, SALVATION = { ns.salvationButton, "showSalvation" },
+    }
     local shown = {}
     for _, key in ipairs(db.order) do
-        if key == "CLASSES" then
-            for _, b in ipairs(classes) do shown[#shown + 1] = b end
-        elseif db[own[key][2]] then
-            shown[#shown + 1] = own[key][1]
-        end
-        if key == "FURY" then
-            for _, q in ipairs(ns.queueButtons) do
-                if db[q.showKey] then shown[#shown + 1] = q end
-            end
+        local b, showKey = byKey[key][1], byKey[key][2]
+        if db[showKey] then
+            b:Show()
+            shown[#shown + 1] = b
+        else
+            b:Hide()
         end
     end
     -- A drag in progress keeps its own anchor; it re-anchors when it ends

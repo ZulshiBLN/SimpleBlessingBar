@@ -150,15 +150,31 @@ function ns.InitDB()
         SimpleBlessingBarGlobalDB.language = nil -- unknown language code
     end
 
+    -- Version 6 replaces the class buttons with the blessing and Salvation buttons (ruleset
+    -- plan 2026-10-19-blessing-core). It runs before the checks below, which would otherwise
+    -- create the new ants settings at their defaults and drop the old order key.
+    if (tonumber(db.dbVersion) or 0) < 6 then
+        if db.classAntsColor ~= nil then db.blessingAntsColor = db.classAntsColor end
+        if db.classAntsSpeed ~= nil then db.blessingAntsSpeed = db.classAntsSpeed end
+        db.classAntsColor, db.classAntsSpeed = nil, nil
+        if type(db.order) == "table" then
+            local order = {}
+            for _, key in ipairs(db.order) do
+                if key == "CLASSES" then
+                    order[#order + 1] = "BLESSING"
+                    order[#order + 1] = "SALVATION"
+                else
+                    order[#order + 1] = key
+                end
+            end
+            db.order = order
+        end
+        db.assign, db.classOrder = nil, nil
+    end
+
     -- Version 1 held nothing but its version; version 2 adds the fields below. The checks
     -- that follow create them, so the migration is these checks, and running it twice
     -- changes nothing.
-    local classes = {}
-    for _, class in ipairs(D.CLASS_ORDER) do classes[class] = true end
-    if type(db.assign) ~= "table" then db.assign = {} end
-    for class, family in pairs(db.assign) do
-        if not classes[class] or not D.BLESSINGS[family] then db.assign[class] = nil end
-    end
     if not D.AURAS[db.aura] then db.aura = D.DEFAULT_AURA end
     if type(db.locked) ~= "boolean" then db.locked = false end
     if type(db.point) ~= "string" or type(db.rel) ~= "string" or not finite(db.x) or not finite(db.y) then
@@ -186,9 +202,8 @@ function ns.InitDB()
     -- loop above already clamps a saved 6-10 to 5.
     if not D.FLYOUT_DIRS[db.flyoutDir] then db.flyoutDir = D.FLYOUT_DIR_DEFAULT end
 
-    -- Version 5 adds the supplies (the loops above) and the two orders
+    -- Version 5 adds the supplies (the loops above) and the bar's order
     db.order = ValidOrder(db.order, D.DEFAULT_ORDER)
-    db.classOrder = ValidOrder(db.classOrder, D.CLASS_ORDER)
 
     db.dbVersion = D.DB_VERSION
 

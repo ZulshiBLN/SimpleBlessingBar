@@ -1,16 +1,15 @@
--- Demo mode: every spell known, every class shown with sample counts, no click casts, the
--- chat says what would be cast (ruleset plan 2026-10-18-settings-window, IMPLEMENTATION
--- "Tests, by phase" 5).
+-- Demo mode: every spell known, every class planned with its default role and no auras, no
+-- click casts, the chat says what would be cast (ruleset plans 2026-10-18-settings-window
+-- and 2026-10-19-blessing-core).
 
 local addon = require("addon")
 
--- A paladin alone, knowing nothing but Devotion Aura rank 1 - and no Righteous Fury, no
--- blessing, no Symbol of Kings. Every class is assigned Blessing of Might.
+-- A paladin alone, knowing nothing but Devotion Aura rank 1 - no Righteous Fury, no blessing,
+-- no Salvation, no Symbol of Kings
 local function login(world)
     local ns = addon.load("enUS", world)
     STATE.known = { [ns.D.AURAS.DEVOTION[1]] = true }
     FIRE("PLAYER_LOGIN")
-    for _, class in ipairs(ns.D.CLASS_ORDER) do SimpleBlessingBarDB.assign[class] = "MIGHT" end
     return ns, SimpleBlessingBarDB, ns.D
 end
 
@@ -27,24 +26,27 @@ local function click(frame, mouseButton)
 end
 
 local function mainButtons(ns)
-    local list = { ns.auraButton, ns.furyButton }
-    for _, class in ipairs(ns.D.CLASS_ORDER) do list[#list + 1] = ns.classButtons[class] end
-    return list
+    return { ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }
 end
 
 describe("demo mode", function()
-    it("shows all nine class buttons with the sample counts, out of a group", function()
+    it("plans a blessing and Salvation for every class, out of a group", function()
         local ns, db, D = login()
         demoOn(ns)
         assert.is_true(db.demo)
-        for _, class in ipairs(D.CLASS_ORDER) do
-            local b = ns.classButtons[class]
-            assert.is_true(b:IsShown(), class)
-            local n = D.DEMO_COUNTS[class]
-            assert.are.equal(n > 0 and tostring(n) or "", b.count:GetText(), class)
-            assert.are.equal(n > 0, b.ants:IsShown(), class)
-        end
+        assert.are.equal(tostring(#D.CLASS_ORDER), ns.blessingButton.count:GetText())
+        assert.are.equal(tostring(#D.CLASS_ORDER), ns.salvationButton.count:GetText()) -- no class defaults to tank
+        assert.are.equal(tostring(D.DEMO_SYMBOLS), ns.blessingButton.symbols:GetText())
         assert.are.same({}, STATE.errors)
+    end)
+
+    it("reads no auras: another paladin's blessing on the player changes nothing", function()
+        local ns, _, D = login()
+        local might = D.BLESSINGS.MIGHT.normal
+        STATE.units.player.auras = { { spellId = might[#might], expirationTime = 3600 } }
+        demoOn(ns)
+        -- the warrior, first class, melee: Might first, as if nobody had given it
+        assert.are.equal(might[#might], ns.blessingButton:GetAttribute("spell1"))
     end)
 
     it("gives no main button a secure action, but each keeps its spell", function()
@@ -54,13 +56,6 @@ describe("demo mode", function()
             assert.is_nil(b:GetAttribute("type1"), b:GetName())
             assert.is_truthy(b:GetAttribute("spell1"), b:GetName())
         end
-    end)
-
-    it("shows the Greater Blessing at its highest rank with no Symbol in the bags", function()
-        local ns, _, D = login()
-        demoOn(ns)
-        local greater = D.BLESSINGS.MIGHT.greater
-        assert.are.equal(greater[#greater], ns.classButtons.WARRIOR:GetAttribute("spell1"))
     end)
 
     it("prints what each main button would cast on a left click, and casts nothing", function()
@@ -73,8 +68,9 @@ describe("demo mode", function()
             local name = "spell" .. b:GetAttribute("spell1")
             assert.is_truthy(CHAT[#CHAT]:find(ns.L.DEMO_CAST:format(name), 1, true), b:GetName())
         end
-        -- Righteous Fury too, though not learned
-        assert.is_truthy(CHAT[#CHAT - 9]:find("spell" .. D.RIGHTEOUS_FURY, 1, true))
+        -- Righteous Fury and Salvation too, though not learned
+        assert.are.equal(D.RIGHTEOUS_FURY, ns.furyButton:GetAttribute("spell1"))
+        assert.are.equal(D.SALVATION, ns.salvationButton:GetAttribute("spell1"))
         assert.are.same({}, STATE.casts)
     end)
 
@@ -83,11 +79,10 @@ describe("demo mode", function()
         demoOn(ns)
         ns.ApplyLanguage("deDE")
         local de = ns.locales.deDE
+        click(ns.salvationButton, "LeftButton")
+        assert.is_truthy(CHAT[#CHAT]:find(de.DEMO_CAST:format(de.SALVATION), 1, true))
         click(ns.auraButton, "LeftButton")
         assert.is_truthy(CHAT[#CHAT]:find(de.DEMO_CAST:format(de.AURA_DEVOTION), 1, true))
-        click(ns.classButtons.MAGE, "LeftButton")
-        local greater = de.DEMO_GREATER:format(de.BLESSING_MIGHT)
-        assert.is_truthy(CHAT[#CHAT]:find(de.DEMO_CAST:format(greater), 1, true))
     end)
 
     it("prints nothing on a right click", function()
@@ -101,11 +96,9 @@ describe("demo mode", function()
     it("sets no secure action through a flyout choice", function()
         local ns = login()
         demoOn(ns)
-        local fly = ns.flyouts.WARRIOR
-        click(ns.classButtons.WARRIOR, "RightButton")
-        click(fly.icons[2], "LeftButton") -- Blessing of Wisdom
-        assert.are.equal("WISDOM", SimpleBlessingBarDB.assign.WARRIOR)
-        assert.is_nil(ns.classButtons.WARRIOR:GetAttribute("type1"))
+        click(ns.auraButton, "RightButton")
+        click(ns.flyouts.AURA.icons[2], "LeftButton")
+        assert.is_nil(ns.auraButton:GetAttribute("type1"))
         assert.are.same({}, STATE.casts)
         assert.are.same({}, STATE.errors)
     end)
@@ -117,8 +110,7 @@ describe("demo mode", function()
         cb:SetChecked(false)
         RUNSCRIPT(cb, "OnClick")
         assert.is_false(db.demo)
-        assert.is_false(ns.classButtons.WARRIOR:IsShown())
-        assert.is_true(ns.classButtons.PALADIN:IsShown())
+        assert.are.equal("", ns.blessingButton.count:GetText()) -- no blessing learned
         assert.are.equal("spell", ns.auraButton:GetAttribute("type1"))
         assert.is_nil(ns.header:GetAttribute("demo"))
     end)

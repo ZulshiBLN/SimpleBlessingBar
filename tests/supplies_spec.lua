@@ -1,10 +1,10 @@
--- Supplies: the Symbol of Kings count on class buttons and the auto-buy (ruleset plan
--- 2026-10-18-settings-more, IMPLEMENTATION "Tests, by phase" 1).
+-- Supplies: the Symbol of Kings count, on the blessing button since the class buttons went,
+-- and the auto-buy (ruleset plans 2026-10-18-settings-more, 2026-10-19-blessing-core).
 
 local addon = require("addon")
 
--- A paladin alone who knows Might and, unless told otherwise, Greater Might; Might is
--- assigned to paladins. `bags` = Symbols carried.
+-- A paladin alone who knows Might and, unless told otherwise, Greater Might. `bags` =
+-- Symbols carried.
 local function login(opts)
     opts = opts or {}
     local ns = addon.load("enUS")
@@ -16,17 +16,16 @@ local function login(opts)
     STATE.money = opts.money or 1000000
     FIRE("PLAYER_LOGIN")
     local db = SimpleBlessingBarDB
-    db.assign.PALADIN = "MIGHT"
     for k, v in pairs(opts.db or {}) do db[k] = v end
     ns.Refresh()
-    return ns, db, D, ns.classButtons.PALADIN
+    return ns, db, D, ns.blessingButton
 end
 
 local function color(fs) return { unpack(fs.textColor, 1, 4) } end
 local function rgba(c) return { c.r, c.g, c.b, c.a } end
 
 describe("the Symbol count", function()
-    it("shows the Symbols centred on a class button whose blessing has a known Greater form", function()
+    it("shows the Symbols centred on the blessing button while a Greater form is known", function()
         local _, _, _, b = login({ bags = 7 })
         assert.are.equal("7", b.symbols:GetText())
         assert.are.equal("CENTER", (b.symbols:GetPoint()))
@@ -36,10 +35,6 @@ describe("the Symbol count", function()
     it("shows nothing without a known Greater form", function()
         local _, _, _, b = login({ bags = 7, noGreater = true })
         assert.are.equal("", b.symbols:GetText())
-        local ns, db, _, b2 = login({ bags = 7 })
-        db.assign.PALADIN = "WISDOM" -- Greater Wisdom is not learned
-        ns.Refresh()
-        assert.are.equal("", b2.symbols:GetText())
     end)
 
     it("turns the warning color at or below the threshold and the empty color at 0", function()
@@ -60,12 +55,11 @@ describe("the Symbol count", function()
         assert.are.same({ 1, 1, 1, 1 }, color(b.symbols))
     end)
 
-    it("shows the sample count in demo mode on an assigned class, none on an unassigned one", function()
+    it("shows the sample count in demo mode", function()
         local ns, db, D = login({ noGreater = true })
         db.demo = true
         ns.Refresh()
-        assert.are.equal(tostring(D.DEMO_SYMBOLS), ns.classButtons.PALADIN.symbols:GetText())
-        assert.are.equal("", ns.classButtons.MAGE.symbols:GetText())
+        assert.are.equal(tostring(D.DEMO_SYMBOLS), ns.blessingButton.symbols:GetText())
     end)
 end)
 

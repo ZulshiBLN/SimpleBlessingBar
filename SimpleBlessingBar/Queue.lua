@@ -11,7 +11,7 @@ local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
 
 local function SalvationName()
-    return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "BLESSING_SALVATION")
+    return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION")
 end
 
 -- The queue's head as the game's tooltip, with its target; an empty queue says so
@@ -28,9 +28,9 @@ local function ShowTooltip(b)
     GameTooltip:Show()
 end
 
-local function NewQueueButton(name, showKey, colorKey, speedKey, idleSpell, title)
+local function NewQueueButton(name, colorKey, speedKey, idleSpell, title)
     local b = ns.CreateSecureButton(name, ns.bar)
-    b.showKey, b.idleSpell, b.title = showKey, idleSpell, title
+    b.idleSpell, b.title = idleSpell, title
     ns.AttachAnts(b, colorKey, speedKey)
     b:SetScript("OnEnter", ShowTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
@@ -38,13 +38,13 @@ local function NewQueueButton(name, showKey, colorKey, speedKey, idleSpell, titl
     return b
 end
 
-local blessing = NewQueueButton("SimpleBlessingBarBlessing", "showBlessing", "blessingAntsColor",
+local blessing = NewQueueButton("SimpleBlessingBarBlessing", "blessingAntsColor",
     "blessingAntsSpeed", D.BLESSINGS.KINGS.normal[1], function() return L.BTN_BLESSINGS end)
-local salvation = NewQueueButton("SimpleBlessingBarSalvation", "showSalvation", "salvationAntsColor",
+local salvation = NewQueueButton("SimpleBlessingBarSalvation", "salvationAntsColor",
     "salvationAntsSpeed", D.SALVATION, SalvationName)
 ns.blessingButton, ns.salvationButton = blessing, salvation
 
--- The blessing button shows the Symbols of Kings in its centre, as the class buttons do
+-- The blessing button shows the Symbols of Kings in its centre
 blessing.symbols = blessing:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 blessing.symbols:SetPoint("CENTER", 0, 0)
 

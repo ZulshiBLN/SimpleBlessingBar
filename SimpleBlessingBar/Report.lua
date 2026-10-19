@@ -75,7 +75,7 @@ local function FirstLines(text, max)
     return table.concat(out, "\n")
 end
 
--- Plain settings (numbers, booleans, strings) sorted by name, and both orders
+-- Plain settings (numbers, booleans, strings) sorted by name, and the bar's order
 local function SettingsText()
     local keys = {}
     for k, v in pairs(db) do
@@ -86,7 +86,6 @@ local function SettingsText()
     local parts = {}
     for _, k in ipairs(keys) do parts[#parts + 1] = k .. "=" .. tostring(db[k]) end
     parts[#parts + 1] = "order=" .. table.concat(db.order, ",")
-    parts[#parts + 1] = "classOrder=" .. table.concat(db.classOrder, ",")
     return table.concat(parts, ", ")
 end
 

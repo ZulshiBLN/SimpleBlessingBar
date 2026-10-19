@@ -77,34 +77,41 @@ describe("the Tracking page", function()
         assert.are.same({ 0, 1, 0, 1 }, ns.auraButton.ants.vertexColor)
     end)
 
-    it("colors the class buttons' ants apart from the aura and Righteous Fury buttons", function()
+    it("colors the blessing and Salvation buttons' ants apart from the others", function()
         local ns, c = open()
-        pickColor(c.classColor[1], { 0, 1, 0, 1 })
-        for _, class in ipairs(ns.D.CLASS_ORDER) do
-            assert.are.same({ 0, 1, 0, 1 }, ns.classButtons[class].ants.vertexColor, class)
-        end
+        pickColor(c.blessingColors[1], { 0, 1, 0, 1 })
+        assert.are.same({ 0, 1, 0, 1 }, ns.blessingButton.ants.vertexColor)
         local gold = ns.D.ANTS_COLOR
-        assert.are.same({ gold.r, gold.g, gold.b, gold.a }, ns.auraButton.ants.vertexColor)
-        assert.are.same({ gold.r, gold.g, gold.b, gold.a }, ns.furyButton.ants.vertexColor)
-        pickColor(c.auraColor[1], { 1, 0, 0, 1 })
-        assert.are.same({ 0, 1, 0, 1 }, ns.classButtons.MAGE.ants.vertexColor)
+        for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.salvationButton }) do
+            assert.are.same({ gold.r, gold.g, gold.b, gold.a }, b.ants.vertexColor)
+        end
+        pickColor(c.salvationColors[1], { 1, 0, 0, 1 })
+        assert.are.same({ 1, 0, 0, 1 }, ns.salvationButton.ants.vertexColor)
+        assert.are.same({ 0, 1, 0, 1 }, ns.blessingButton.ants.vertexColor)
     end)
 
-    it("runs the class buttons' ants at their own speed", function()
+    it("runs the blessing button's ants at their own speed", function()
         local ns, c, db, D = open()
-        local mage = ns.classButtons.MAGE
-        db.assign.MAGE = "MIGHT" -- the party's mage lacks it
-        ns.Refresh()
-        assert.is_true(mage.ants:IsShown())
-        c.classSpeed:SetValue(5)
-        assert.are.equal(5, db.classAntsSpeed)
-        RUNSCRIPT(mage.antsHolder, "OnUpdate", 2 * D.ANTS_STEPS[5])
-        assert.are.equal(2, mage.ants.texCoord[1] / D.ANTS_CELL)
+        local b = ns.blessingButton
+        assert.is_true(b.ants:IsShown()) -- the paladin and the mage lack Might
+        c.blessingSpeed:SetValue(5)
+        assert.are.equal(5, db.blessingAntsSpeed)
+        RUNSCRIPT(b.antsHolder, "OnUpdate", 2 * D.ANTS_STEPS[5])
+        assert.are.equal(2, b.ants.texCoord[1] / D.ANTS_CELL)
         -- the aura button keeps the default speed: the same time is one frame there
         RUNSCRIPT(ns.auraButton.antsHolder, "OnUpdate", D.ANTS_STEPS[3])
         assert.are.equal(1, ns.auraButton.ants.texCoord[1] / D.ANTS_CELL)
-        c.auraSpeed:SetValue(1)
-        assert.are.equal(5, db.classAntsSpeed)
+        c.salvationSpeed:SetValue(1)
+        assert.are.equal(5, db.blessingAntsSpeed)
+    end)
+
+    it("hides the blessing and Salvation buttons with their toggles", function()
+        local ns, c, db = open()
+        check(c.showBlessing, false)
+        assert.is_false(db.showBlessing)
+        assert.is_false(ns.blessingButton:IsShown())
+        check(c.showSalvation, false)
+        assert.is_false(ns.salvationButton:IsShown())
     end)
 
     it("runs the ants at the speed set for the button", function()
@@ -134,12 +141,11 @@ describe("the Tracking page", function()
         assert.are.equal("4", c.furySpeedText:GetText())
     end)
 
-    it("colors the count of every class button", function()
+    it("colors the count of the blessing and Salvation buttons", function()
         local ns, c = open()
-        pickColor(c.countColor[1], { 1, 0.5, 0, 1 })
-        for _, class in ipairs(ns.D.CLASS_ORDER) do
-            assert.are.same({ 1, 0.5, 0, 1 }, ns.classButtons[class].count.textColor)
-        end
+        pickColor(c.blessingColors[2], { 1, 0.5, 0, 1 })
+        assert.are.same({ 1, 0.5, 0, 1 }, ns.blessingButton.count.textColor)
+        assert.are.same({ 1, 0.5, 0, 1 }, ns.salvationButton.count.textColor)
     end)
 
     it("keeps an open flyout open with auto-close off, and dims the time", function()
@@ -170,9 +176,9 @@ describe("the Tracking page", function()
         assert.are.equal(4, ns.header:GetAttribute("autohide"))
         assert.are.equal(1, c.autoCloseRow:GetAlpha())
         STATE.combat = true
-        click(ns.classButtons.MAGE, "RightButton")
-        assert.are.equal(4, ns.flyouts.MAGE.autoHide)
-        assert.are.same({ ns.classButtons.MAGE }, ns.flyouts.MAGE.autoHideWith)
+        click(ns.auraButton, "RightButton")
+        assert.are.equal(4, ns.flyouts.AURA.autoHide)
+        assert.are.same({ ns.auraButton }, ns.flyouts.AURA.autoHideWith)
         assert.are.same({}, STATE.errors)
     end)
 

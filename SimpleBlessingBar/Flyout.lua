@@ -18,9 +18,9 @@ ns.OnDBReady(function(d) db = d end)
 local header = CreateFrame("Frame", "SimpleBlessingBarHeader", UIParent, "SecureHandlerBaseTemplate")
 ns.header = header
 
--- Every flyout key, as a Lua list for the snippets: built from constants only (code.md)
+-- Every flyout key, as a Lua list for the snippets: built from constants only (code.md).
+-- The aura flyout is the one left since the class buttons went (blessing core plan).
 local KEYS = { "AURA" }
-for _, class in ipairs(D.CLASS_ORDER) do KEYS[#KEYS + 1] = class end
 local KEY_LIST = '"' .. table.concat(KEYS, '", "') .. '"'
 
 -- Closes every open flyout but `fly`. Pasted into the snippets below.
@@ -206,40 +206,15 @@ table.insert(ns.onRefresh, function()
 end)
 
 ---------------------------------------------------------------------------
--- Class flyouts
----------------------------------------------------------------------------
--- Each icon carries its own target: the member lacking that very blessing, chosen out of
--- combat - so a Salvation icon stays within the paladin's party.
-local classFlys = {}
-for _, class in ipairs(D.CLASS_ORDER) do
-    local button = ns.classButtons[class]
-    classFlys[class] = ns.CreateFlyout(class, button, function(family, spell)
-        db.assign[class] = family
-        button.blessIcon:SetTexture(C_Spell.GetSpellTexture(spell))
-        button.blessIcon:SetDesaturated(false)
-        button.classIcon:SetDesaturated(false)
-    end)
-end
-
--- Only the classes in the group: each icon scans the group once a second
-table.insert(ns.onRefresh, function()
-    for _, class in ipairs(D.CLASS_ORDER) do
-        if ns.classButtons[class]:IsShown() then
-            local entries = {}
-            for _, family in ipairs(B.KnownFamilies()) do
-                local state = B.ClassState(class, family)
-                entries[#entries + 1] = { family = family, spell = state.spell, unit = state.target }
-            end
-            ns.FillFlyout(classFlys[class], entries)
-        end
-    end
-end)
-
----------------------------------------------------------------------------
 -- Demo mode: a left click on a main button says what it would cast
 ---------------------------------------------------------------------------
 -- Spell ID -> its name key, and whether it is a Greater Blessing (the keys name the normal form)
-local NAME_KEYS = { [D.RIGHTEOUS_FURY] = { key = "RIGHTEOUS_FURY" }, [D.REVOKE] = { key = "REVOKE" } }
+local NAME_KEYS = {
+    [D.RIGHTEOUS_FURY] = { key = "RIGHTEOUS_FURY" },
+    [D.SALVATION] = { key = "SALVATION" },
+    [D.MASS_SALVATION] = { key = "MASS_SALVATION" },
+    [D.REVOKE] = { key = "REVOKE" },
+}
 for family, f in pairs(D.BLESSINGS) do
     for _, id in ipairs(f.normal) do NAME_KEYS[id] = { key = "BLESSING_" .. family } end
     for _, id in ipairs(f.greater) do NAME_KEYS[id] = { key = "BLESSING_" .. family, greater = true } end
@@ -247,8 +222,6 @@ end
 for family, list in pairs(D.AURAS) do
     for _, id in ipairs(list) do NAME_KEYS[id] = { key = "AURA_" .. family } end
 end
--- Mass Salvation has a name of its own on Forever, not "Greater Blessing of Salvation"
-NAME_KEYS[D.MASS_SALVATION] = { key = "MASS_SALVATION" }
 
 local function DemoClick(b, mouseButton, down)
     if down or mouseButton ~= "LeftButton" or not ns.IsDemo() then return end
@@ -266,4 +239,3 @@ end
 for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do
     b:HookScript("OnClick", DemoClick)
 end
-for _, class in ipairs(D.CLASS_ORDER) do ns.classButtons[class]:HookScript("OnClick", DemoClick) end
