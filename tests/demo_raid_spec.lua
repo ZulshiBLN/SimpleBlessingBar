@@ -304,33 +304,34 @@ describe("the demo raid", function()
 
     -- The two names at the field's edge: a 12-letter one, cut where the field is narrower, and
     -- the longest part of it that fits (the mock measures 7 px a letter)
+    -- Their texts, and the fitted one's field: its own row's, as a role icon narrows a field
     local function edges(o)
-        local cut, fit
+        local cut, fit, field
         for _, r in ipairs(shown(o)) do
             if r.edge == "cut" then cut = r.name:GetText() end
-            if r.edge == "fit" then fit = r.name:GetText() end
+            if r.edge == "fit" then fit, field = r.name:GetText(), r.name:GetWidth() end
         end
-        return cut, fit
+        return cut, fit, field
     end
 
-    it("fits two names to the name field, following the window's width", function()
-        local ns, o = demo()
-        for _, st in ipairs(ns.UI.stretchers) do st(400) end
-        local field = ns.overview.rows[1].name:GetWidth()
-        assert.is_true(field < 84, field)
-        local cut, fit = edges(o)
-        assert.are.equal(12, #cut)
-        -- wide letters only: twelve narrow ones fit the field whole in game
-        assert.is_truthy(cut:lower():match("^[mwodagnu]+$"), cut)
-        assert.is_true(#cut * 7 > field)
-        assert.are.equal(math.floor(field / 7), #fit)
-        assert.are.equal(cut:sub(1, #fit), fit)
-        for _, st in ipairs(ns.UI.stretchers) do st(600) end
-        field = ns.overview.rows[1].name:GetWidth()
-        assert.is_true(field >= 84, field)
-        local cut2, fit2 = edges(o)
-        assert.are.equal(cut, cut2)
-        assert.are.equal(cut, fit2)
+    it("fits two names to the name field, following the window's width, whatever the seed", function()
+        for seed = 1, SEEDS do
+            local ns, o = demo(seed)
+            for _, st in ipairs(ns.UI.stretchers) do st(400) end
+            local cut, fit, field = edges(o)
+            assert.is_true(field < 84, field)
+            assert.are.equal(12, #cut)
+            -- wide letters only: twelve narrow ones fit the field whole in game
+            assert.is_truthy(cut:lower():match("^[mwodagnu]+$"), cut)
+            assert.is_true(#cut * 7 > field)
+            assert.are.equal(math.floor(field / 7), #fit)
+            assert.are.equal(cut:sub(1, #fit), fit)
+            for _, st in ipairs(ns.UI.stretchers) do st(600) end
+            local cut2, fit2, field2 = edges(o)
+            assert.is_true(field2 >= 84, field2)
+            assert.are.equal(cut, cut2)
+            assert.are.equal(cut, fit2)
+        end
     end)
 
     it("passes no made-up unit to the client", function()
