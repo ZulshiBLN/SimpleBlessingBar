@@ -25,15 +25,19 @@ for family, list in pairs(D.AURAS) do
     for _, id in ipairs(list) do NAME_KEYS[id] = { key = "AURA_" .. family } end
 end
 
-local function DemoClick(b, mouseButton, down)
-    if down or mouseButton ~= "LeftButton" or not ns.IsDemo() then return end
-    local spell = b:GetAttribute("spell1")
-    if not spell then return end
+-- Says in the chat what a click would cast
+function ns.DemoCast(spell)
     local n = NAME_KEYS[spell]
     local client = C_Spell.GetSpellName(spell)
     local name = ns.LocalName(client, n.key)
     if n.greater and name ~= client then name = ns.L.DEMO_GREATER:format(name) end
     ns.DemoPrint(ns.L.DEMO_CAST, name)
+end
+
+local function DemoClick(b, mouseButton, down)
+    if down or mouseButton ~= "LeftButton" or not ns.IsDemo() then return end
+    local spell = b:GetAttribute("spell1")
+    if spell then ns.DemoCast(spell) end
 end
 
 for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do

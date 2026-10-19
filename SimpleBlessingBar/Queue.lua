@@ -57,6 +57,44 @@ local salvation = NewQueueButton("SimpleBlessingBarSalvation", "salvationAntsCol
     "salvationAntsSpeed", D.SALVATION, SalvationName)
 ns.blessingButton, ns.salvationButton = blessing, salvation
 
+-- Buff & Run (ruleset plan 2026-10-20-buff-and-run): the blessing button's middle click casts
+-- on the current target what B.BuffRunSpell chose for him, then targets the next friendly
+-- player - one macro, as the client lets an addon pick neither spell nor target during a
+-- click. The cast goes through a hidden button holding the spell's ID, so the rank fits in
+-- every language; "LeftButton 1" clicks it on key down, which works with
+-- ActionButtonUseKeyDown on and off.
+local buffRun = CreateFrame("Button", "SimpleBlessingBarBuffRun", UIParent, "SecureActionButtonTemplate")
+buffRun:RegisterForClicks("AnyUp", "AnyDown")
+SetAttr(buffRun, "type", "spell")
+SetAttr(buffRun, "unit", "target")
+local BUFF_RUN_MACRO = "/click SimpleBlessingBarBuffRun LeftButton 1\n/targetfriendplayer"
+
+-- The middle click's attributes as every refresh leaves them, also at combat start: the
+-- macro, and no spell, so in combat a middle click only moves on
+local function ArmBuffRun()
+    SetAttr(blessing, "type3", "macro")
+    SetAttr(blessing, "macrotext3", BUFF_RUN_MACRO)
+    SetAttr(buffRun, "spell", nil)
+end
+
+-- Just before a middle click, out of combat: the spell for the current target. During the
+-- global cooldown the click does nothing at all, so no player is passed by. Demo mode casts
+-- nothing and says once, on the press, what it would cast.
+blessing:SetScript("PreClick", function(_, mouseButton, down)
+    if mouseButton ~= "MiddleButton" or InCombatLockdown() then return end
+    local spell = B.BuffRunSpell("target")
+    if spell and C_Spell.GetSpellCooldown(spell).startTime > 0 then
+        SetAttr(blessing, "type3", nil)
+        return
+    end
+    SetAttr(blessing, "type3", "macro")
+    if ns.IsDemo() then
+        if spell and down then ns.DemoCast(spell) end
+        spell = nil
+    end
+    SetAttr(buffRun, "spell", spell)
+end)
+
 -- A right click on the blessing button opens the lists that steer it, on its release; it
 -- casts nothing, as no type2 is set. Not in combat, as the minimap button's middle click.
 blessing.rightClickText = function() return L.SET_PRIORITIES end
@@ -96,6 +134,7 @@ end
 table.insert(ns.onRefresh, function(combatStart)
     local queue, symbolsUsed = B.PlanBlessings()
     Show(blessing, queue, combatStart)
+    ArmBuffRun()
     ns.UpdateSymbols(blessing, B.AnyGreaterKnown())
     Show(salvation, B.PlanSalvation(symbolsUsed), combatStart)
 end)

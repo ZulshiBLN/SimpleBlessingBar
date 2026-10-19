@@ -44,9 +44,12 @@ describe("the blessing and Salvation buttons", function()
         assert.is_true(bless.icon:IsDesaturated())
     end)
 
-    it("cast on a left click only; the middle click is left free", function()
-        local _, bless = login()
+    -- The blessing button's middle click is Buff & Run (ruleset plan 2026-10-20-buff-and-run,
+    -- buffrun_spec.lua); without a target it casts nothing
+    it("cast their queue's head on a left click only", function()
+        local _, bless, salv = login()
         RUNCLICK(bless, "MiddleButton", true)
+        RUNCLICK(salv, "MiddleButton", true)
         assert.are.same({}, STATE.casts)
         RUNCLICK(bless, "LeftButton", true)
         assert.are.same({ { spell = M.normal[6], unit = "player" } }, STATE.casts)

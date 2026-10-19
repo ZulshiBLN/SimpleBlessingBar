@@ -313,7 +313,8 @@ function RUNCLICK(frame, button, down)
     local template = rawget(frame, "template")
     if template and template:find("SecureActionButtonTemplate") and (down == true) == (STATE.keyDown == true) then
       local kind = Attr(frame, "type", button)
-      if kind == "spell" then
+      -- A spell action without a spell does nothing, as in the client
+      if kind == "spell" and Attr(frame, "spell", button) ~= nil then
         STATE.casts[#STATE.casts + 1] = { spell = Attr(frame, "spell", button), unit = Attr(frame, "unit", button) }
       elseif kind == "macro" then
         RunMacro(Attr(frame, "macrotext", button))

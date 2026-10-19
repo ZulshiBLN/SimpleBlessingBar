@@ -515,3 +515,37 @@ function B.ChooseAura()
     end
     return firstKnown
 end
+
+---------------------------------------------------------------------------
+-- Buff & Run (ruleset plan 2026-10-20-buff-and-run): what the blessing button's middle click
+-- casts on its target, any friendly player. Out of combat only.
+---------------------------------------------------------------------------
+-- Whether the unit carries a blessing of mine, normal or Greater, also one running out: a
+-- second would replace it. Salvation and auras take no blessing slot and do not count.
+function B.HasMyBlessing(unit)
+    if ns.IsDemo() then return false end -- demo mode reads no auras
+    local i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
+        if not aura then return false end
+        if not issecretvalue(aura.spellId) and RANKS[aura.spellId] then return true end
+        i = i + 1
+    end
+end
+
+-- The spell for the unit: nil unless it is a friendly player, alive and in reach, carrying
+-- no blessing of mine; else the first family of his class's list another paladin has not
+-- given, in the best normal rank that fits him - Greater Blessings reach group members only
+function B.BuffRunSpell(unit)
+    if not (UnitIsPlayer(unit) and UnitCanAssist("player", unit) and B.Eligible(unit)) then return end
+    if B.HasMyBlessing(unit) then return end
+    local list = db.classLists[select(2, UnitClass(unit))]
+    if not list then return end
+    for _, family in ipairs(list.order) do
+        local spell = B.RankFor(D.BLESSINGS[family].normal, unit)
+        if spell and not B.GivenByOthers(unit, family) then
+            if B.InRange(spell, unit) then return spell end
+            return
+        end
+    end
+end
