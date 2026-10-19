@@ -394,6 +394,8 @@ UnitIsConnected = function(u) local r = U(u) return r ~= nil and r.connected ~= 
 UnitIsDeadOrGhost = function(u) local r = U(u) return r ~= nil and r.dead == true end
 UnitIsVisible = function(u) local r = U(u) return r ~= nil and r.visible ~= false end
 UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
+-- The group role the game reports: the record's role, else "NONE"
+UnitGroupRolesAssigned = function(u) local r = U(u) return r and r.role or "NONE" end
 
 local function countUnits(prefix)
   local n = 0
@@ -429,7 +431,8 @@ C_UnitAuras = {
     for _, a in ipairs(r.auras or {}) do
       if a.mine or not (filter or ""):find("PLAYER") then
         n = n + 1
-        if n == i then return { spellId = a.spellId, expirationTime = a.expirationTime } end
+        -- The aura's own record serves as its instance ID: the same aura in both filters
+        if n == i then return { spellId = a.spellId, expirationTime = a.expirationTime, auraInstanceID = a } end
       end
     end
   end,

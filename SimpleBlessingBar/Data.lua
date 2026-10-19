@@ -12,6 +12,12 @@ ns.D = D
 -- in ns.InitDB() (ruleset: project.md, Data)
 D.DB_VERSION = 5
 
+-- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
+-- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
+D.SALVATION      = 1038
+D.MASS_SALVATION = 25895
+D.REVOKE         = 1325499
+
 ---------------------------------------------------------------------------
 -- Spells, lowest rank first. IDs do not rise with rank (Devotion Aura rank 2 is 10290,
 -- rank 3 is 643), so code walks these lists and never compares IDs.
@@ -22,10 +28,50 @@ D.BLESSINGS = {
     KINGS     = { normal = { 20217 }, greater = { 25898 } },
     -- The normal Salvation reads "target party member" in game; Mass Salvation names the
     -- whole raid or group. The addon limits only the normal one to the paladin's party.
-    SALVATION = { normal = { 1038 }, greater = { 25895 }, normalPartyOnly = true },
+    SALVATION = { normal = { D.SALVATION }, greater = { D.MASS_SALVATION }, normalPartyOnly = true },
     LIGHT     = { normal = { 19977, 19978, 19979 }, greater = { 25890 } },
 }
 D.BLESSING_ORDER = { "MIGHT", "WISDOM", "KINGS", "SALVATION", "LIGHT" }
+
+-- The normal rank each Greater rank equals in strength, by index into the normal list: read
+-- in game on Forever (Might 112/133 AP, Wisdom 36/40 mana, Light 400/115; ruleset decisions
+-- 2026-10-19). Equal strengths make the group decide between the two forms.
+D.GREATER_EQUALS = {
+    MIGHT  = { 6, 7 },
+    WISDOM = { 5, 6 },
+    KINGS  = { 1 },
+    LIGHT  = { 3 },
+}
+
+---------------------------------------------------------------------------
+-- Roles (ruleset plan 2026-10-19-blessing-core)
+---------------------------------------------------------------------------
+D.ROLES = { "TANK", "HEALER", "MELEE", "RANGED", "CASTER" }
+-- The roles a class can play, its default first: the role used when the game reports none.
+-- The shaman counts as one that can tank, as sources disagree (ruleset decisions 2026-10-19).
+D.CLASS_ROLES = {
+    WARRIOR = { "MELEE", "TANK" },
+    PALADIN = { "MELEE", "HEALER", "TANK" },
+    HUNTER  = { "RANGED" },
+    ROGUE   = { "MELEE" },
+    PRIEST  = { "HEALER", "CASTER" },
+    SHAMAN  = { "HEALER", "CASTER", "MELEE", "TANK" },
+    MAGE    = { "CASTER" },
+    WARLOCK = { "CASTER" },
+    DRUID   = { "CASTER", "HEALER", "MELEE", "TANK" },
+}
+-- The blessings a role wants, most wanted first. Might raises melee attack power only, so
+-- ranged does without it first.
+D.ROLE_LISTS = {
+    TANK   = { "KINGS", "MIGHT", "LIGHT", "WISDOM" },
+    HEALER = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+    MELEE  = { "MIGHT", "KINGS", "LIGHT", "WISDOM" },
+    RANGED = { "KINGS", "WISDOM", "LIGHT", "MIGHT" },
+    CASTER = { "WISDOM", "KINGS", "LIGHT", "MIGHT" },
+}
+-- In a raid, the members of a class who must lack a blessing before its Greater form, or
+-- Mass Salvation, pays (Michel, 2026-10-19)
+D.RAID_GREATER_MIN = 3
 
 D.AURAS = {
     DEVOTION      = { 465, 10290, 643, 10291, 1032, 10292, 10293 },

@@ -95,6 +95,75 @@ function B.InRange(spell, unit)
     return UnitIsUnit(unit, "player") or C_Spell.IsSpellInRange(spell, unit) == true
 end
 
+---------------------------------------------------------------------------
+-- Roles and presence (ruleset plan 2026-10-19-blessing-core)
+---------------------------------------------------------------------------
+-- The game's group roles, mapped onto ours
+local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
+
+-- A member's role: the one the game reports where the class can play it - a damage dealer
+-- gets the class's first damage role - else the class default.
+function B.RoleOf(unit)
+    local roles = D.CLASS_ROLES[select(2, UnitClass(unit))]
+    if not roles then return end
+    local reported = UnitGroupRolesAssigned(unit)
+    for _, role in ipairs(roles) do
+        if role == reported or (reported == "DAMAGER" and DAMAGE_ROLES[role]) then return role end
+    end
+    return roles[1]
+end
+
+-- Spell ID -> { family, strength, greater }: a normal rank's strength is its index in the
+-- normal list, a Greater rank's the normal index it equals (D.GREATER_EQUALS)
+local RANKS = {}
+for family, f in pairs(D.BLESSINGS) do
+    for i, id in ipairs(f.normal) do RANKS[id] = { family = family, strength = i } end
+    for i, id in ipairs(f.greater) do
+        local equals = D.GREATER_EQUALS[family]
+        RANKS[id] = { family = family, strength = equals and equals[i], greater = true }
+    end
+end
+B.RANKS = RANKS
+
+-- The index of the best normal rank of a family this paladin knows, 0 for none
+function B.BestKnownNormal(family)
+    local best = 0
+    for i, id in ipairs(D.BLESSINGS[family].normal) do
+        if B.Known(id) then best = i end
+    end
+    return best
+end
+
+-- The aura instances on a unit this paladin cast ("HELPFUL|PLAYER")
+local function MineOn(unit)
+    local mine, i = {}, 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
+        if not aura then return mine end
+        mine[aura.auraInstanceID] = true
+        i = i + 1
+    end
+end
+
+-- Whether another paladin gave the unit this family: in its Greater form, or a normal rank
+-- at least this paladin's best known one. A lower rank counts as missing - casting it again
+-- is worth it (Michel, 2026-10-19). Read out of combat only.
+function B.GivenByOthers(unit, family)
+    local mine = MineOn(unit)
+    local best = B.BestKnownNormal(family)
+    local i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
+        if not aura then return false end
+        local rank = RANKS[aura.spellId]
+        if rank and rank.family == family and not mine[aura.auraInstanceID]
+           and (rank.greater or rank.strength >= best) then
+            return true
+        end
+        i = i + 1
+    end
+end
+
 -- This paladin's aura of the family on the unit, normal or Greater, any rank; another
 -- paladin's blessing is not returned ("HELPFUL|PLAYER").
 function B.AuraOf(unit, familyKey)
