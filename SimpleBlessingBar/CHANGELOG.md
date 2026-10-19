@@ -23,8 +23,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   they keep the cast that was first when the fight started; one that must wait for the end of
   combat shows no highlight, and the tooltip says so.
 - A Priorities tab: early renewal, 5 minutes before a blessing or Salvation of yours runs out
-  by default; the priority list of each class, reordered by drag and drop, with blessings
-  switched off per class and "Enable all" to switch them on again; the aura list; and the
+  by default; the aura list; the priority list of each class, reordered by drag and drop,
+  with blessings switched off per class and "Enable all" to switch them on again; and the
   overview.
 - A change of a list is cast at once, replacing your blessing of another kind.
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role

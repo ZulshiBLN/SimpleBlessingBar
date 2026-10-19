@@ -71,8 +71,14 @@ local function copy(t)
 end
 
 describe("the Priorities tab", function()
-    -- The y offset a frame was placed at on the page
-    local function top(frame) return select(3, frame:GetPoint()) end
+    -- The x and y offsets a frame was placed at, for both SetPoint forms: (point, x, y) and
+    -- (point, relative, relativePoint, x, y)
+    local function offsets(frame)
+        local a = { frame:GetPoint() }
+        if type(a[2]) == "number" then return a[2], a[3] end
+        return a[4], a[5]
+    end
+    local function top(frame) return select(2, offsets(frame)) end
 
     it("stands between Supplies and Order, laid out top to bottom", function()
         local ns = login()
@@ -84,11 +90,57 @@ describe("the Priorities tab", function()
         assert.are.equal(at.TAB_SUPPLIES + 1, at.TAB_PRIORITIES)
         assert.are.equal(at.TAB_PRIORITIES + 1, at.TAB_ORDER)
         local c = ns.UI.controls
-        local rowsTop = top(c.listRows[1])
-        assert.is_true(rowsTop < 0)
-        assert.is_true(top(c.auraRow) < rowsTop - 4 * 30)
-        assert.is_true(top(c.overviewScroll) < top(c.auraRow))
+        -- renewal, Auras title, aura row, an empty line, Blessings title, class rows, buttons,
+        -- overview (ruleset plan 2026-10-19-tab-layout)
+        local order = { top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle), top(c.listRows[1]),
+                        top(c.listsDefault), top(c.overviewScroll) }
+        for i = 2, #order do assert.is_true(order[i] < order[i - 1], "element " .. i) end
+        assert.is_true(top(c.auraRow) - top(c.blessingsTitle) >= 24 + 6 + 24, "an empty line between")
+        assert.is_true(top(c.listRows[1]) < top(c.blessingsTitle))
+        assert.is_true(top(c.listRows[5]) > top(c.listsDefault))
         assert.are.equal(page, ns.overviewHost.page)
+    end)
+
+    it("titles the aura and blessing lists in gold, centred", function()
+        local ns = login()
+        local page = openTab(ns)
+        local c = ns.UI.controls
+        for _, case in ipairs({ { c.auraTitle, ns.L.AURA_LIST }, { c.blessingsTitle, ns.L.BTN_BLESSINGS } }) do
+            local title, text = case[1], case[2]
+            assert.are.equal(text, title:GetText())
+            local point, rel, relPoint, x = title:GetPoint()
+            assert.are.same({ "TOP", page, "TOP", 0 }, { point, rel, relPoint, x })
+        end
+    end)
+
+    it("centres the aura row, without a label, 204 px wide", function()
+        local ns = login()
+        local page = openTab(ns)
+        local auraRow = ns.UI.controls.auraRow
+        assert.is_nil(auraRow.label)
+        assert.are.equal(7 * 24 + 6 * 6, auraRow:GetWidth())
+        local point, rel, relPoint, x = auraRow:GetPoint()
+        assert.are.same({ "TOP", page, "TOP", 0 }, { point, rel, relPoint, x })
+    end)
+
+    it("centres Default and Enable all as a pair, also after a language switch", function()
+        local ns = login()
+        local page = openTab(ns)
+        local c = ns.UI.controls
+        local function check()
+            local point, rel, relPoint, x = c.listsDefault:GetPoint()
+            assert.are.same({ "TOPLEFT", page, "TOP" }, { point, rel, relPoint })
+            assert.are.equal(-(c.listsDefault:GetWidth() + 8 + c.enableAll:GetWidth()) / 2, x)
+        end
+        check()
+        ns.ApplyLanguage("deDE")
+        check()
+    end)
+
+    it("says how to use the lists in two short lines", function()
+        local ns = login()
+        assert.are.equal("The order in which you give blessings.\nDrag to reorder, right-click to toggle on/off",
+            ns.L.LISTS_HINT)
     end)
 
     it("puts five classes in the left column and four in the right, a line between them", function()
@@ -113,7 +165,6 @@ describe("the Priorities tab", function()
             assert.are.same(classDefault(class), (shown(r)))
         end
         local auraRow = ns.UI.controls.auraRow
-        assert.are.equal(ns.L.AURA_LIST, auraRow.label:GetText())
         assert.are.same(D.AURA_ORDER, (shown(auraRow)))
     end)
 

@@ -116,11 +116,11 @@ closes when combat starts and opens again when combat ends. Every change takes e
 **Priorities** - a middle click on the minimap button opens the window here.
 - Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
   blessing has run out.
-- A row per class with its priority list, in two columns: drag a blessing left or right to
-  reorder it; a right click switches it off for that class (greyed at the end, never given) or
-  on again. At least one stays on. "Enable all" switches every blessing on again, the order
-  kept; "Default" restores every row and the aura list.
-- The aura list: drag an aura left or right to reorder it.
+- **Auras:** the aura list - drag an aura left or right to reorder it.
+- **Blessings:** a row per class with its priority list, in two columns: drag a blessing left
+  or right to reorder it; a right click switches it off for that class (greyed at the end,
+  never given) or on again. At least one stays on. "Enable all" switches every blessing on
+  again, the order kept; "Default" restores every row and the aura list.
 - **The overview** of your group, scrolled for a raid: every member under his class, his role
   from the game marked "(T)" tank or "(H)" healer, with the blessings and the Salvation he
   carries. Yours have a gold border; the blessing you would give him next is faint, with a

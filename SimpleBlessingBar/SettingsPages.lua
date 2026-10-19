@@ -330,15 +330,22 @@ do
         local row = CreateFrame("Frame", nil, prioritiesPage)
         row:SetHeight(ICON)
         row.list, row.spells, row.switchable, row.labelText = list, spells, switchable, label
-        row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        row.label:SetPoint("LEFT", 4, 0)
-        row.label:SetWidth(LABEL_W)
-        row.label:SetJustifyH("LEFT")
+        -- A row without a label (the aura row) starts its icons at its left edge
+        if label then
+            row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            row.label:SetPoint("LEFT", 4, 0)
+            row.label:SetWidth(LABEL_W)
+            row.label:SetJustifyH("LEFT")
+        end
         row.icons = {}
         for i = 1, count do
             local icon = CreateFrame("Button", nil, row)
             icon:SetSize(ICON, ICON)
-            icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
+            if row.label then
+                icon:SetPoint("LEFT", row.label, "RIGHT", (i - 1) * (ICON + ICON_GAP), 0)
+            else
+                icon:SetPoint("LEFT", row, "LEFT", (i - 1) * (ICON + ICON_GAP), 0)
+            end
             icon.tex = icon:CreateTexture(nil, "ARTWORK")
             icon.tex:SetAllPoints()
             icon.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
@@ -370,7 +377,27 @@ do
         return row
     end
 
-    -- The class rows: two columns, a vertical line between them
+    -- A gold title centred over the page, as the overview's class titles (ruleset plan
+    -- 2026-10-19-tab-layout)
+    local function Title(key)
+        local t = prioritiesPage:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        t:SetPoint("TOP", prioritiesPage, "TOP", 0, Place(14, 8))
+        ns.SetL(t, key)
+        return t
+    end
+
+    -- The aura list first, centred under its title, without a label
+    controls.auraTitle = Title("AURA_LIST")
+    local auraRow = NewRow(#D.CLASS_ORDER + 1, #D.AURA_ORDER, nil,
+        function() return { order = db.auraList, off = {} } end,
+        function(family) return D.AURAS[family] end, false)
+    auraRow:SetWidth(#D.AURA_ORDER * (ICON + ICON_GAP) - ICON_GAP)
+    auraRow:SetPoint("TOP", prioritiesPage, "TOP", 0, Place(ICON, 6))
+    controls.auraRow = auraRow
+    Place(ICON, 6) -- an empty line between the two lists (Michel)
+
+    -- The class rows under their title: two columns, a vertical line between them
+    controls.blessingsTitle = Title("BTN_BLESSINGS")
     local function BlessingSpells(family) return D.BLESSINGS[family].normal end
     local rowsTop = Place(LEFT_ROWS * (ICON + ROW_GAP), 6)
     for r, class in ipairs(D.CLASS_ORDER) do
@@ -400,7 +427,7 @@ do
         RefreshLists()
         ns.Refresh()
     end)
-    reset:SetPoint("TOPLEFT", INSET, Place(22, 6) - 6)
+    local buttonsY = Place(22, 6) - 6
     controls.listsDefault = reset
     local enableAll = UI.AddButton(prioritiesPage, "ENABLE_ALL", function()
         for _, class in ipairs(D.CLASS_ORDER) do
@@ -417,20 +444,19 @@ do
     end)
     enableAll:SetPoint("LEFT", reset, "RIGHT", 8, 0)
     controls.enableAll = enableAll
-    UI.AddSeparator()
-
-    local auraRow = NewRow(#rows + 1, #D.AURA_ORDER, function() return L.AURA_LIST end,
-        function() return { order = db.auraList, off = {} } end,
-        function(family) return D.AURAS[family] end, false)
-    auraRow:SetPoint("TOPLEFT", INSET, Place(ICON, 6))
-    auraRow:SetWidth(2 * COL_W)
-    controls.auraRow = auraRow
+    -- The pair centred; their widths follow the language, so it is placed again on every refresh
+    local function CentreButtons()
+        reset:ClearAllPoints()
+        reset:SetPoint("TOPLEFT", prioritiesPage, "TOP", -(reset:GetWidth() + 8 + enableAll:GetWidth()) / 2, buttonsY)
+    end
+    CentreButtons()
+    refreshers[#refreshers + 1] = CentreButtons
     UI.AddSeparator()
 
     RefreshLists = function()
         for r, row in ipairs(rows) do
             local list = row.list()
-            row.label:SetText(row.labelText())
+            if row.label then row.label:SetText(row.labelText()) end
             for i, family in ipairs(Shown(list)) do
                 local icon = row.icons[i]
                 icon.family = family
