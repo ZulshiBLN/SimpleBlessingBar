@@ -22,7 +22,7 @@ The addon loads for paladins only.
 |---|---|---|
 | Aura | Cast the chosen aura, highest rank you know - highlighted while none of your auras is up | Open the aura flyout |
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing | – |
-| Blessings | Cast the next blessing your group needs - highlighted while one is left | Set the role of your target, or your own (not in combat) |
+| Blessings | Cast the next blessing your group needs - highlighted while one is left | Set the role of your target, or your own; with Shift, open the overview (not in combat) |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
 
@@ -94,6 +94,24 @@ followed by casts that cannot happen in combat waits for the end of it; if nothi
 left, the button keeps its number without the highlight, and its tooltip says so. Clicking
 again casts it again. Everything updates when combat ends.
 
+## Overview
+
+Shift and a right click on the blessing button, `/sbb overview`, a middle click on the minimap
+button, or the "Overview" button on the Blessings tab open a window with your whole group; Escape
+closes it, and you can drag it anywhere. It closes when combat starts - buffs cannot be read
+then - and opens again when combat ends.
+
+- Every member stands under his role, with the blessings and the Salvation he carries. Yours
+  have a gold border; the blessing you would give him next is faint, with a "+". A role set by
+  hand is marked "*". Members out of range, dead or offline are greyed.
+- Hover an icon for the spell, who gave it - "another paladin" for one outside your group -
+  and the minutes left.
+- A right click on a member's row sets his role, as the blessing button's menu does, without
+  targeting him.
+- At the bottom, a line per paladin in your group, yours first: what he gave and to how many
+  members. Blessings from paladins outside your group are listed as "Others".
+- From 21 members the window shows two columns.
+
 ## Settings
 
 `/sbb`, a middle click on the handle, the minimap button, the AddOn menu next to the minimap,
@@ -139,11 +157,12 @@ closes when combat starts and opens again when combat ends. Every change takes e
   stays on. "Default" restores every row.
 - Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
   blessing has run out.
+- "Overview" opens the overview beside the settings window.
 
 **Macros** - prepared; macros follow in a later version.
 
-**Minimap button** - left click opens the settings, right click locks or unlocks the bar, drag
-moves it around the minimap.
+**Minimap button** - left click opens the settings, right click locks or unlocks the bar, middle
+click opens the overview, drag moves it around the minimap.
 
 **Bug report** - `/sbb bug` or "Report bug" builds a report with the addon version, client,
 language, settings and this addon's errors from BugSack, if installed. Copy it with Ctrl+C and
@@ -158,6 +177,7 @@ paste it as a new issue on GitHub. It contains no character name or realm.
 | `/sbb lock` | Lock or unlock the bar |
 | `/sbb reset` | Move the bar back to its start position (not in combat) |
 | `/sbb bug` | Open the bug report |
+| `/sbb overview` | Open or close the overview |
 
 ## Languages
 
@@ -177,6 +197,7 @@ unless you choose another in the settings.
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
 | `Flyout.lua` | Secure header, the aura flyout, demo mode's chat output |
 | `RoleMenu.lua` | The blessing button's right-click menu: a member's role set by hand |
+| `Overview.lua` | The overview window: members by role, what they carry, the paladins' footer |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
 | `Report.lua` | Bug report window |

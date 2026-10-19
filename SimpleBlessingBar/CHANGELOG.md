@@ -28,6 +28,11 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   switched off per role; "I give only", pinning one blessing for everyone until logout; and
   early renewal, 5 minutes before a blessing or Salvation of yours runs out by default.
 - A change of role, list or pin is cast at once, replacing your blessing of another kind.
+- An overview window: every group member under his role with the blessings and Salvation he
+  carries, yours marked, the one you would give next faint; a footer with what each paladin
+  gives. Opened with Shift and a right click on the blessing button, `/sbb overview`, a middle
+  click on the minimap button or the Blessings tab; a right click on a row sets that member's
+  role.
 - An aura flyout: a right click on the aura button opens your auras beside it. A click on one
   selects it for the button without casting, also in combat. The flyout closes 3 seconds after
   the mouse leaves it, and a left click on any button of the bar closes it.
@@ -46,4 +51,4 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - The handle's tooltip names the lock state and what each click does.
 - Demo mode plans a blessing and Salvation for every class and casts nothing; the chat says
   what a click would cast.
-- `/sbb help`, `/sbb lock`, `/sbb reset` and `/sbb bug`.
+- `/sbb help`, `/sbb lock`, `/sbb reset`, `/sbb bug` and `/sbb overview`.
