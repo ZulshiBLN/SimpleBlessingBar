@@ -41,6 +41,18 @@ know. In combat it keeps the aura chosen before.
   the first blessing on his class's list that you know and no other paladin has given - in its
   Greater form, or in a rank at least as high as your best. A lower rank from someone else
   counts as missing.
+- The default lists, most wanted first:
+
+  | Class | Default |
+  |---|---|
+  | Warrior, Rogue | Might, Kings, Light |
+  | Paladin | Kings, Might, Wisdom, Light |
+  | Hunter | Kings, Wisdom, Might, Light |
+  | Shaman, Druid | Wisdom, Kings, Might, Light |
+  | Priest, Mage, Warlock | Wisdom, Kings, Light, Might |
+
+  Warriors and Rogues never get Wisdom: no spec of theirs uses mana. Might raises melee attack
+  power only, so it comes last for the classes that never fight in melee.
 - The game refuses a rank on a target more than ten levels below the level you learned it at.
   A low-level member therefore gets the highest rank that reaches him, and a blessing none of
   whose ranks reaches him is skipped for the next on his list.
@@ -118,7 +130,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
   blessing has run out.
 - **Auras:** the aura list - drag an aura left or right to reorder it.
-- **Blessings:** a row per class with its priority list, in two columns: drag a blessing left
+- **Blessings:** a row per class, named in its class colour, with its priority list, in two
+  columns: drag a blessing left
   or right to reorder it; a right click switches it off for that class (greyed at the end,
   never given) or on again. At least one stays on. "Enable all" switches every blessing on
   again, the order kept; "Default" restores every row and the aura list.
