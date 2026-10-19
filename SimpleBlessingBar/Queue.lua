@@ -25,6 +25,10 @@ local function ShowTooltip(b)
         GameTooltip:SetText(b.title())
         GameTooltip:AddLine(L.QUEUE_EMPTY, 1, 1, 1)
     end
+    -- A pin explains why only one blessing comes
+    if b == ns.blessingButton and B.pin then
+        GameTooltip:AddLine(L.PIN_TOOLTIP:format(B.FamilyName(B.pin)), 1, 0.82, 0)
+    end
     GameTooltip:Show()
 end
 

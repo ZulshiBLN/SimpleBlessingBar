@@ -428,6 +428,22 @@ end
 local blessingsPage = UI.NewPage("TAB_BLESSINGS")
 
 do
+    local B = ns.Blessings
+    local FamilyName = B.FamilyName
+
+    -- The pin "I give only X": in memory only, so it is not a setting in db
+    local pinOptions = { { value = false, text = function() return L.PIN_NONE end } }
+    for _, family in ipairs(D.BLESSING_ORDER) do
+        pinOptions[#pinOptions + 1] = { value = family, text = function() return FamilyName(family) end }
+    end
+    local _, pinDropdown = UI.AddDropdown("PIN_LABEL", pinOptions,
+        function() return B.pin or false end,
+        function(family)
+            B.pin = family or nil
+            ns.Refresh()
+        end)
+    controls.pin = pinDropdown
+
     UI.AddNote("LISTS_HINT", 10, 2)
 
     local ICON, ICON_GAP, LABEL_W = 24, 6, 120
@@ -435,10 +451,6 @@ do
     controls.listRows = rows
     local RefreshLists
     local drag -- { row, index } while dragging
-
-    local function FamilyName(family)
-        return ns.LocalName(C_Spell.GetSpellName(D.BLESSINGS[family].normal[1]), "BLESSING_" .. family)
-    end
 
     -- The families of a row as shown: those on, in order, then those off in D.BLESSING_ORDER
     local function Shown(list)

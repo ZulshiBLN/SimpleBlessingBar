@@ -227,10 +227,21 @@ local function Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
 
+-- The pin "I give only X": a family, or nil. Kept in memory until logout, never saved
+-- (Michel, 2026-10-19).
+B.pin = nil
+
+-- A family's name in the addon's language
+function B.FamilyName(family)
+    return ns.LocalName(C_Spell.GetSpellName(D.BLESSINGS[family].normal[1]), "BLESSING_" .. family)
+end
+
 -- The first family of the unit's role list, as the player edited it, this paladin can give the
--- unit - a normal rank or the best known Greater one fits - and others have not given
+-- unit - a normal rank or the best known Greater one fits - and others have not given. The
+-- pin replaces every list, families switched off included.
 function B.ChosenFamily(unit, class)
-    for _, family in ipairs(db.roleLists[B.RoleOf(unit, class)].order) do
+    local list = B.pin and { B.pin } or db.roleLists[B.RoleOf(unit, class)].order
+    for _, family in ipairs(list) do
         local f = D.BLESSINGS[family]
         local greater = B.Rank(f.greater)
         if (B.RankFor(f.normal, unit) or (greater and B.Fits(greater, unit)))
