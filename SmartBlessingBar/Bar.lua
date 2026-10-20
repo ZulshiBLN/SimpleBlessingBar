@@ -330,7 +330,6 @@ end
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
 function ns.Refresh(combatStart)
     if not db or InCombatLockdown() then return end
-    ns.attrPending = false
 
     -- The four buttons in the order set on the Order page, each if the settings show it. A
     -- hidden button leaves no gap.
