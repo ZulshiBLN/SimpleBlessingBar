@@ -101,3 +101,91 @@ describe("the buff key", function()
         assert.are.equal(key, _G.SmartBlessingBarBuffAll)
     end)
 end)
+
+-- The Buff & Run key is a binding of the blessing button's middle click itself (phase 1 in
+-- game: it blesses and moves on, also with the button hidden)
+describe("the Buff & Run key", function()
+    it("works through the blessing button's middle click, also with the button hidden", function()
+        local ns = login({ units = { player = { class = "PALADIN" }, target = { class = "MAGE" } } })
+        STATE.friends = { { class = "ROGUE" } }
+        SmartBlessingBarDB.showBlessing = false
+        ns.Refresh()
+        assert.is_false(ns.blessingButton:IsShown())
+        RUNCLICK(ns.blessingButton, "MiddleButton", true)
+        RUNCLICK(ns.blessingButton, "MiddleButton", false)
+        assert.are.equal(1, #STATE.casts)
+        assert.are.equal("target", STATE.casts[1].unit)
+        assert.are.equal(1, STATE.targetedNext)
+    end)
+end)
+
+describe("the Priorities key", function()
+    it("toggles the window on the Priorities tab on its release, and refuses in combat", function()
+        local ns = login()
+        local key = _G.SmartBlessingBarPrioritiesKey
+        assert.are.same({ "AnyUp" }, key.clicks)
+        RUNCLICK(key, "LeftButton", false)
+        assert.is_true(ns.SettingsPageShown("TAB_PRIORITIES"))
+        RUNCLICK(key, "LeftButton", false)
+        assert.is_false(ns.UI.window:IsShown())
+        STATE.combat = true
+        RUNCLICK(key, "LeftButton", false)
+        assert.is_false(ns.UI.window:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+    end)
+end)
+
+-- Bindings.xml and the labels the game's Key Bindings show
+describe("the key bindings", function()
+    local BINDINGS = {
+        { "CLICK SmartBlessingBarBuffAll:LeftButton", "KEY_BUFF_ALL" },
+        { "CLICK SmartBlessingBarBlessing:MiddleButton", "KEY_BUFF_RUN" },
+        { "CLICK SmartBlessingBarPrioritiesKey:LeftButton", "KEY_PRIORITIES" },
+    }
+
+    it("are exactly the three in Bindings.xml, under the addon's header", function()
+        local xml = addon.read(addon.NAME .. "/Bindings.xml")
+        local names = {}
+        for name in xml:gmatch('<Binding name="([^"]+)"') do names[#names + 1] = name end
+        assert.are.same({ BINDINGS[1][1], BINDINGS[2][1], BINDINGS[3][1] }, names)
+        assert.is_truthy(xml:find('header="SMARTBLESSINGBAR"', 1, true))
+    end)
+
+    it("carry the locale's texts for every class and follow a paladin's language switch", function()
+        for _, class in ipairs({ "PALADIN", "MAGE" }) do
+            local ns = addon.load("deDE", { class = class })
+            assert.are.equal("SmartBlessingBar", BINDING_HEADER_SMARTBLESSINGBAR)
+            for _, b in ipairs(BINDINGS) do
+                assert.are.equal(ns.locales.deDE[b[2]], _G["BINDING_NAME_" .. b[1]], class .. " " .. b[2])
+            end
+        end
+        local ns = addon.load("deDE")
+        FIRE("PLAYER_LOGIN")
+        ns.ApplyLanguage("frFR")
+        for _, b in ipairs(BINDINGS) do
+            assert.are.equal(ns.locales.frFR[b[2]], _G["BINDING_NAME_" .. b[1]], b[2])
+        end
+    end)
+
+    -- code.md's list of globals, which luacheck cannot see in `_G["..."]` writes: the
+    -- .luacheckrc names, the binding labels and frame names starting SmartBlessingBar
+    it("leave no global outside the rule's list, for a paladin and another class", function()
+        local config = { files = {} }
+        local chunk = assert(loadfile(".luacheckrc"))
+        setfenv(chunk, config)
+        chunk()
+        local allowed = {}
+        for _, name in ipairs(config.globals) do allowed[name] = true end
+        for _, class in ipairs({ "PALADIN", "MAGE" }) do
+            addon.load("enUS", { class = class, recordGlobals = true })
+            FIRE("PLAYER_LOGIN")
+            local seen = 0
+            for name in pairs(addon.written) do
+                seen = seen + 1
+                local ok = allowed[name] or name:match("^BINDING_NAME_CLICK SmartBlessingBar")
+                assert.is_truthy(ok, class .. ": " .. tostring(name))
+            end
+            assert.is_true(seen > 0, class) -- the recording works: the binding names at least
+        end
+    end)
+end)

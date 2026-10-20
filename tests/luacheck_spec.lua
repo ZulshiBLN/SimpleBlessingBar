@@ -62,6 +62,7 @@ describe(".luacheckrc", function()
             "function SmartBlessingBar_OnCompartmentClick() end",
             "function SmartBlessingBar_OnCompartmentEnter() end",
             "function SmartBlessingBar_OnCompartmentLeave() end",
+            'BINDING_HEADER_SMARTBLESSINGBAR = "x"',
         }, "\n") .. "\n"
         assert.are.equal(0, warningsFor(allowed))
     end)

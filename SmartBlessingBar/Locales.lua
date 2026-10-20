@@ -69,6 +69,9 @@ locales.enUS = {
     OPT_BUFF_RUN = "Buff & Run (middle-click the blessing button)",
     OPT_PVP_BLESSING = "Allow PvP blessing",
     SET_PRIORITIES = "Set priorities",
+    KEY_BUFF_ALL = "Cast next buff - aura, Fury or blessing, one per press",
+    KEY_BUFF_RUN = "Buff & Run - bless target, then target next player",
+    KEY_PRIORITIES = "Set priorities - open or close the Priorities tab",
     MOVE = "Move",
     LOCK = "Lock",
     UNLOCK = "Unlock",
@@ -192,6 +195,9 @@ locales.deDE = {
     OPT_BUFF_RUN = "Buff & Run (Mittelklick auf den Segen-Button)",
     OPT_PVP_BLESSING = "PvP-Segen erlauben",
     SET_PRIORITIES = "Prioritäten festlegen",
+    KEY_BUFF_ALL = "Nächsten Buff wirken - Aura, Zorn oder Segen, einer pro Druck",
+    KEY_BUFF_RUN = "Buff & Run - Ziel segnen, dann nächsten Spieler anvisieren",
+    KEY_PRIORITIES = "Prioritäten festlegen - Prioritäten-Tab öffnen oder schließen",
     MOVE = "Bewegen",
     LOCK = "Sperren",
     UNLOCK = "Entsperren",
@@ -315,6 +321,9 @@ locales.frFR = {
     OPT_BUFF_RUN = "Buff & Run (clic milieu sur le bouton de bénédiction)",
     OPT_PVP_BLESSING = "Autoriser les bénédictions JcJ",
     SET_PRIORITIES = "Définir les priorités",
+    KEY_BUFF_ALL = "Lancer le prochain buff - aura, Fureur ou bénédiction, un par appui",
+    KEY_BUFF_RUN = "Buff & Run - bénir la cible, puis cibler le joueur suivant",
+    KEY_PRIORITIES = "Définir les priorités - ouvrir ou fermer l'onglet Priorités",
     MOVE = "Déplacer",
     LOCK = "Verrouiller",
     UNLOCK = "Déverrouiller",
@@ -438,6 +447,9 @@ locales.esES = {
     OPT_BUFF_RUN = "Buff & Run (clic central en el botón de bendición)",
     OPT_PVP_BLESSING = "Permitir bendiciones JcJ",
     SET_PRIORITIES = "Definir prioridades",
+    KEY_BUFF_ALL = "Lanzar el siguiente beneficio - aura, Furia o bendición, uno por pulsación",
+    KEY_BUFF_RUN = "Buff & Run - bendecir al objetivo y luego seleccionar al siguiente jugador",
+    KEY_PRIORITIES = "Definir prioridades - abrir o cerrar la pestaña Prioridades",
     MOVE = "Mover",
     LOCK = "Bloquear",
     UNLOCK = "Desbloquear",
@@ -565,6 +577,9 @@ locales.itIT = {
     OPT_BUFF_RUN = "Buff & Run (clic centrale sul pulsante della benedizione)",
     OPT_PVP_BLESSING = "Consenti benedizioni PvP",
     SET_PRIORITIES = "Imposta priorità",
+    KEY_BUFF_ALL = "Lancia il prossimo buff - aura, Furia o benedizione, uno per pressione",
+    KEY_BUFF_RUN = "Buff & Run - benedici il bersaglio, poi seleziona il giocatore successivo",
+    KEY_PRIORITIES = "Imposta priorità - apri o chiudi la scheda Priorità",
     MOVE = "Sposta",
     LOCK = "Blocca",
     UNLOCK = "Sblocca",
@@ -688,6 +703,9 @@ locales.ptBR = {
     OPT_BUFF_RUN = "Buff & Run (clique do meio no botão de bênção)",
     OPT_PVP_BLESSING = "Permitir bênçãos JxJ",
     SET_PRIORITIES = "Definir prioridades",
+    KEY_BUFF_ALL = "Lançar o próximo bônus - aura, Fúria ou bênção, um por toque",
+    KEY_BUFF_RUN = "Buff & Run - abençoar o alvo e depois selecionar o próximo jogador",
+    KEY_PRIORITIES = "Definir prioridades - abrir ou fechar a aba Prioridades",
     MOVE = "Mover",
     LOCK = "Travar",
     UNLOCK = "Destravar",
@@ -811,6 +829,9 @@ locales.ruRU = {
     OPT_BUFF_RUN = "Buff & Run (СКМ по кнопке благословения)",
     OPT_PVP_BLESSING = "Разрешить благословения в PvP",
     SET_PRIORITIES = "Задать приоритеты",
+    KEY_BUFF_ALL = "Следующий бафф - аура, Неистовство или благословение, по одному за нажатие",
+    KEY_BUFF_RUN = "Buff & Run - благословить цель, затем выбрать следующего игрока",
+    KEY_PRIORITIES = "Задать приоритеты - открыть или закрыть вкладку «Приоритеты»",
     MOVE = "Переместить",
     LOCK = "Закрепить",
     UNLOCK = "Открепить",
@@ -934,6 +955,9 @@ locales.koKR = {
     OPT_BUFF_RUN = "Buff & Run (축복 버튼 가운데 클릭)",
     OPT_PVP_BLESSING = "PvP 축복 허용",
     SET_PRIORITIES = "우선순위 설정",
+    KEY_BUFF_ALL = "다음 버프 시전 - 오라, 격노 또는 축복, 누를 때마다 하나",
+    KEY_BUFF_RUN = "Buff & Run - 대상을 축복한 뒤 다음 플레이어 선택",
+    KEY_PRIORITIES = "우선순위 설정 - 우선순위 탭 열기 또는 닫기",
     MOVE = "이동",
     LOCK = "잠금",
     UNLOCK = "잠금 해제",
@@ -1057,6 +1081,9 @@ locales.zhCN = {
     OPT_BUFF_RUN = "Buff & Run（中键点击祝福按钮）",
     OPT_PVP_BLESSING = "允许PvP祝福",
     SET_PRIORITIES = "设置优先级",
+    KEY_BUFF_ALL = "施放下一个增益 - 光环、正义之怒或祝福，每按一次一个",
+    KEY_BUFF_RUN = "Buff & Run - 祝福目标，然后选择下一个玩家",
+    KEY_PRIORITIES = "设置优先级 - 打开或关闭优先级标签页",
     MOVE = "移动",
     LOCK = "锁定",
     UNLOCK = "解锁",
@@ -1180,6 +1207,9 @@ locales.zhTW = {
     OPT_BUFF_RUN = "Buff & Run（中鍵點擊祝福按鈕）",
     OPT_PVP_BLESSING = "允許PvP祝福",
     SET_PRIORITIES = "設定優先順序",
+    KEY_BUFF_ALL = "施放下一個增益 - 光環、正義之怒或祝福，每按一次一個",
+    KEY_BUFF_RUN = "Buff & Run - 祝福目標，然後選擇下一個玩家",
+    KEY_PRIORITIES = "設定優先順序 - 開啟或關閉優先順序分頁",
     MOVE = "移動",
     LOCK = "鎖定",
     UNLOCK = "解鎖",
@@ -1258,9 +1288,25 @@ ns.LOCALE_NAMES = {
     zhCN = "简体中文 (Chinese S.)", zhTW = "繁體中文 (Chinese T.)",
 }
 
+-- The game's Key Bindings name the keys of Bindings.xml by these globals (ruleset plan
+-- 2026-10-20-key-bindings). Set here, before Core.lua's class check, so every class sees the
+-- names (Michel), and again on every language switch.
+local BINDINGS = {
+    ["CLICK SmartBlessingBarBuffAll:LeftButton"] = "KEY_BUFF_ALL",
+    ["CLICK SmartBlessingBarBlessing:MiddleButton"] = "KEY_BUFF_RUN",
+    ["CLICK SmartBlessingBarPrioritiesKey:LeftButton"] = "KEY_PRIORITIES",
+}
+local function NameBindings()
+    BINDING_HEADER_SMARTBLESSINGBAR = "SmartBlessingBar"
+    for binding, key in pairs(BINDINGS) do
+        _G["BINDING_NAME_" .. binding] = active[key] or locales.enUS[key]
+    end
+end
+
 function ns.SetLocale(code)
     if not locales[code] then code = client end
     active, activeCode = locales[code], code
+    NameBindings()
 end
 function ns.GetLocaleCode() return activeCode end
 ns.L = setmetatable({}, {
@@ -1268,3 +1314,5 @@ ns.L = setmetatable({}, {
         return active[key] or locales.enUS[key] or key
     end,
 })
+
+NameBindings()

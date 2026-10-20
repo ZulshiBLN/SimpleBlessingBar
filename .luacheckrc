@@ -19,6 +19,9 @@ globals = {
     "SmartBlessingBar_OnCompartmentClick",
     "SmartBlessingBar_OnCompartmentEnter",
     "SmartBlessingBar_OnCompartmentLeave",
+    -- The key bindings' header; their names are `_G["BINDING_NAME_CLICK ..."]`, which
+    -- luacheck cannot see - keys_spec.lua checks every global the addon leaves
+    "BINDING_HEADER_SMARTBLESSINGBAR",
 }
 
 -- The WoW API the addon reads, listed by hand so a typo or a removed API is

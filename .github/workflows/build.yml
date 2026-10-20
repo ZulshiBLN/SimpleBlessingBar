@@ -49,7 +49,7 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: bash .github/scripts/check-package.sh .release/*.zip .release/release.json $TAG
 
-      # The checks must be able to refuse: a zip without its TOC, a release.json
+      # The checks must be able to refuse: a zip without its TOC or its Bindings.xml, a release.json
       # for the wrong flavor, a tag that is not the TOC's version.
       - name: Control - the checks refuse a wrong package
         run: |
@@ -68,7 +68,17 @@ jobs:
           if bash .github/scripts/check-package.sh "$zip" .release/release.json v0.0.0; then
               echo "the check accepted a tag that is not the TOC's version"; exit 1
           fi
-          echo "the checks refused all three wrong packages, as they must"
+          # Bindings.xml is read by the client, not listed in the TOC (ruleset plan
+          # 2026-10-20-key-bindings)
+          nobind="$RUNNER_TEMP/nobind"
+          mkdir -p "$nobind" && unzip -q "$zip" -d "$nobind"
+          rm "$nobind/SmartBlessingBar/Bindings.xml"
+          mkdir -p "$RUNNER_TEMP/nobind-zip"
+          (cd "$nobind" && zip -q -r "$RUNNER_TEMP/nobind-zip/$(basename "$zip")" SmartBlessingBar)
+          if bash .github/scripts/check-package.sh "$RUNNER_TEMP/nobind-zip/$(basename "$zip")" .release/release.json; then
+              echo "the check accepted a zip without Bindings.xml"; exit 1
+          fi
+          echo "the checks refused all four wrong packages, as they must"
 
       # A develop commit is never a merge in main, so the release workflow's
       # first check must refuse it; on main, and on a release tag, it must pass.

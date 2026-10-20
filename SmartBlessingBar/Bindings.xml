@@ -1,0 +1,7 @@
+<!-- The keys the game's Key Bindings offer under AddOns > SmartBlessingBar (ruleset plan
+     2026-10-20-key-bindings). The client reads this file by itself; Locales.lua names them. -->
+<Bindings>
+    <Binding name="CLICK SmartBlessingBarBuffAll:LeftButton" header="SMARTBLESSINGBAR" category="ADDONS"/>
+    <Binding name="CLICK SmartBlessingBarBlessing:MiddleButton" category="ADDONS"/>
+    <Binding name="CLICK SmartBlessingBarPrioritiesKey:LeftButton" category="ADDONS"/>
+</Bindings>

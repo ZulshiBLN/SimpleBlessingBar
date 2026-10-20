@@ -99,6 +99,12 @@ local function PrioritiesClick()
     if InCombatLockdown() then ns.Print(L.NOT_IN_COMBAT) return end
     if ns.SettingsPageShown("TAB_PRIORITIES") then ns.CloseSettings() else ns.OpenSettingsOn("TAB_PRIORITIES") end
 end
+
+-- The Priorities key (Bindings.xml; ruleset plan 2026-10-20-key-bindings): a hidden button its
+-- binding clicks, on the release only, so one press toggles once
+local prioritiesKey = CreateFrame("Button", "SmartBlessingBarPrioritiesKey", UIParent)
+prioritiesKey:RegisterForClicks("AnyUp")
+prioritiesKey:SetScript("OnClick", PrioritiesClick)
 minimapBtn:SetScript("OnClick", function(_, button)
     if button == "MiddleButton" then PrioritiesClick() else Click(button) end
 end)
