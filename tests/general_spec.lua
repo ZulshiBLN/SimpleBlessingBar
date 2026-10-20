@@ -7,8 +7,8 @@ local function open()
     local ns = addon.load("enUS", { group = "party", units = { party1 = { class = "MAGE" } } })
     STATE.known = { [ns.D.AURAS.DEVOTION[1]] = true }
     FIRE("PLAYER_LOGIN")
-    SlashCmdList.SIMPLEBLESSINGBAR("")
-    return ns, ns.UI.controls, SimpleBlessingBarDB
+    SlashCmdList.SMARTBLESSINGBAR("")
+    return ns, ns.UI.controls, SmartBlessingBarDB
 end
 
 local function click(cb, checked)
@@ -44,13 +44,13 @@ describe("the General page", function()
         assert.are.equal(ns.L.LANG_AUTO:format("English"), entries[1].text)
         assert.is_true(entries[1].selected)
         pick(c.language, "Deutsch")
-        assert.are.equal("deDE", SimpleBlessingBarGlobalDB.language)
+        assert.are.equal("deDE", SmartBlessingBarGlobalDB.language)
         assert.are.equal(ns.locales.deDE.TAB_GENERAL, ns.UI.tabs[1]:GetText())
         assert.are.equal("Deutsch", selected(c.language))
         local auto = MENU(c.language)[1] -- now named in German
         assert.are.equal(ns.locales.deDE.LANG_AUTO:format("English"), auto.text)
         auto.pick()
-        assert.is_nil(SimpleBlessingBarGlobalDB.language)
+        assert.is_nil(SmartBlessingBarGlobalDB.language)
         assert.are.equal(ns.locales.enUS.TAB_GENERAL, ns.UI.tabs[1]:GetText())
     end)
 

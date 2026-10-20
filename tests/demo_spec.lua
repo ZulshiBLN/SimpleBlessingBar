@@ -10,11 +10,11 @@ local function login(world)
     local ns = addon.load("enUS", world)
     STATE.known = { [ns.D.AURAS.DEVOTION[1]] = true }
     FIRE("PLAYER_LOGIN")
-    return ns, SimpleBlessingBarDB, ns.D
+    return ns, SmartBlessingBarDB, ns.D
 end
 
 local function demoOn(ns)
-    SlashCmdList.SIMPLEBLESSINGBAR("")
+    SlashCmdList.SMARTBLESSINGBAR("")
     local cb = ns.UI.controls.demo
     cb:SetChecked(true)
     RUNSCRIPT(cb, "OnClick")
@@ -119,7 +119,7 @@ describe("demo mode", function()
 
     it("cannot be switched in combat", function()
         local ns, db = login()
-        SlashCmdList.SIMPLEBLESSINGBAR("")
+        SlashCmdList.SMARTBLESSINGBAR("")
         STATE.combat = true
         local cb = ns.UI.controls.demo
         cb:SetChecked(true)

@@ -6,7 +6,7 @@ local addon = require("addon")
 local function login(world)
     local ns = addon.load("enUS", world)
     FIRE("PLAYER_LOGIN")
-    return ns, SimpleBlessingBarDB
+    return ns, SmartBlessingBarDB
 end
 
 local function err(message, stack, counter)
@@ -25,18 +25,18 @@ describe("the bug report", function()
         assert.is_truthy(text:find("order=AURA,FURY,BLESSING,SALVATION", 1, true))
         assert.is_nil(text:find("classOrder", 1, true))
         assert.is_truthy(text:find("**Description:** -", 1, true))
-        assert.is_truthy(text:find("none from SimpleBlessingBar", 1, true))
+        assert.is_truthy(text:find("none from SmartBlessingBar", 1, true))
     end)
 
     it("never names the player or the realm, also not from an error or the description", function()
         local ns = login()
-        STATE.bugs = { err('SimpleBlessingBar: error("SimpleBlessingBar Zulshe")',
-            "Interface/AddOns/SimpleBlessingBar/Bar.lua:1: Keshmar on Forever") }
+        STATE.bugs = { err('SmartBlessingBar: error("SmartBlessingBar Zulshe")',
+            "Interface/AddOns/SmartBlessingBar/Bar.lua:1: Keshmar on Forever") }
         local text = ns.BuildReport("Zulshe saw it")
         assert.is_nil(text:find("Zulshe", 1, true))
         assert.is_nil(text:find("Keshmar", 1, true))
         assert.is_nil(text:find("Forever", 1, true))
-        assert.is_truthy(text:find("SimpleBlessingBar <player>", 1, true))
+        assert.is_truthy(text:find("SmartBlessingBar <player>", 1, true))
         assert.is_truthy(text:find("<player> on <realm>", 1, true))
         assert.is_truthy(text:find("<player> saw it", 1, true))
     end)
@@ -46,18 +46,18 @@ describe("the bug report", function()
     it("touches no secret name", function()
         local ns = login()
         STATE.secretName = true
-        STATE.bugs = { err("SimpleBlessingBar Zulshe on Forever") }
+        STATE.bugs = { err("SmartBlessingBar Zulshe on Forever") }
         local text = ns.BuildReport("")
-        assert.is_truthy(text:find("SimpleBlessingBar Zulshe on <realm>", 1, true))
+        assert.is_truthy(text:find("SmartBlessingBar Zulshe on <realm>", 1, true))
     end)
 
     it("takes only this addon's errors, the newest five, with at most 12 stack lines", function()
         local ns = login()
         local bugs = { err("OtherAddon broke") }
-        for i = 1, 7 do bugs[#bugs + 1] = err("SimpleBlessingBar error " .. i) end
+        for i = 1, 7 do bugs[#bugs + 1] = err("SmartBlessingBar error " .. i) end
         local long = {}
         for i = 1, 20 do long[i] = "line" .. i end
-        bugs[#bugs + 1] = err("SimpleBlessingBar error 8", table.concat(long, "\n"), 3)
+        bugs[#bugs + 1] = err("SmartBlessingBar error 8", table.concat(long, "\n"), 3)
         STATE.bugs = bugs
         local text = ns.BuildReport("")
         assert.is_nil(text:find("OtherAddon", 1, true))
@@ -77,7 +77,7 @@ end)
 describe("the bug report window", function()
     it("opens from /sbb bug and from General, and replaces the settings window", function()
         local ns = login()
-        SlashCmdList.SIMPLEBLESSINGBAR("")
+        SlashCmdList.SMARTBLESSINGBAR("")
         assert.is_true(ns.UI.window:IsShown())
         RUNSCRIPT(ns.UI.controls.reportBug, "OnClick")
         assert.is_true(ns.reportWindow:IsShown())
@@ -86,14 +86,14 @@ describe("the bug report window", function()
         assert.are.same({}, STATE.errors)
 
         local again = login()
-        SlashCmdList.SIMPLEBLESSINGBAR("bug")
+        SlashCmdList.SMARTBLESSINGBAR("bug")
         assert.is_true(again.reportWindow:IsShown())
         assert.are.equal(again.D.BUG_REPORT_URL, again.D.BUG_REPORT_URL:match("^https://github.com/.+/issues$"))
     end)
 
     it("is listed by /sbb help", function()
         local ns = login()
-        SlashCmdList.SIMPLEBLESSINGBAR("help")
+        SlashCmdList.SMARTBLESSINGBAR("help")
         local found = false
         for _, line in ipairs(CHAT) do
             if line:find("/sbb bug", 1, true) and line:find(ns.L.CMD_BUG, 1, true) then found = true end

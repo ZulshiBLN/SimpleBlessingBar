@@ -14,7 +14,7 @@ local function plan(world, know, symbols)
     STATE.bags = { [D.SYMBOL_OF_KINGS] = symbols or 0 }
     STATE.now = 10000
     FIRE("PLAYER_LOGIN")
-    return ns.Blessings, ns, SimpleBlessingBarDB
+    return ns.Blessings, ns, SmartBlessingBarDB
 end
 
 local BASICS = { M.normal[1], K.normal[1], D.SALVATION, D.REVOKE }
@@ -97,7 +97,7 @@ describe("the renewal setting", function()
         assert.are.equal(5, db.renewMinutes)
         ns.Refresh()
         assert.is_nil(ns.blessingButton:GetAttribute("spell1"))
-        SlashCmdList.SIMPLEBLESSINGBAR("")
+        SlashCmdList.SMARTBLESSINGBAR("")
         ns.UI.controls.renewMinutes:SetValue(15)
         assert.are.equal(15, db.renewMinutes)
         assert.are.equal(M.normal[1], ns.blessingButton:GetAttribute("spell1"))

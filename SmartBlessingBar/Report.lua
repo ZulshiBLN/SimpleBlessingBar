@@ -1,4 +1,4 @@
--- SimpleBlessingBar - bug report window
+-- SmartBlessingBar - bug report window
 -- As in SimpleConjureBar (ruleset plan 2026-10-18-settings-more). Addons cannot send data, open
 -- a browser or write to the clipboard, so the window builds a ready report - addon version,
 -- client, language, settings and this addon's Lua errors from BugGrabber - in a selected text
@@ -94,14 +94,14 @@ function ns.BuildReport(description)
     local _, classFile = UnitClass("player")
     local identity = Identity()
     local lines = {
-        "## SimpleBlessingBar bug report",
+        "## SmartBlessingBar bug report",
         "",
         "**Description:** " .. ((description and description ~= "") and Anonymize(description, identity) or "-"),
         "",
         "- Addon version: " .. ns.VERSION,
         "- Client: " .. tostring(version) .. " (build " .. tostring(build) .. ", interface " .. tostring(interface) .. ")",
         "- Client locale: " .. tostring(GetLocale()) .. ", addon language: "
-            .. tostring(SimpleBlessingBarGlobalDB.language or "auto"),
+            .. tostring(SmartBlessingBarGlobalDB.language or "auto"),
         "- Character: " .. tostring(classFile) .. ", level " .. tostring(UnitLevel("player"))
             .. (IsInRaid() and ", raid" or IsInGroup() and ", party" or ", solo"),
         "- Date: " .. date("%Y-%m-%d %H:%M"),
@@ -112,7 +112,7 @@ function ns.BuildReport(description)
     if not hasGrabber then
         lines[#lines + 1] = "**Lua errors:** BugGrabber/BugSack not installed"
     elseif #errors == 0 then
-        lines[#lines + 1] = "**Lua errors:** none from SimpleBlessingBar"
+        lines[#lines + 1] = "**Lua errors:** none from SmartBlessingBar"
     else
         lines[#lines + 1] = "**Lua errors (newest first):**"
         for i, e in ipairs(errors) do
@@ -145,7 +145,7 @@ end
 
 local function CreateWindow()
     local W, H, PAD = 520, 420, 22
-    frame = CreateFrame("Frame", "SimpleBlessingBarReport", UIParent, "BackdropTemplate")
+    frame = CreateFrame("Frame", "SmartBlessingBarReport", UIParent, "BackdropTemplate")
     ns.reportWindow = frame
     frame:SetSize(W, H)
     frame:SetPoint("CENTER")
@@ -162,7 +162,7 @@ local function CreateWindow()
         tile = true, tileSize = 32, edgeSize = 32,
         insets = { left = 11, right = 12, top = 12, bottom = 11 },
     })
-    tinsert(UISpecialFrames, "SimpleBlessingBarReport") -- closes with Escape
+    tinsert(UISpecialFrames, "SmartBlessingBarReport") -- closes with Escape
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -18)

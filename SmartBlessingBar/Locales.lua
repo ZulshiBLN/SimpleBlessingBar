@@ -1,4 +1,4 @@
--- SimpleBlessingBar - localization
+-- SmartBlessingBar - localization
 -- The language follows the client (GetLocale()); a saved choice overrides it (ns.SetLocale).
 -- Missing texts fall back to English (enUS). enGB clients report enUS.
 -- string.format in WoW Lua has no positional arguments (%1$s), so every translation keeps the

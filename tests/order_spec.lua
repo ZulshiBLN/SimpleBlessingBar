@@ -10,11 +10,11 @@ local TOP = 1000   -- the first row's top edge on screen
 local function login(world)
     local ns = addon.load("enUS", world)
     FIRE("PLAYER_LOGIN")
-    return ns, SimpleBlessingBarDB, ns.D
+    return ns, SmartBlessingBarDB, ns.D
 end
 
 local function openOrder(ns)
-    SlashCmdList.SIMPLEBLESSINGBAR("")
+    SlashCmdList.SMARTBLESSINGBAR("")
     for i, page in ipairs(ns.UI.pages) do
         if page.titleKey == "TAB_ORDER" then RUNSCRIPT(ns.UI.tabs[i], "OnClick") return page end
     end

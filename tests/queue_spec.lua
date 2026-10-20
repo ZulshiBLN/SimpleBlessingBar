@@ -18,7 +18,7 @@ local function login(world, extra, symbols)
     STATE.known = know(extra)
     STATE.bags = { [D.SYMBOL_OF_KINGS] = symbols or 0 }
     FIRE("PLAYER_LOGIN")
-    return ns, ns.blessingButton, ns.salvationButton, SimpleBlessingBarDB
+    return ns, ns.blessingButton, ns.salvationButton, SmartBlessingBarDB
 end
 
 local function aura(id, mine) return { spellId = id, expirationTime = 3600, mine = mine } end

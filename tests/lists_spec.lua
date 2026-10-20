@@ -19,11 +19,11 @@ local function login(db)
                     [D.AURAS.DEVOTION[1]] = true, [D.AURAS.RETRIBUTION[1]] = true }
     FIRE("PLAYER_LOGIN")
     ns.Refresh()
-    return ns, SimpleBlessingBarDB
+    return ns, SmartBlessingBarDB
 end
 
 local function openTab(ns)
-    SlashCmdList.SIMPLEBLESSINGBAR("")
+    SlashCmdList.SMARTBLESSINGBAR("")
     for i, page in ipairs(ns.UI.pages) do
         if page.titleKey == "TAB_PRIORITIES" then RUNSCRIPT(ns.UI.tabs[i], "OnClick") return page end
     end
@@ -357,7 +357,7 @@ describe("settings version 8", function()
     local function lists(saved)
         local ns = addon.load("enUS", { db = { dbVersion = 8, classLists = saved } })
         ns.InitDB()
-        return SimpleBlessingBarDB.classLists
+        return SmartBlessingBarDB.classLists
     end
     local function default(class) return { order = classDefault(class), off = {} } end
 
@@ -368,7 +368,7 @@ describe("settings version 8", function()
                           CASTER = { order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } },
                           TANK = { order = { "LIGHT" }, off = {} } } } })
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(D.DB_VERSION, db.dbVersion)
         assert.are.same({ "KINGS", "MIGHT", "LIGHT" }, db.classLists.WARRIOR.order) -- melee, no Wisdom
         assert.are.same({ order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } }, db.classLists.MAGE)
@@ -380,13 +380,13 @@ describe("settings version 8", function()
         end
         local once = copy(db)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 
     it("gives an older file without lists the defaults, and an unknown aura the default order", function()
         local ns = addon.load("enUS", { db = { dbVersion = 5, aura = "SANCTUARY" } })
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         for _, class in ipairs(D.CLASS_ORDER) do assert.are.same(default(class), db.classLists[class]) end
         assert.are.same(D.AURA_ORDER, db.auraList)
     end)
@@ -433,7 +433,7 @@ describe("settings version 8", function()
     it("repairs a damaged aura list", function()
         local ns = addon.load("enUS", { db = { dbVersion = 8, auraList = { "FIRE", "BOGUS", "FIRE" } } })
         ns.InitDB()
-        local list = SimpleBlessingBarDB.auraList
+        local list = SmartBlessingBarDB.auraList
         assert.are.equal("FIRE", list[1])
         assert.are.equal(#D.AURA_ORDER, #list)
     end)

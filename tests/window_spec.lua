@@ -9,7 +9,7 @@ local function login()
     return ns, ns.UI
 end
 
-local function sbb(msg) SlashCmdList.SIMPLEBLESSINGBAR(msg) end
+local function sbb(msg) SlashCmdList.SMARTBLESSINGBAR(msg) end
 
 describe("the settings window", function()
     it("opens and closes with /sbb, and closes with Escape", function()

@@ -1,4 +1,4 @@
--- SimpleBlessingBar - the overview, at the foot of the Priorities tab
+-- SmartBlessingBar - the overview, at the foot of the Priorities tab
 -- Members sorted by class in two columns, names in class colour, a paladin's aura, the
 -- blessings and Salvation they carry, mine glowing, the one this paladin would give next
 -- faint (ruleset plans 2026-10-19-overview, 2026-10-19-priorities, 2026-10-19-tab-layout,

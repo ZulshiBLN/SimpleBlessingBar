@@ -1,4 +1,4 @@
--- SimpleBlessingBar - settings pages
+-- SmartBlessingBar - settings pages
 -- The pages of the settings window, built with the helpers of Settings.lua (ns.UI).
 
 local _, ns = ...
@@ -29,9 +29,9 @@ do
         opts[#opts + 1] = { value = code, text = function() return ns.LOCALE_NAMES[code] end }
     end
     controls.language = select(2, UI.AddDropdown("OPT_LANGUAGE", opts, function()
-        return SimpleBlessingBarGlobalDB.language or "auto"
+        return SmartBlessingBarGlobalDB.language or "auto"
     end, function(v)
-        SimpleBlessingBarGlobalDB.language = (v ~= "auto") and v or nil
+        SmartBlessingBarGlobalDB.language = (v ~= "auto") and v or nil
         ns.ApplyLanguage(v == "auto" and ns.clientLocale or v)
     end))
 end

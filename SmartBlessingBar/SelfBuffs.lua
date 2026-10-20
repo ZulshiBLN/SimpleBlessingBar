@@ -1,4 +1,4 @@
--- SimpleBlessingBar - aura and Righteous Fury buttons
+-- SmartBlessingBar - aura and Righteous Fury buttons
 -- The first two places on the bar. The aura button casts the highest known rank of the aura
 -- its list picks: the first one no other paladin runs (ruleset plan 2026-10-19-priorities).
 -- Both buttons show the marching ants while what they cast is missing - known out of combat
@@ -30,8 +30,8 @@ local function SetSpell(b, spell)
     b.icon:SetDesaturated(not spell)
 end
 
-local aura = NewButton("SimpleBlessingBarAura", "auraAntsColor", "auraAntsSpeed")
-local fury = NewButton("SimpleBlessingBarFury", "furyAntsColor", "furyAntsSpeed")
+local aura = NewButton("SmartBlessingBarAura", "auraAntsColor", "auraAntsSpeed")
+local fury = NewButton("SmartBlessingBarFury", "furyAntsColor", "furyAntsSpeed")
 ns.auraButton, ns.furyButton = aura, fury
 fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
 

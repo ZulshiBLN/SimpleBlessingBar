@@ -1,4 +1,4 @@
--- SimpleBlessingBar - startup
+-- SmartBlessingBar - startup
 
 local _, ns = ...
 if not ns.enabled then return end
@@ -11,7 +11,7 @@ events:SetScript("OnEvent", function()
     ns.InitDB()
     -- Saved language choice (account-wide), otherwise the client language. Applied before any
     -- chat output, so every message already uses the chosen language.
-    local lang = SimpleBlessingBarGlobalDB.language
+    local lang = SmartBlessingBarGlobalDB.language
     if lang then ns.ApplyLanguage(lang) end
 
     ns.InitBar()
@@ -23,7 +23,7 @@ end)
 ---------------------------------------------------------------------------
 -- Chat commands
 ---------------------------------------------------------------------------
-SLASH_SIMPLEBLESSINGBAR1 = "/sbb"
+SLASH_SMARTBLESSINGBAR1 = "/sbb"
 
 -- In the order /sbb help lists them
 local COMMANDS = {
@@ -42,8 +42,8 @@ local function PrintHelp()
     end
 end
 
-SlashCmdList.SIMPLEBLESSINGBAR = function(msg)
-    local db = SimpleBlessingBarDB
+SlashCmdList.SMARTBLESSINGBAR = function(msg)
+    local db = SmartBlessingBarDB
     if type(db) ~= "table" then return end -- before PLAYER_LOGIN
     msg = (msg or ""):lower():match("^%s*(.-)%s*$")
     if msg == "" then

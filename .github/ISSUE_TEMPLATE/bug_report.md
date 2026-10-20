@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in SimpleBlessingBar does not work as it should
+about: Something in SmartBlessingBar does not work as it should
 labels: bug
 ---
 
@@ -14,7 +14,7 @@ Please do not paste files from your WoW "WTF" folder or your account name.
 
 ## Version and client
 
-<!-- The addon version from the login line ("SimpleBlessingBar: Version ... loaded"),
+<!-- The addon version from the login line ("SmartBlessingBar: Version ... loaded"),
      your client language, and the build from /dump select(2, GetBuildInfo()). -->
 
 ## Lua error

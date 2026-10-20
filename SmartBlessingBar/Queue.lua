@@ -1,4 +1,4 @@
--- SimpleBlessingBar - the blessing and Salvation buttons
+-- SmartBlessingBar - the blessing and Salvation buttons
 -- Each casts the head of its queue, which the planner (Blessings.lua) builds out of combat
 -- from what the group carries (ruleset plan 2026-10-19-blessing-core). In combat the head
 -- stays as the last refresh before it wrote it: aura data is unreadable then, and the secure
@@ -55,9 +55,9 @@ local function NewQueueButton(name, colorKey, speedKey, idleSpell, title)
     return b
 end
 
-local blessing = NewQueueButton("SimpleBlessingBarBlessing", "blessingAntsColor",
+local blessing = NewQueueButton("SmartBlessingBarBlessing", "blessingAntsColor",
     "blessingAntsSpeed", D.BLESSINGS.KINGS.normal[1], function() return L.BTN_BLESSINGS end)
-local salvation = NewQueueButton("SimpleBlessingBarSalvation", "salvationAntsColor",
+local salvation = NewQueueButton("SmartBlessingBarSalvation", "salvationAntsColor",
     "salvationAntsSpeed", D.SALVATION, SalvationName)
 ns.blessingButton, ns.salvationButton = blessing, salvation
 
@@ -67,11 +67,11 @@ ns.blessingButton, ns.salvationButton = blessing, salvation
 -- click. The cast goes through a hidden button holding the spell's ID, so the rank fits in
 -- every language; "LeftButton 1" clicks it on key down, which works with
 -- ActionButtonUseKeyDown on and off.
-local buffRun = CreateFrame("Button", "SimpleBlessingBarBuffRun", UIParent, "SecureActionButtonTemplate")
+local buffRun = CreateFrame("Button", "SmartBlessingBarBuffRun", UIParent, "SecureActionButtonTemplate")
 buffRun:RegisterForClicks("AnyUp", "AnyDown")
 SetAttr(buffRun, "type", "spell")
 SetAttr(buffRun, "unit", "target")
-local BUFF_RUN_MACRO = "/click SimpleBlessingBarBuffRun LeftButton 1\n/targetfriendplayer"
+local BUFF_RUN_MACRO = "/click SmartBlessingBarBuffRun LeftButton 1\n/targetfriendplayer"
 
 -- The middle click's attributes as every refresh leaves them, also at combat start: the
 -- macro while the switch is on (General tab), and no spell, so in combat a middle click only

@@ -101,7 +101,7 @@ describe("a normal blessing", function()
         local learned = {}
         for _, id in ipairs(basics()) do learned[id] = 60 end
         local B = plan({ units = { player = { class = "PALADIN", level = 1 } } }, basics(), learned)
-        SimpleBlessingBarDB.demo = true
+        SmartBlessingBarDB.demo = true
         assert.are.equal(#D.CLASS_ORDER, #B.PlanBlessings())
     end)
 end)

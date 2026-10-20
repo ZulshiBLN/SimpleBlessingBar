@@ -13,9 +13,9 @@ local function open()
     STATE.known = { [D.AURAS.DEVOTION[1]] = true, [D.RIGHTEOUS_FURY] = true,
                     [D.BLESSINGS.MIGHT.normal[1]] = true }
     FIRE("PLAYER_LOGIN")
-    SlashCmdList.SIMPLEBLESSINGBAR("")
+    SlashCmdList.SMARTBLESSINGBAR("")
     RUNSCRIPT(ns.UI.tabs[2], "OnClick")
-    return ns, ns.UI.controls, SimpleBlessingBarDB, D
+    return ns, ns.UI.controls, SmartBlessingBarDB, D
 end
 
 local function check(cb, checked)

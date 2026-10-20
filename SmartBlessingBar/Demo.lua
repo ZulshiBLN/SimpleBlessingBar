@@ -1,4 +1,4 @@
--- SimpleBlessingBar - demo mode's chat output
+-- SmartBlessingBar - demo mode's chat output
 -- In demo mode the main buttons carry no secure action; a left click says what it would cast
 -- (ruleset plan 2026-10-18-settings-window; moved from Flyout.lua by plan
 -- 2026-10-19-priorities). Loaded after Queue.lua, once all four buttons exist.

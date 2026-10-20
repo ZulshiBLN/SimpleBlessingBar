@@ -1,4 +1,4 @@
--- SimpleBlessingBar - entry points: minimap button, AddOn compartment, options entry
+-- SmartBlessingBar - entry points: minimap button, AddOn compartment, options entry
 -- As in SimpleConjureBar (ruleset plan 2026-10-18-settings-more). The minimap button is built
 -- without a library (project.md): left click = settings, right click = lock, drag = move it
 -- around the minimap.
@@ -22,7 +22,7 @@ end
 
 local function ShowEntryTooltip(owner, anchor)
     GameTooltip:SetOwner(owner, anchor)
-    GameTooltip:SetText("SimpleBlessingBar |cffffffffv" .. ns.VERSION .. "|r")
+    GameTooltip:SetText("SmartBlessingBar |cffffffffv" .. ns.VERSION .. "|r")
     GameTooltip:AddLine(" ")
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
@@ -40,7 +40,7 @@ end
 ---------------------------------------------------------------------------
 -- Minimap button
 ---------------------------------------------------------------------------
-local minimapBtn = CreateFrame("Button", "SimpleBlessingBarMinimapButton", Minimap)
+local minimapBtn = CreateFrame("Button", "SmartBlessingBarMinimapButton", Minimap)
 ns.minimapButton = minimapBtn
 minimapBtn:SetSize(31, 31)
 minimapBtn:SetFrameStrata("MEDIUM")
@@ -117,12 +117,12 @@ function ns.CompartmentLeave() ns.HideTooltip() end
 ---------------------------------------------------------------------------
 function ns.RegisterOptionsPanel()
     local panel = CreateFrame("Frame")
-    panel.name = "SimpleBlessingBar"
+    panel.name = "SmartBlessingBar"
 
     local head = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
     head:SetTextColor(1, 0.82, 0) -- Blizzard gold
     head:SetPoint("TOP", panel, "TOP", 0, -120)
-    head:SetText("SimpleBlessingBar")
+    head:SetText("SmartBlessingBar")
 
     local ver = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     ver:SetPoint("TOP", head, "BOTTOM", 0, -10)
@@ -147,7 +147,7 @@ function ns.RegisterOptionsPanel()
     open:SetScript("OnClick", function() ns.OpenSettings(true) end)
     ns.optionsOpenButton = open
 
-    local category = Settings.RegisterCanvasLayoutCategory(panel, "SimpleBlessingBar")
+    local category = Settings.RegisterCanvasLayoutCategory(panel, "SmartBlessingBar")
     Settings.RegisterAddOnCategory(category)
     ns.settingsCategory = category
 end

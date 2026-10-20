@@ -36,7 +36,7 @@ end
 
 describe(".luacheckrc", function()
     it("refuses writing a global the rule does not allow", function()
-        assert.is_true(hasCode("SimpleBlessingBarScratch = 1\n", "111"))
+        assert.is_true(hasCode("SmartBlessingBarScratch = 1\n", "111"))
     end)
 
     it("refuses io, os, require, dofile and loadfile", function()
@@ -46,7 +46,7 @@ describe(".luacheckrc", function()
     end)
 
     it("refuses defining a top-level function", function()
-        assert.is_true(hasCode("function SimpleBlessingBarHelper() end\n", "111"))
+        assert.is_true(hasCode("function SmartBlessingBarHelper() end\n", "111"))
     end)
 
     it("refuses writing another addon's slash command entry", function()
@@ -55,13 +55,13 @@ describe(".luacheckrc", function()
 
     it("allows exactly the globals the rule names", function()
         local allowed = table.concat({
-            "SimpleBlessingBarDB = {}",
-            "SimpleBlessingBarGlobalDB = {}",
-            'SLASH_SIMPLEBLESSINGBAR1 = "/x"',
-            "SlashCmdList.SIMPLEBLESSINGBAR = print",
-            "function SimpleBlessingBar_OnCompartmentClick() end",
-            "function SimpleBlessingBar_OnCompartmentEnter() end",
-            "function SimpleBlessingBar_OnCompartmentLeave() end",
+            "SmartBlessingBarDB = {}",
+            "SmartBlessingBarGlobalDB = {}",
+            'SLASH_SMARTBLESSINGBAR1 = "/x"',
+            "SlashCmdList.SMARTBLESSINGBAR = print",
+            "function SmartBlessingBar_OnCompartmentClick() end",
+            "function SmartBlessingBar_OnCompartmentEnter() end",
+            "function SmartBlessingBar_OnCompartmentLeave() end",
         }, "\n") .. "\n"
         assert.are.equal(0, warningsFor(allowed))
     end)

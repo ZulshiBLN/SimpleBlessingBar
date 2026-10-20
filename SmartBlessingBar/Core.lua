@@ -1,4 +1,4 @@
--- SimpleBlessingBar - core
+-- SmartBlessingBar - core
 -- Class check, chat output and saved variables. Every other module builds on this file.
 
 local ADDON_NAME, ns = ...
@@ -7,13 +7,13 @@ local D = ns.D
 -- The AddOn compartment: the TOC names these three functions for every class, so they exist
 -- before the paladin check below. For a paladin Minimap.lua sets what they call; for any other
 -- class a click does nothing.
-function SimpleBlessingBar_OnCompartmentClick(...)
+function SmartBlessingBar_OnCompartmentClick(...)
     if ns.CompartmentClick then ns.CompartmentClick(...) end
 end
-function SimpleBlessingBar_OnCompartmentEnter(...)
+function SmartBlessingBar_OnCompartmentEnter(...)
     if ns.CompartmentEnter then ns.CompartmentEnter(...) end
 end
-function SimpleBlessingBar_OnCompartmentLeave(...)
+function SmartBlessingBar_OnCompartmentLeave(...)
     if ns.CompartmentLeave then ns.CompartmentLeave(...) end
 end
 
@@ -29,7 +29,7 @@ ns.VERSION = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version") or "?"
 -- Chat output
 ---------------------------------------------------------------------------
 function ns.Print(msg)
-    print("|cfff58cbaSimpleBlessingBar|r: " .. msg)
+    print("|cfff58cbaSmartBlessingBar|r: " .. msg)
 end
 
 ---------------------------------------------------------------------------
@@ -185,13 +185,13 @@ function ns.DefaultClassLists() return ValidClassLists(nil) end
 -- Saved variables are plain files that can be edited or damaged, so every value is checked
 -- before anything reads it.
 function ns.InitDB()
-    if type(SimpleBlessingBarDB) ~= "table" then SimpleBlessingBarDB = {} end
-    if type(SimpleBlessingBarGlobalDB) ~= "table" then SimpleBlessingBarGlobalDB = {} end
-    db = SimpleBlessingBarDB
+    if type(SmartBlessingBarDB) ~= "table" then SmartBlessingBarDB = {} end
+    if type(SmartBlessingBarGlobalDB) ~= "table" then SmartBlessingBarGlobalDB = {} end
+    db = SmartBlessingBarDB
 
-    local lang = SimpleBlessingBarGlobalDB.language
+    local lang = SmartBlessingBarGlobalDB.language
     if lang ~= nil and not ns.locales[lang] then
-        SimpleBlessingBarGlobalDB.language = nil -- unknown language code
+        SmartBlessingBarGlobalDB.language = nil -- unknown language code
     end
 
     -- Version 6 replaces the class buttons with the blessing and Salvation buttons (ruleset

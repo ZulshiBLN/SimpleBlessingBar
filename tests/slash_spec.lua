@@ -10,7 +10,7 @@ local function login()
 end
 
 local function sbb(msg)
-    SlashCmdList.SIMPLEBLESSINGBAR(msg)
+    SlashCmdList.SMARTBLESSINGBAR(msg)
 end
 
 -- Whether any chat line printed since `from` contains the text
@@ -24,7 +24,7 @@ end
 describe("/sbb", function()
     it("is the command, and help lists every command, the window's too", function()
         local ns = login()
-        assert.are.equal("/sbb", SLASH_SIMPLEBLESSINGBAR1)
+        assert.are.equal("/sbb", SLASH_SMARTBLESSINGBAR1)
         for _, msg in ipairs({ "help", "  HELP " }) do
             local from = #CHAT + 1
             sbb(msg)
@@ -46,12 +46,12 @@ describe("/sbb", function()
 
     it("lock toggles the lock and says which", function()
         local ns = login()
-        assert.is_false(SimpleBlessingBarDB.locked)
+        assert.is_false(SmartBlessingBarDB.locked)
         sbb("lock")
-        assert.is_true(SimpleBlessingBarDB.locked)
+        assert.is_true(SmartBlessingBarDB.locked)
         assert.is_true(printed(ns.L.LOCKED, #CHAT))
         sbb("lock")
-        assert.is_false(SimpleBlessingBarDB.locked)
+        assert.is_false(SmartBlessingBarDB.locked)
         assert.is_true(printed(ns.L.UNLOCKED, #CHAT))
     end)
 
@@ -60,13 +60,13 @@ describe("/sbb", function()
         FIRE("PLAYER_LOGIN")
         STATE.combat = true
         sbb("reset")
-        assert.are.equal(300, SimpleBlessingBarDB.x)
+        assert.are.equal(300, SmartBlessingBarDB.x)
         assert.is_true(printed(ns.L.NOT_IN_COMBAT, #CHAT))
         assert.are.same({}, STATE.errors)
 
         STATE.combat = false
         sbb("reset")
-        assert.is_nil(SimpleBlessingBarDB.point)
+        assert.is_nil(SmartBlessingBarDB.point)
         assert.are.equal("CENTER", (ns.bar:GetPoint()))
         assert.is_true(printed(ns.L.POS_RESET, #CHAT))
     end)

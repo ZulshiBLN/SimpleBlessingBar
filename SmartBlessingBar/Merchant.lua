@@ -1,4 +1,4 @@
--- SimpleBlessingBar - Symbol of Kings auto-buy
+-- SmartBlessingBar - Symbol of Kings auto-buy
 -- At a vendor the missing amount up to the target is bought, as in SimpleConjureBar, but only
 -- while a Greater Blessing is known and only as far as the gold above the reserve reaches
 -- (ruleset plan 2026-10-18-settings-more). On Forever BuyMerchantItem counts single items and

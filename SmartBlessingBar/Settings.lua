@@ -1,4 +1,4 @@
--- SimpleBlessingBar - settings window framework
+-- SmartBlessingBar - settings window framework
 -- The window, its layout system and the reusable widgets, after SimpleConjureBar's. The pages
 -- themselves are built in SettingsPages.lua with the helpers exported as ns.UI.
 --
@@ -20,7 +20,7 @@ ns.OnDBReady(function(d) db = d end)
 local UI = {}
 ns.UI = UI
 
-local settings = CreateFrame("Frame", "SimpleBlessingBarSettings", UIParent, "BackdropTemplate")
+local settings = CreateFrame("Frame", "SmartBlessingBarSettings", UIParent, "BackdropTemplate")
 UI.window = settings
 settings:SetSize(300, 290)
 settings:SetPoint("CENTER")
@@ -38,7 +38,7 @@ settings:SetBackdrop({
     tile = true, tileSize = 32, edgeSize = 32,
     insets = { left = 11, right = 12, top = 12, bottom = 11 },
 })
-tinsert(UISpecialFrames, "SimpleBlessingBarSettings") -- closes with Escape
+tinsert(UISpecialFrames, "SmartBlessingBarSettings") -- closes with Escape
 
 -- The dialog border is about 12 px wide, plus 10 px space to the content
 local INSET = 22
@@ -78,7 +78,7 @@ end
 -- Title with version, close button
 ---------------------------------------------------------------------------
 local title = settings:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-title:SetText("SimpleBlessingBar")
+title:SetText("SmartBlessingBar")
 
 -- Version slightly smaller and white right after the title
 local titleVersion = settings:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

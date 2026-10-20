@@ -1,4 +1,4 @@
--- SimpleBlessingBar - blessing logic
+-- SmartBlessingBar - blessing logic
 -- Which rank to cast, roles, what others gave, and the planner behind the blessing and
 -- Salvation buttons (ruleset plan 2026-10-19-blessing-core).
 -- Runs out of combat only: aura data returns nothing in combat (ruleset research

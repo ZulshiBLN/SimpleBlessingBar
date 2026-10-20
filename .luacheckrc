@@ -13,12 +13,12 @@ not_globals = { "io", "os", "require", "dofile", "loadfile", "module" }
 -- Every name the rule allows, including those no code writes yet: the rule is
 -- encoded here whole, not grown file by file.
 globals = {
-    "SimpleBlessingBarDB",
-    "SimpleBlessingBarGlobalDB",
-    "SLASH_SIMPLEBLESSINGBAR1",
-    "SimpleBlessingBar_OnCompartmentClick",
-    "SimpleBlessingBar_OnCompartmentEnter",
-    "SimpleBlessingBar_OnCompartmentLeave",
+    "SmartBlessingBarDB",
+    "SmartBlessingBarGlobalDB",
+    "SLASH_SMARTBLESSINGBAR1",
+    "SmartBlessingBar_OnCompartmentClick",
+    "SmartBlessingBar_OnCompartmentEnter",
+    "SmartBlessingBar_OnCompartmentLeave",
 }
 
 -- The WoW API the addon reads, listed by hand so a typo or a removed API is
@@ -36,7 +36,7 @@ read_globals = {
     "BugGrabber", "UnitGroupRolesAssigned", "UnitName", "UnitGUID",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
     "UnitIsPlayer", "UnitCanAssist",
-    SlashCmdList = { fields = { SIMPLEBLESSINGBAR = { read_only = false } } },
+    SlashCmdList = { fields = { SMARTBLESSINGBAR = { read_only = false } } },
 }
 
 -- Specs run in plain Lua 5.1 under busted, where file access is how they read

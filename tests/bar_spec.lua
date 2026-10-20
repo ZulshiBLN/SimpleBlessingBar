@@ -34,7 +34,7 @@ describe("the handle", function()
         RUNSCRIPT(ns.handle, "OnEnter")
         assert.are.equal(ns.handle, GameTooltip.owner)
         assert.are.equal("ANCHOR_LEFT", GameTooltip.anchor)
-        assert.are.equal("SimpleBlessingBar", GameTooltip:GetText())
+        assert.are.equal("SmartBlessingBar", GameTooltip:GetText())
         assert.are.same({ L.TIP_UNLOCKED, " ", L.LEFTCLICK .. "|" .. L.MOVE, L.RIGHTCLICK .. "|" .. L.LOCK,
                           L.MIDDLECLICK .. "|" .. L.SETTINGS }, lines())
         assert.are.same({ 0.4, 0.8, 1 }, { unpack(GameTooltip.lines[1], 3, 5) })
@@ -47,7 +47,7 @@ describe("the handle", function()
         local L = ns.L
         RUNSCRIPT(ns.handle, "OnEnter")
         RUNSCRIPT(ns.handle, "OnMouseDown", "RightButton")
-        assert.is_true(SimpleBlessingBarDB.locked)
+        assert.is_true(SmartBlessingBarDB.locked)
         assert.are.equal(L.TIP_LOCKED, GameTooltip.lines[1][1])
         assert.are.same({ 1, 0.3, 0.3 }, { unpack(GameTooltip.lines[1], 3, 5) })
         assert.are.equal(L.RIGHTCLICK .. "|" .. L.UNLOCK, lines()[4])
@@ -60,7 +60,7 @@ describe("the handle", function()
         assert.is_true(window:IsShown())
         RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
         assert.is_false(window:IsShown())
-        SimpleBlessingBarDB.locked = true
+        SmartBlessingBarDB.locked = true
         RUNSCRIPT(ns.handle, "OnMouseDown", "MiddleButton")
         assert.is_true(window:IsShown())
         assert.is_false(ns.handle.moving == true)
@@ -142,7 +142,7 @@ describe("the handle", function()
         assert.is_true(ns.bar.moving)
         RUNSCRIPT(ns.handle, "OnMouseUp", "LeftButton")
         assert.is_false(ns.bar.moving)
-        assert.are.equal("LEFT", SimpleBlessingBarDB.point)
+        assert.are.equal("LEFT", SmartBlessingBarDB.point)
         assert.are.same({}, STATE.errors)
     end)
 
@@ -164,8 +164,8 @@ describe("the bar's buttons", function()
         for i, class in ipairs(D.CLASS_ORDER) do units["raid" .. i] = { class = class, subgroup = 1 } end
         local ns = login({ group = "raid", units = units })
         for _, class in ipairs(D.CLASS_ORDER) do
-            assert.is_nil(_G["SimpleBlessingBarClass" .. class], class)
-            assert.is_nil(_G["SimpleBlessingBarFlyout" .. class], class)
+            assert.is_nil(_G["SmartBlessingBarClass" .. class], class)
+            assert.is_nil(_G["SmartBlessingBarFlyout" .. class], class)
         end
         -- the aura flyout went with ruleset plan 2026-10-19-priorities
         assert.is_nil(ns.flyouts)

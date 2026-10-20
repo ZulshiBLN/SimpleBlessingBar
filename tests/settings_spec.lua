@@ -15,7 +15,7 @@ describe("settings", function()
     it("start with the default aura list, unlocked and no position", function()
         local ns = addon.load("enUS")
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.same(ns.D.AURA_ORDER, db.auraList)
         assert.is_nil(db.aura)
         assert.is_false(db.locked)
@@ -26,10 +26,10 @@ describe("settings", function()
     it("migrate a version 1 file, and a second run changes nothing", function()
         local ns = addon.load("enUS", { db = { dbVersion = 1 } })
         ns.InitDB()
-        local once = copy(SimpleBlessingBarDB)
+        local once = copy(SmartBlessingBarDB)
         assert.are.equal(ns.D.DB_VERSION, once.dbVersion)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 
     it("replace a damaged aura, lock and position", function()
@@ -38,7 +38,7 @@ describe("settings", function()
             point = "CENTER", rel = "CENTER", x = 0 / 0, y = 10,
         } })
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.is_nil(db.assign) -- version 6 drops the class assignments
         assert.are.same(ns.D.AURA_ORDER, db.auraList) -- version 8: an unknown aura leads nothing
         assert.is_nil(db.aura)
@@ -50,7 +50,7 @@ describe("settings", function()
     it("keep a valid position", function()
         local ns = addon.load("enUS", { db = { dbVersion = 2, point = "TOP", rel = "TOP", x = 12, y = -40 } })
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.same({ "TOP", "TOP", 12, -40 }, { db.point, db.rel, db.x, db.y })
     end)
 end)
@@ -62,20 +62,20 @@ describe("settings version 3", function()
         local ns = addon.load("enUS", { db = { dbVersion = 2, assign = { WARRIOR = "MIGHT" } } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         for key, default in pairs(D.BOOL_DEFAULTS) do assert.are.equal(default, db[key], key) end
         for key, n in pairs(D.NUMBER_DEFAULTS) do assert.are.equal(n.default, db[key], key) end
         for key, color in pairs(D.COLOR_DEFAULTS) do assert.are.same(color, db[key], key) end
         local once = copy(db)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 
     it("copy the color defaults instead of sharing them", function()
         local ns = addon.load("enUS")
         ns.InitDB()
         local before = copy(ns.D.BG_COLOR)
-        SimpleBlessingBarDB.bg.r = 0.5
+        SmartBlessingBarDB.bg.r = 0.5
         assert.are.same(before, ns.D.BG_COLOR)
     end)
 
@@ -87,7 +87,7 @@ describe("settings version 3", function()
         } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(D.SCALE_MAX, db.scale)
         assert.are.equal(D.ANTS_SPEED_MIN, db.auraAntsSpeed)
         assert.are.equal(3, db.furyAntsSpeed) -- whole steps: 2.6 rounds to 3
@@ -100,7 +100,7 @@ describe("settings version 3", function()
     it("never keep demo mode across a login", function()
         local ns = addon.load("enUS", { db = { dbVersion = 3, demo = true } })
         ns.InitDB()
-        assert.is_false(SimpleBlessingBarDB.demo)
+        assert.is_false(SmartBlessingBarDB.demo)
     end)
 end)
 
@@ -110,7 +110,7 @@ describe("settings version 5", function()
         local ns = addon.load("enUS", { db = { dbVersion = 4, flyoutDir = "FIRST" } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(D.DB_VERSION, db.dbVersion)
         assert.is_false(db.autoBuy)
         for _, key in ipairs({ "symbolWarn", "symbolAmount", "goldReserve" }) do
@@ -121,19 +121,19 @@ describe("settings version 5", function()
         assert.is_nil(db.flyoutDir) -- version 8 drops the flyout settings
         local once = copy(db)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 
     it("repair the order: unknown keys and doubles out, missing ones appended", function()
         local ns = addon.load("enUS", { db = { dbVersion = 6, order = { "SALVATION", "BOGUS", "SALVATION", 7 } } })
         local D = ns.D
         ns.InitDB()
-        assert.are.same({ "SALVATION", "AURA", "FURY", "BLESSING" }, SimpleBlessingBarDB.order)
+        assert.are.same({ "SALVATION", "AURA", "FURY", "BLESSING" }, SmartBlessingBarDB.order)
         for _, bad in ipairs({ "x", 5 }) do
             ns = addon.load("enUS", { db = { dbVersion = 6, order = bad } })
             ns.InitDB()
-            assert.are.same(D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
-            assert.are_not.equal(ns.D.DEFAULT_ORDER, SimpleBlessingBarDB.order)
+            assert.are.same(D.DEFAULT_ORDER, SmartBlessingBarDB.order)
+            assert.are_not.equal(ns.D.DEFAULT_ORDER, SmartBlessingBarDB.order)
         end
     end)
 
@@ -144,7 +144,7 @@ describe("settings version 5", function()
         } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(D.NUMBER_DEFAULTS.symbolWarn.default, db.symbolWarn)
         assert.are.equal(D.NUMBER_DEFAULTS.symbolAmount.max, db.symbolAmount)
         assert.are.equal(0, db.goldReserve)
@@ -164,7 +164,7 @@ describe("settings version 6", function()
     it("migrate a version 5 file: the class block becomes blessing and Salvation, twice without change", function()
         local ns = addon.load("enUS", { db = v5() })
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(ns.D.DB_VERSION, db.dbVersion)
         assert.are.same({ "BLESSING", "SALVATION", "AURA", "FURY" }, db.order)
         assert.are.same({ r = 0, g = 1, b = 0, a = 1 }, db.blessingAntsColor)
@@ -175,7 +175,7 @@ describe("settings version 6", function()
         assert.is_nil(db.classOrder)
         local once = copy(db)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 
     it("migrate a file without a version", function()
@@ -183,8 +183,8 @@ describe("settings version 6", function()
         saved.dbVersion = nil
         local ns = addon.load("enUS", { db = saved })
         ns.InitDB()
-        assert.are.same({ "BLESSING", "SALVATION", "AURA", "FURY" }, SimpleBlessingBarDB.order)
-        assert.is_nil(SimpleBlessingBarDB.assign)
+        assert.are.same({ "BLESSING", "SALVATION", "AURA", "FURY" }, SmartBlessingBarDB.order)
+        assert.is_nil(SmartBlessingBarDB.assign)
     end)
 
     it("leave a version 6 file's blessing ants as they are", function()
@@ -194,7 +194,7 @@ describe("settings version 6", function()
         saved.blessingAntsSpeed = 2
         local ns = addon.load("enUS", { db = saved })
         ns.InitDB()
-        assert.are.equal(2, SimpleBlessingBarDB.blessingAntsSpeed)
+        assert.are.equal(2, SmartBlessingBarDB.blessingAntsSpeed)
     end)
 end)
 
@@ -205,13 +205,13 @@ describe("settings version 4", function()
         local ns = addon.load("enUS", { db = { dbVersion = 3, flyoutAutoCloseTime = 8, vertical = true } })
         local D = ns.D
         ns.InitDB()
-        local db = SimpleBlessingBarDB
+        local db = SmartBlessingBarDB
         assert.are.equal(D.DB_VERSION, db.dbVersion)
         assert.is_nil(db.flyoutDir)
         assert.is_nil(db.flyoutAutoCloseTime)
         assert.is_true(db.vertical)
         local once = copy(db)
         ns.InitDB()
-        assert.are.same(once, SimpleBlessingBarDB)
+        assert.are.same(once, SmartBlessingBarDB)
     end)
 end)

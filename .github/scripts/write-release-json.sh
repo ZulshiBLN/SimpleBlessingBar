@@ -10,7 +10,7 @@ set -euo pipefail
 zip="$1"
 version="$2"
 out="$3"
-toc="SimpleBlessingBar/SimpleBlessingBar.toc"
+toc="SmartBlessingBar/SmartBlessingBar.toc"
 
 field() { # value of a "## Field:" line of the TOC
     grep -m1 -E "^## $1:" "$toc" | sed -E "s/^## $1:[[:space:]]*//" | tr -d '\r'

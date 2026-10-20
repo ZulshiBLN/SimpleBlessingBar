@@ -15,7 +15,7 @@ local function login(opts)
     STATE.bags = { [D.SYMBOL_OF_KINGS] = opts.bags or 0 }
     STATE.money = opts.money or 1000000
     FIRE("PLAYER_LOGIN")
-    local db = SimpleBlessingBarDB
+    local db = SmartBlessingBarDB
     for k, v in pairs(opts.db or {}) do db[k] = v end
     ns.Refresh()
     return ns, db, D, ns.blessingButton
@@ -165,7 +165,7 @@ end)
 describe("the Supplies page", function()
     local function open(opts)
         local ns, db, D, b = login(opts)
-        SlashCmdList.SIMPLEBLESSINGBAR("")
+        SlashCmdList.SMARTBLESSINGBAR("")
         return ns, ns.UI.controls, db, D, b
     end
 

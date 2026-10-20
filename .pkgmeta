@@ -1,11 +1,11 @@
-# BigWigs packager layout. The addon sits in SimpleBlessingBar/, beside the
+# BigWigs packager layout. The addon sits in SmartBlessingBar/, beside the
 # repository's README, LICENSE and tooling: the packager copies the checkout to
-# .release/SimpleBlessingBar/, moves the addon's files up into that folder and
+# .release/SmartBlessingBar/, moves the addon's files up into that folder and
 # zips only it. Dotfiles are left out by the packager itself.
-package-as: SimpleBlessingBar
+package-as: SmartBlessingBar
 
 move-folders:
-  SimpleBlessingBar/SimpleBlessingBar: SimpleBlessingBar
+  SmartBlessingBar/SmartBlessingBar: SmartBlessingBar
 
 ignore:
   - tests

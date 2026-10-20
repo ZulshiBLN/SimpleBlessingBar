@@ -13,7 +13,7 @@ local function demo(seed)
     local ns = addon.load("enUS")
     STATE.known = { [D.BLESSINGS.KINGS.normal[1]] = true }
     FIRE("PLAYER_LOGIN")
-    SimpleBlessingBarDB.demo = true
+    SmartBlessingBarDB.demo = true
     ns.OpenSettingsOn("TAB_PRIORITIES")
     ns.Refresh()
     return ns, ns.overview
@@ -170,7 +170,7 @@ describe("the demo raid", function()
     it("gives each member the first of his class's list from me, the rest from one other Paladin each", function()
         for seed = 1, SEEDS do
             local ns, o = demo(seed)
-            local L, lists = ns.L, SimpleBlessingBarDB.classLists
+            local L, lists = ns.L, SmartBlessingBarDB.classLists
             local size = classSizes(o)
             local givers = {}
             for _, r in ipairs(shown(o)) do
@@ -201,7 +201,7 @@ describe("the demo raid", function()
 
     it("follows a change of a class's list at once", function()
         local ns, o = demo()
-        local warrior = SimpleBlessingBarDB.classLists.WARRIOR
+        local warrior = SmartBlessingBarDB.classLists.WARRIOR
         table.insert(warrior.order, 1, "WISDOM")
         ns.Refresh()
         for _, r in ipairs(shown(o)) do
@@ -290,7 +290,7 @@ describe("the demo raid", function()
         local _, o = demo()
         local glowing = 0
         for _, r in ipairs(shown(o)) do
-            local first = SimpleBlessingBarDB.classLists[r.class].order[1]
+            local first = SmartBlessingBarDB.classLists[r.class].order[1]
             for _, s in ipairs(r.slots) do
                 if s:IsShown() and s.glow:IsShown() then
                     glowing = glowing + 1
@@ -343,7 +343,7 @@ describe("the demo raid", function()
 
     it("shows the real group again when demo mode goes off", function()
         local ns, o = demo()
-        SimpleBlessingBarDB.demo = false
+        SmartBlessingBarDB.demo = false
         ns.Refresh()
         local rows = shown(o)
         assert.are.equal(1, #rows)

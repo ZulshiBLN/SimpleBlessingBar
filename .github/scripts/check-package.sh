@@ -9,7 +9,7 @@ set -euo pipefail
 zip="$1"
 meta="$2"
 tag="${3:-}"
-addon="SimpleBlessingBar"
+addon="SmartBlessingBar"
 
 fail() { echo "PACKAGE CHECK FAILED: $*" >&2; exit 1; }
 

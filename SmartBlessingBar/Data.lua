@@ -1,4 +1,4 @@
--- SimpleBlessingBar - static data
+-- SmartBlessingBar - static data
 -- Spell IDs, layout constants and default settings. Loaded before every other module.
 -- IDs are the Classic Era IDs, checked on WoW Forever 1.60.1.70450 (ruleset research
 -- 2026-10-18-paladin-facts). Blessing of Sanctuary does not exist there and is left out.
@@ -8,7 +8,7 @@ local _, ns = ...
 local D = {}
 ns.D = D
 
--- Schema version of SimpleBlessingBarDB; a change to its shape raises it and ships a migration
+-- Schema version of SmartBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
 D.DB_VERSION = 9
 
@@ -109,7 +109,7 @@ D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "
 D.DEFAULT_ORDER = { "AURA", "FURY", "BLESSING", "SALVATION" }
 
 -- Where the bug report tells players to paste it
-D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SimpleBlessingBar/issues"
+D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SmartBlessingBar/issues"
 
 ---------------------------------------------------------------------------
 -- Look: SimpleConjureBar's, so both addons read as one family

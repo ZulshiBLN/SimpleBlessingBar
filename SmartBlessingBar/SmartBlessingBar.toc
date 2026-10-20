@@ -1,5 +1,5 @@
 ## Interface: 16001
-## Title: SimpleBlessingBar
+## Title: SmartBlessingBar
 ## IconTexture: Interface\Icons\Spell_Holy_SealOfWisdom
 ## Notes: Paladin blessing manager: blesses your group by class, coordinates with other paladins and casts auras
 ## Notes-deDE: Segensverwaltung für Paladine: segnet die Gruppe nach Klasse, stimmt sich mit anderen Paladinen ab und wirkt Auren
@@ -17,9 +17,9 @@
 ## X-License: MIT
 ## X-Curse-Project-ID: 1751962
 ## X-Wago-ID: ZKxO5o6k
-## AddonCompartmentFunc: SimpleBlessingBar_OnCompartmentClick
-## AddonCompartmentFuncOnEnter: SimpleBlessingBar_OnCompartmentEnter
-## AddonCompartmentFuncOnLeave: SimpleBlessingBar_OnCompartmentLeave
+## AddonCompartmentFunc: SmartBlessingBar_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: SmartBlessingBar_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: SmartBlessingBar_OnCompartmentLeave
 ## Category: Class
 ## Category-deDE: Klasse
 ## Category-frFR: Classe
@@ -31,8 +31,8 @@
 ## Category-koKR: 직업
 ## Category-zhCN: 职业
 ## Category-zhTW: 職業
-## SavedVariables: SimpleBlessingBarGlobalDB
-## SavedVariablesPerCharacter: SimpleBlessingBarDB
+## SavedVariables: SmartBlessingBarGlobalDB
+## SavedVariablesPerCharacter: SmartBlessingBarDB
 
 Locales.lua
 Data.lua

@@ -1,4 +1,4 @@
--- SimpleBlessingBar - the bar
+-- SmartBlessingBar - the bar
 -- Handle, position and lock, the look, and the layout of its four buttons: aura, Righteous
 -- Fury, blessing and Salvation (ruleset plan 2026-10-19-blessing-core). Out of combat the
 -- refresh writes everything; in combat nothing is rewritten and the buttons keep what they
@@ -117,7 +117,7 @@ end
 ---------------------------------------------------------------------------
 -- Bar and handle
 ---------------------------------------------------------------------------
-local bar = CreateFrame("Frame", "SimpleBlessingBarFrame", UIParent, "BackdropTemplate")
+local bar = CreateFrame("Frame", "SmartBlessingBarFrame", UIParent, "BackdropTemplate")
 ns.bar = bar
 bar:SetSize(SIZE + 2 * PAD, SIZE + 2 * PAD)
 bar:SetMovable(true)
@@ -137,7 +137,7 @@ handleTex:SetAllPoints()
 -- SimpleConjureBar's handle tooltip: the lock state and what each click does
 local function ShowHandleTooltip(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    GameTooltip:SetText("SimpleBlessingBar")
+    GameTooltip:SetText("SmartBlessingBar")
     if db.locked then
         GameTooltip:AddLine(L.TIP_LOCKED, 1, 0.3, 0.3)
     else

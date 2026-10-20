@@ -2,7 +2,7 @@
 # version a release is filed under on CurseForge and Wago. Plain bash, no jq,
 # so the controls run anywhere.
 
-TOC=SimpleBlessingBar/SimpleBlessingBar.toc
+TOC=SmartBlessingBar/SmartBlessingBar.toc
 
 fail() { echo "UPLOAD FAILED: $*" >&2; exit 1; }
 

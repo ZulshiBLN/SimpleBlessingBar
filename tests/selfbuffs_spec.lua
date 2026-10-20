@@ -159,7 +159,7 @@ describe("the aura button", function()
 
     it("casts the list's first aura in demo mode, ignoring other paladins", function()
         local ns, D, b = withAuras(own({ group = "party", units = { party1 = paladin(D_DEV) } }))
-        SimpleBlessingBarDB.demo = true
+        SmartBlessingBarDB.demo = true
         ns.Refresh()
         assert.are.equal(D.AURAS.DEVOTION[#D.AURAS.DEVOTION], b:GetAttribute("spell1"))
     end)
@@ -226,7 +226,7 @@ describe("the Righteous Fury button", function()
     it("is greyed without ants in demo mode, also for a tank", function()
         local ns = addon.load("enUS", { group = "party", units = { player = { class = "PALADIN", role = "TANK" } } })
         FIRE("PLAYER_LOGIN")
-        SimpleBlessingBarDB.demo = true
+        SmartBlessingBarDB.demo = true
         ns.Refresh()
         assert.is_false(ns.furyButton.ants:IsShown())
         assert.is_true(ns.furyButton.icon:IsDesaturated())

@@ -39,7 +39,7 @@ jobs:
               version="$TAG"
           else
               version=$(basename "$zip" .zip)
-              version=${version#SimpleBlessingBar-}
+              version=${version#SmartBlessingBar-}
               version=${version%-forever}
           fi
           bash .github/scripts/write-release-json.sh "$zip" "$version" .release/release.json
@@ -56,8 +56,8 @@ jobs:
           zip=$(ls .release/*.zip)
           bad="$RUNNER_TEMP/bad"
           mkdir -p "$bad" && unzip -q "$zip" -d "$bad"
-          rm "$bad/SimpleBlessingBar/SimpleBlessingBar.toc"
-          (cd "$bad" && zip -q -r "$RUNNER_TEMP/$(basename "$zip")" SimpleBlessingBar)
+          rm "$bad/SmartBlessingBar/SmartBlessingBar.toc"
+          (cd "$bad" && zip -q -r "$RUNNER_TEMP/$(basename "$zip")" SmartBlessingBar)
           if bash .github/scripts/check-package.sh "$RUNNER_TEMP/$(basename "$zip")" .release/release.json; then
               echo "the check accepted a zip without its TOC"; exit 1
           fi
@@ -85,9 +85,9 @@ jobs:
 
       - name: Release notes from the CHANGELOG
         run: |
-          version=$(grep -m1 -E '^## Version:' SimpleBlessingBar/SimpleBlessingBar.toc | sed -E 's/^## Version:[[:space:]]*//' | tr -d '\r[:space:]')
+          version=$(grep -m1 -E '^## Version:' SmartBlessingBar/SmartBlessingBar.toc | sed -E 's/^## Version:[[:space:]]*//' | tr -d '\r[:space:]')
           awk -v v="## [$version]" 'index($0, v) == 1 { on = 1; next } on && /^## / { exit } on { print }' \
-              SimpleBlessingBar/CHANGELOG.md > .release/notes.md
+              SmartBlessingBar/CHANGELOG.md > .release/notes.md
           [ -s .release/notes.md ] || { echo "no CHANGELOG entry for $version"; exit 1; }
 
       # The version rule on fixed lists, the interface mapping, and the check

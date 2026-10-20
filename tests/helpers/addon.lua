@@ -3,7 +3,7 @@
 -- and one shared namespace. The file list is read from the TOC, never retyped.
 local M = {}
 
-local ADDON = "SimpleBlessingBar"
+local ADDON = "SmartBlessingBar"
 M.NAME = ADDON
 
 function M.read(path)
@@ -43,7 +43,7 @@ function M.load(locale, world)
     if world.bugGrabber == false then BugGrabber = nil end
     STATE.units.player = STATE.units.player or {}
     STATE.units.player.class = STATE.units.player.class or STATE.class
-    SimpleBlessingBarDB, SimpleBlessingBarGlobalDB = world.db, world.globalDB
+    SmartBlessingBarDB, SmartBlessingBarGlobalDB = world.db, world.globalDB
     local ns = {}
     for _, file in ipairs(M.tocFiles()) do
         local chunk = assert(loadstring(M.read(ADDON .. "/" .. file), "@" .. ADDON .. "/" .. file))

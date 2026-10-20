@@ -1,4 +1,4 @@
-# SimpleBlessingBar
+# SmartBlessingBar
 
 A paladin blessing manager for **WoW Forever** (Classic content on the modern Retail client,
 Interface 16001): it blesses your group by class, works around what other paladins already gave,
@@ -10,9 +10,9 @@ characters come later.
 ## Installation
 
 Once a release is published it will be on GitHub, CurseForge and Wago. Until then, the addon can
-only be installed by hand from this repository: copy the folder `SimpleBlessingBar` into
+only be installed by hand from this repository: copy the folder `SmartBlessingBar` into
 `Interface\AddOns` of your WoW Forever installation, so that
-`Interface\AddOns\SimpleBlessingBar` holds `SimpleBlessingBar.toc`.
+`Interface\AddOns\SmartBlessingBar` holds `SmartBlessingBar.toc`.
 
 The addon loads for paladins only.
 
