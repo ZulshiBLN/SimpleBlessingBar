@@ -357,13 +357,15 @@ local function Arrange(shown)
     end
 end
 
--- The four buttons by order key, each with the setting that shows it
+-- The four buttons by order key, each with the setting that shows it; the buff key reads it
+-- too (Queue.lua)
 local BUTTONS = {
     AURA = { function() return ns.auraButton end, "showAura" },
     FURY = { function() return ns.furyButton end, "showFury" },
     BLESSING = { function() return ns.blessingButton end, "showBlessing" },
     SALVATION = { function() return ns.salvationButton end, "showSalvation" },
 }
+ns.BAR_BUTTONS = BUTTONS
 
 -- What the layout depends on; layoutKey (above ns.LoadPosition) is the last one laid out
 local function LayoutKey()

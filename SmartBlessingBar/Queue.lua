@@ -149,19 +149,56 @@ end
 
 -- From the settings alone, also while auras are secret: Buff & Run's macro, no click action in
 -- demo mode, and an icon before the first plan
+---------------------------------------------------------------------------
+-- The buff key (ruleset plan 2026-10-20-key-bindings): a hidden button a key binding clicks.
+-- It carries the left-click action of the first switched-on, glowing aura, Fury or blessing
+-- button in the bar's order - the blessing button's being the group's next blessing
+-- (Michel); Salvation never. Written with the bar, so it too keeps its action in combat.
+---------------------------------------------------------------------------
+local buffKey = CreateFrame("Button", "SmartBlessingBarBuffAll", UIParent, "SecureActionButtonTemplate")
+buffKey:RegisterForClicks("AnyUp", "AnyDown")
+ns.buffKey = buffKey
+local KEY_SOURCES = { AURA = true, FURY = true, BLESSING = true }
+
+local function ArmBuffKey()
+    local source
+    for _, key in ipairs(db.order) do
+        local entry = KEY_SOURCES[key] and ns.BAR_BUTTONS[key]
+        local b = entry and entry[1]()
+        if b and db[entry[2]] and b.antsShown then
+            source = b
+            break
+        end
+    end
+    for _, attr in ipairs({ "type1", "spell1", "unit1" }) do
+        SetAttr(buffKey, attr, source and source:GetAttribute(attr) or nil)
+    end
+end
+
+-- Demo mode casts nothing; a press says once, on the release, what it would cast
+buffKey:HookScript("OnClick", function(self, _, down)
+    if down or not ns.IsDemo() then return end
+    local spell = self:GetAttribute("spell1")
+    if spell then ns.DemoCast(spell) end
+end)
+
 table.insert(ns.onSettings, function()
     ArmBuffRun()
-    for _, b in ipairs({ blessing, salvation }) do
+    for _, b in ipairs({ blessing, salvation, buffKey }) do
         if ns.IsDemo() then SetAttr(b, "type1", nil) end
+    end
+    for _, b in ipairs({ blessing, salvation }) do
         if not b.iconTexture then ns.SetIcon(b, C_Spell.GetSpellTexture(b.idleSpell), true) end
     end
 end)
 
--- A hidden button plans nothing: its empty queue also leaves nothing a /click could cast
+-- A hidden button plans nothing: its empty queue also leaves nothing a /click could cast.
+-- After the aura and Fury buttons (SelfBuffs.lua loads first), so the buff key sees all three.
 table.insert(ns.onRefresh, function(combatStart)
     local queue, symbolsUsed = {}, 0
     if db.showBlessing then queue, symbolsUsed = B.PlanBlessings() end
     Show(blessing, queue, combatStart)
     ns.RefreshSymbols()
     Show(salvation, db.showSalvation and B.PlanSalvation(symbolsUsed) or {}, combatStart)
+    ArmBuffKey()
 end)
