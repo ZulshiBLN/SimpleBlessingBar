@@ -92,7 +92,8 @@ Greater Blessing or Mass Salvation, the member otherwise. Dead, offline and out-
 players are left out. A blessing, Salvation or Mass Salvation of yours is renewed when less
 than 5 minutes are left (see the Priorities tab); another paladin's counts until it runs out.
 
-**In combat** the game hides who has which buff. The blessing and Salvation buttons keep the
+**In combat** the game hides who has which buff - in instances and PvP often out of combat
+too; the bar then behaves as in combat until the game shows them again. The blessing and Salvation buttons keep the
 cast that was first when the fight started - a Greater Blessing or Mass Salvation that would be
 followed by casts that cannot happen in combat waits for the end of it; if nothing else is
 left, the button keeps its number without the highlight, and its tooltip says so. Clicking

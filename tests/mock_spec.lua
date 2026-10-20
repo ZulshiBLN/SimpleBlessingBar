@@ -195,3 +195,27 @@ describe("the mock for Buff & Run", function()
         assert.are.equal(1.5, cd.duration)
     end)
 end)
+
+-- Secret auras out of combat (restricted_spec.lua): the client refuses the read with an error;
+-- C_Secrets says so beforehand, unless the client has no C_Secrets
+describe("secret auras in the mock", function()
+    it("refuse a read with an error, and C_Secrets answers or is missing", function()
+        addon.load("enUS")
+        assert.is_false(C_Secrets.ShouldAurasBeSecret())
+        assert.is_true(pcall(C_UnitAuras.GetAuraDataByIndex, "player", 1, "HELPFUL"))
+        STATE.aurasSecret = true
+        assert.is_true(C_Secrets.ShouldAurasBeSecret())
+        assert.is_false(pcall(C_UnitAuras.GetAuraDataByIndex, "player", 1, "HELPFUL"))
+        STATE.noSecretsApi = true
+        assert.is_nil(C_Secrets.ShouldAurasBeSecret)
+    end)
+
+    -- A SetPoint with an unknown anchor name errors, as in the client (bar_spec.lua)
+    it("refuse an unknown anchor name", function()
+        addon.load("enUS")
+        local f = CreateFrame("Frame")
+        assert.is_true(pcall(f.SetPoint, f, "TOPLEFT", UIParent, "BOTTOMLEFT", 0, 0))
+        assert.is_false(pcall(f.SetPoint, f, "FOO"))
+        assert.is_false(pcall(f.SetPoint, f, "LEFT", UIParent, "left"))
+    end)
+end)

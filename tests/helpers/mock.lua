@@ -497,7 +497,10 @@ C_UnitAuras = {
       if a.spellId == id then return { spellId = a.spellId, expirationTime = a.expirationTime } end
     end
   end,
+  -- While STATE.aurasSecret, the client refuses an addon's read with an error, also out of
+  -- combat (Midnight's restriction in instances and PvP)
   GetAuraDataByIndex = function(u, i, filter)
+    if STATE.aurasSecret then error("Auras cannot be accessed when secret while tainted by 'SmartBlessingBar'") end
     local r = U(u)
     if not r then return end
     local n = 0
@@ -513,6 +516,13 @@ C_UnitAuras = {
     end
   end,
 }
+-- C_Secrets.ShouldAurasBeSecret answers STATE.aurasSecret; STATE.noSecretsApi leaves it out,
+-- as a client without it
+C_Secrets = setmetatable({}, { __index = function(_, k)
+  if k == "ShouldAurasBeSecret" and not STATE.noSecretsApi then
+    return function() return STATE.aurasSecret == true end
+  end
+end })
 C_Spell = {
   IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
   GetSpellTexture = function(id) return "icon" .. id end,

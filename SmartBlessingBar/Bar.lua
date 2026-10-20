@@ -326,10 +326,11 @@ local function Arrange(shown)
 end
 
 -- Reads the group out of combat and writes everything to the buttons. In combat it does
--- nothing: aura data is unreadable then and the buttons are protected.
+-- nothing: aura data is unreadable then and the buttons are protected. The same while the
+-- client keeps auras secret out of combat: the buttons keep what they had.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
 function ns.Refresh(combatStart)
-    if not db or InCombatLockdown() then return end
+    if not db or InCombatLockdown() or not ns.Blessings.AurasReadable() then return end
 
     -- The four buttons in the order set on the Order page, each if the settings show it. A
     -- hidden button leaves no gap.

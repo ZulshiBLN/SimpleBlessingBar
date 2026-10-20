@@ -14,6 +14,16 @@ ns.OnDBReady(function(d) db = d end)
 local B = {}
 ns.Blessings = B
 
+-- Whether the client lets the addon read auras now. Not in combat; and since Midnight, in
+-- instances and PvP it keeps them secret out of combat too and refuses a read with an error
+-- (BugSack, 2026-10-20). Where C_Secrets is missing, one read is tried.
+function B.AurasReadable()
+    if InCombatLockdown() then return false end
+    local secret = C_Secrets and C_Secrets.ShouldAurasBeSecret
+    if secret then return not secret() end
+    return (pcall(C_UnitAuras.GetAuraDataByIndex, "player", 1, "HELPFUL"))
+end
+
 -- An aura's spell ID, or nil while the game keeps any field the addon reads secret: such a
 -- buff counts as unread (code.md). Every reader asks this before using the others.
 function B.SpellOf(aura)
@@ -550,6 +560,7 @@ end
 -- no blessing of mine; else the first family of his class's list another paladin has not
 -- given, in the best normal rank that fits him - Greater Blessings reach group members only
 function B.BuffRunSpell(unit)
+    if not B.AurasReadable() then return end
     if not (UnitIsPlayer(unit) and UnitCanAssist("player", unit) and B.Eligible(unit)) then return end
     if B.HasMyBlessing(unit) then return end
     local list = db.classLists[select(2, UnitClass(unit))]
