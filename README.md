@@ -4,13 +4,13 @@ A paladin blessing manager for **WoW Forever** (Classic content on the modern Re
 Interface 16001): it blesses your group by class, works around what other paladins already gave,
 and casts Salvation, auras and Righteous Fury, with a modern look.
 
-**Status: early development.** No release has been published yet. Exceptions for single
-characters come later.
+Exceptions for single characters come later.
 
 ## Installation
 
-Once a release is published it will be on GitHub, CurseForge and Wago. Until then, the addon can
-only be installed by hand from this repository: copy the folder `SmartBlessingBar` into
+Install it with the CurseForge app, Wago or WowUp, which also keep it up to date. By hand:
+download `SmartBlessingBar-vX.Y.Z-forever.zip` from the
+[GitHub releases](https://github.com/ZulshiBLN/SmartBlessingBar/releases) and unpack it into
 `Interface\AddOns` of your WoW Forever installation, so that
 `Interface\AddOns\SmartBlessingBar` holds `SmartBlessingBar.toc`.
 
@@ -143,8 +143,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
   class, each name in its class colour, a tank or healer - the role from the game - with the
   game's role icon before the name; a name too long for its place is cut with "...". In front of a paladin's blessings
   the aura he runs, then the blessings and the Salvation each member carries. Yours glow
-  gold; the blessing you would give him next is faint, with a "+". Members out of
-  range, dead or offline are dimmed. Hover an icon for the spell, who gave it - "another
+  gold; the blessing you would give him next is faint, with a "+". Members dead, offline or
+  out of sight are dimmed, and so is one out of range of the blessing you would give him next. Hover an icon for the spell, who gave it - "another
   paladin" for one outside your group - and the minutes left. In demo mode it shows a made-up
   raid of 40, the same until `/reload`: all classes, four paladins with their auras, you one of
   them, tanks and healers, a few members dimmed or without Salvation, and names from 2 to 12
