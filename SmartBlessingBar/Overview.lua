@@ -215,9 +215,11 @@ end
 -- names are set here, not through ns.SetL - and when the window's width changes. The scroll
 -- frame's own stretcher, registered before this one, has set its width by then; before the
 -- window's first layout it has none, and the layout builds it.
--- While the client keeps auras secret the overview stays as it was
+-- While the client keeps auras secret the overview stays as it was; demo mode's raid reads none
 local function BuildIfShown()
-    if host.page:IsShown() and (host.scroll:GetWidth() or 0) > 0 and B.AurasReadable() then Build() end
+    if host.page:IsShown() and (host.scroll:GetWidth() or 0) > 0 and (ns.IsDemo() or B.AurasReadable()) then
+        Build()
+    end
 end
 host.page:HookScript("OnShow", BuildIfShown)
 table.insert(ns.onRefresh, BuildIfShown)

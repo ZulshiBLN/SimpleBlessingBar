@@ -69,3 +69,17 @@ local function Update()
     ns.SetAnts(fury, known and tank and not OwnBuff(D.RIGHTEOUS_FURY))
 end
 table.insert(ns.onRefresh, Update)
+
+-- From the settings alone, also while auras are secret: the icons before the first plan (the
+-- Priorities tab shows the aura button's spell) and no click action in demo mode
+table.insert(ns.onSettings, function()
+    if not aura.shownSpell then
+        aura.shownSpell = D.AURAS[db.auraList[1]][1]
+        ns.SetIcon(aura, C_Spell.GetSpellTexture(aura.shownSpell), true)
+    end
+    if not fury.iconTexture then ns.SetIcon(fury, C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY), true) end
+    if ns.IsDemo() then
+        SetAttr(aura, "type1", nil)
+        SetAttr(fury, "type1", nil)
+    end
+end)

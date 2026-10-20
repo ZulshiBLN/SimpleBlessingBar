@@ -60,3 +60,45 @@ for _, api in ipairs({ "with C_Secrets", "without C_Secrets" }) do
         end)
     end)
 end
+
+-- Third release review: the gate stopped the layout and every setting too. A login or
+-- /reload while auras are secret must still build the bar, arm Buff & Run and open the
+-- settings; only the planners wait.
+describe("a login while auras are secret", function()
+    local function secretLogin()
+        local ns = addon.load("enUS", addon.mightFirst())
+        STATE.known = { [M.normal[1]] = true, [D.AURAS.DEVOTION[1]] = true }
+        STATE.aurasSecret = true
+        FIRE("PLAYER_LOGIN")
+        return ns
+    end
+
+    it("builds the bar with its icons and arms Buff & Run", function()
+        local ns = secretLogin()
+        for _, b in ipairs({ ns.auraButton, ns.furyButton, ns.blessingButton, ns.salvationButton }) do
+            assert.is_not_nil(b:GetPoint())
+            assert.is_not_nil(b.icon:GetTexture())
+        end
+        assert.are.equal("macro", ns.blessingButton:GetAttribute("type3"))
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("opens the settings", function()
+        local ns = secretLogin()
+        SlashCmdList.SMARTBLESSINGBAR("")
+        assert.is_true(ns.UI.window:IsShown())
+        assert.are.same({}, STATE.errors)
+    end)
+
+    it("casts nothing once demo mode is switched on", function()
+        local ns = addon.load("enUS", addon.mightFirst())
+        STATE.known = { [M.normal[1]] = true }
+        FIRE("PLAYER_LOGIN")
+        assert.are.equal("spell", ns.blessingButton:GetAttribute("type1"))
+        STATE.aurasSecret = true
+        SmartBlessingBarDB.demo = true
+        ns.Refresh()
+        assert.is_nil(ns.blessingButton:GetAttribute("type1"))
+        assert.is_nil(ns.auraButton:GetAttribute("type1"))
+    end)
+end)

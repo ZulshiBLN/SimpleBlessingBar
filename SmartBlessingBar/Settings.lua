@@ -119,7 +119,6 @@ local function CreateCheck(parent, labelKey, key, onChange)
     refreshers[#refreshers + 1] = function() cb:SetChecked(db[key]) end
     return cb, text
 end
-UI.CreateCheck = CreateCheck
 
 -- Single check box in its own row; `indent` moves it right by that many check box widths,
 -- under the box it depends on
@@ -478,7 +477,6 @@ local function OpenColorPicker(key, onChange)
     defaultBtn.key, defaultBtn.onChange = key, onChange
     defaultBtn:Show()
 end
-UI.OpenColorPicker = OpenColorPicker
 
 -- Color swatch button: a click opens the client's color picker (with the "Default" button)
 local function CreateSwatchButton(parent, key, onChange)
@@ -515,7 +513,6 @@ local function CreateSwatchButton(parent, key, onChange)
     end
     return swatch
 end
-UI.CreateSwatchButton = CreateSwatchButton
 
 -- Color swatch with label in its own row
 function UI.AddSwatch(labelKey, key, gap, onChange)

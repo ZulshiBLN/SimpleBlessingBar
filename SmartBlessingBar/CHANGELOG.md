@@ -23,7 +23,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   class it reaches for a Greater Blessing or Mass Salvation. A right click on the blessing
   button opens the Priorities tab. In combat they keep the cast that was first when the
   fight started; one that must wait for the end of combat shows no highlight, and the
-  tooltip says so.
+  tooltip says so. The same while the game hides buffs out of combat, as it sometimes does
+  in instances and PvP.
 - A Priorities tab: early renewal, 5 minutes before a blessing or Salvation of yours runs out
   by default; the aura list; the priority list of each class, under its class colour,
   reordered by drag and drop, with blessings switched off per class and "Enable all" to

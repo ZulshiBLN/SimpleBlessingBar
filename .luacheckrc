@@ -28,7 +28,7 @@ read_globals = {
     "C_AddOns", "C_ClassColor", "C_Item", "C_Secrets", "C_Spell", "C_Timer", "C_UnitAuras", "CreateFrame",
     "UIParent", "UISpecialFrames", "tinsert",
     "GameTooltip", "GetLocale", "GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
-    "InCombatLockdown", "IsInGroup", "IsInRaid", "IsPlayerSpell",
+    "InCombatLockdown", "debugstack", "IsInGroup", "IsInRaid", "IsPlayerSpell",
     "RegisterStateDriver", "UnregisterStateDriver", "ReloadUI", "ColorPickerFrame", "CreateColor", "PixelUtil",
     "C_CurrencyInfo", "C_MerchantFrame", "GetMerchantNumItems", "GetMerchantItemID", "GetMerchantItemMaxStack",
     "BuyMerchantItem", "GetMoney", "GetTime", "GetCursorPosition", "IsMouseButtonDown", "LOCALIZED_CLASS_NAMES_MALE",

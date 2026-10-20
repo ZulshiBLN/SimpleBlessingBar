@@ -323,6 +323,10 @@ ns.UpdateSymbols = UpdateSymbols
 -- The buttons refresh with the bar: functions added here run after the layout, out of combat
 -- only. They get `combatStart`, true for the refresh right before the lockdown.
 ns.onRefresh = {}
+-- Functions that write what the settings alone decide - Buff & Run's macro, demo mode's
+-- empty clicks, the idle icons - run on every refresh before the planners, even while auras
+-- are secret
+ns.onSettings = {}
 -- The blessing and Salvation buttons (Queue.lua)
 ns.queueButtons = {}
 
@@ -369,11 +373,11 @@ local function LayoutKey()
 end
 
 -- Reads the group out of combat and writes what changed to the buttons. In combat it does
--- nothing: aura data is unreadable then and the buttons are protected. The same while the
--- client keeps auras secret out of combat: the buttons keep what they had.
+-- nothing: aura data is unreadable then and the buttons are protected. While the client keeps
+-- auras secret out of combat it lays out and writes the settings, and the planners wait.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
 function ns.Refresh(combatStart)
-    if not db or InCombatLockdown() or not ns.Blessings.AurasReadable() then return end
+    if not db or InCombatLockdown() then return end
 
     -- The layout only when it changed (ruleset plan 2026-10-20-performance-pvp): the ticker runs
     -- this every second
@@ -396,8 +400,12 @@ function ns.Refresh(combatStart)
         if not handle.moving then ns.ReAnchor() end
         Arrange(shown)
     end
-    -- One fresh read of the group for every planner and the overview, closed also on an error
-    ns.Blessings.EndRead()
+    -- What comes from the settings alone, also while the client keeps auras secret
+    for _, fn in ipairs(ns.onSettings) do fn() end
+    -- The planners read auras: not while the client keeps them secret, then the buttons keep
+    -- what they had (third release review: the layout and settings must not wait for it)
+    if not ns.Blessings.AurasReadable() then return end
+    -- One read of the group for every planner and the overview
     ns.Blessings.WithRead(function()
         for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
     end)

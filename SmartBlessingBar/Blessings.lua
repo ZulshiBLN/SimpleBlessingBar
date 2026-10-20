@@ -1,8 +1,8 @@
 -- SmartBlessingBar - blessing logic
 -- Which rank to cast, roles, what others gave, and the planner behind the blessing and
 -- Salvation buttons (ruleset plan 2026-10-19-blessing-core).
--- Runs out of combat only: aura data returns nothing in combat (ruleset research
--- 2026-10-18-paladin-facts, section 3), so the callers freeze its results there.
+-- Runs only while B.AurasReadable(): in combat, and in instances and PvP often out of it too,
+-- the client refuses aura reads (code.md), so the callers freeze its results there.
 
 local _, ns = ...
 if not ns.enabled then return end
@@ -45,12 +45,18 @@ local read -- { auras = key -> list, known = id -> bool, level = unit -> level }
 function B.BeginRead() read = { auras = {}, known = {}, level = {} } end
 function B.EndRead() read = nil end
 
+-- The error with the stack where it happened, for BugSack, as a rethrow would lose it
+local function WithStack(err)
+    if debugstack then return tostring(err) .. "\n" .. debugstack(2) end
+    return err
+end
+
 -- fn inside a read: the running one, or one of its own, closed also when fn errors - a
 -- read left open would serve its old snapshot to the next click. The error goes on.
 function B.WithRead(fn)
     if read then return fn() end
     B.BeginRead()
-    local ok, result = pcall(fn)
+    local ok, result = xpcall(fn, WithStack)
     B.EndRead()
     if not ok then error(result, 0) end
     return result

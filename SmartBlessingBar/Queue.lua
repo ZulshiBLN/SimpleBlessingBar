@@ -47,7 +47,8 @@ end
 
 local function NewQueueButton(name, colorKey, speedKey, idleSpell, title)
     local b = ns.CreateSecureButton(name, ns.bar)
-    -- Nothing left until the first refresh, which waits for the end of combat after a /reload
+    -- Nothing left until the first plan, which waits for the end of combat after a /reload and
+    -- for readable auras
     b.idleSpell, b.title, b.left = idleSpell, title, 0
     ns.AttachAnts(b, colorKey, speedKey)
     b:SetScript("OnEnter", ShowTooltip)
@@ -90,6 +91,8 @@ end
 -- nothing and says once, on the press, what it would cast.
 blessing:SetScript("PreClick", function(_, mouseButton, down)
     if mouseButton ~= "MiddleButton" or InCombatLockdown() or not db.buffRun then return end
+    -- No spell from an earlier click, should the choice below fail
+    SetAttr(buffRun, "spell", nil)
     local spell = B.WithRead(function() return B.BuffRunSpell("target") end)
     if spell and C_Spell.GetSpellCooldown(spell).startTime > 0 then
         SetAttr(blessing, "type3", nil)
@@ -144,12 +147,21 @@ function ns.RefreshSymbols()
     ns.UpdateSymbols(blessing, B.AnyGreaterKnown())
 end
 
+-- From the settings alone, also while auras are secret: Buff & Run's macro, no click action in
+-- demo mode, and an icon before the first plan
+table.insert(ns.onSettings, function()
+    ArmBuffRun()
+    for _, b in ipairs({ blessing, salvation }) do
+        if ns.IsDemo() then SetAttr(b, "type1", nil) end
+        if not b.iconTexture then ns.SetIcon(b, C_Spell.GetSpellTexture(b.idleSpell), true) end
+    end
+end)
+
 -- A hidden button plans nothing: its empty queue also leaves nothing a /click could cast
 table.insert(ns.onRefresh, function(combatStart)
     local queue, symbolsUsed = {}, 0
     if db.showBlessing then queue, symbolsUsed = B.PlanBlessings() end
     Show(blessing, queue, combatStart)
-    ArmBuffRun()
     ns.RefreshSymbols()
     Show(salvation, db.showSalvation and B.PlanSalvation(symbolsUsed) or {}, combatStart)
 end)
