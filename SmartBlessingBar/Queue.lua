@@ -131,7 +131,7 @@ end
 -- only; in demo mode no secure action, the click prints instead (Demo.lua).
 local function Show(b, queue, combatStart)
     local head = Head(queue, combatStart)
-    b.head, b.left = head, #queue
+    b.queue, b.head, b.left = queue, head, #queue
     SetAttr(b, "type1", (head and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", head and head.spell)
     SetAttr(b, "unit1", head and head.unit)
@@ -186,8 +186,15 @@ end)
 -- demo mode - the buff key's too - and an icon before the first plan. The lists are made
 -- once, as this runs every refresh.
 local CLICK_BUTTONS, ICON_BUTTONS = { blessing, salvation, buffKey }, { blessing, salvation }
-table.insert(ns.onSettings, function()
+table.insert(ns.onSettings, function(combatStart, readable)
     ArmBuffRun()
+    -- While auras are secret the planners wait: the last queues stay, but a hidden button
+    -- empties its own, and the combat start still skips held entries (final release review)
+    if not readable then
+        Show(blessing, db.showBlessing and blessing.queue or {}, combatStart)
+        Show(salvation, db.showSalvation and salvation.queue or {}, combatStart)
+        ArmBuffKey()
+    end
     if ns.IsDemo() then
         for _, b in ipairs(CLICK_BUTTONS) do SetAttr(b, "type1", nil) end
     end

@@ -243,6 +243,18 @@ describe("the Righteous Fury button", function()
         assert.is_false(b.icon:IsDesaturated())
     end)
 
+    -- Final release review: hidden, it leaves nothing a /click could cast, as the aura button
+    it("casts nothing and does not glow while its button is hidden", function()
+        local ns = addon.load("enUS", { group = "party", units = { player = { class = "PALADIN", role = "TANK" } } })
+        STATE.known[ns.D.RIGHTEOUS_FURY] = true
+        FIRE("PLAYER_LOGIN")
+        assert.are.equal("spell", ns.furyButton:GetAttribute("type1"))
+        SmartBlessingBarDB.showFury = false
+        ns.Refresh()
+        assert.is_nil(ns.furyButton:GetAttribute("type1"))
+        assert.is_false(ns.furyButton.ants:IsShown())
+    end)
+
     it("is greyed without ants in demo mode, also for a tank", function()
         local ns = addon.load("enUS", { group = "party", units = { player = { class = "PALADIN", role = "TANK" } } })
         FIRE("PLAYER_LOGIN")

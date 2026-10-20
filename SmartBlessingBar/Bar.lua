@@ -321,11 +321,13 @@ ns.UpdateSymbols = UpdateSymbols
 -- Refresh
 ---------------------------------------------------------------------------
 -- The buttons refresh with the bar: functions added here run after the layout, out of combat
--- only. They get `combatStart`, true for the refresh right before the lockdown.
+-- and while auras are readable. They get `combatStart`, true for the refresh right before the
+-- lockdown.
 ns.onRefresh = {}
 -- Functions that write what the settings alone decide - Buff & Run's macro, demo mode's
--- empty clicks, the idle icons - run on every refresh before the planners, even while auras
--- are secret
+-- empty clicks, the idle icons, a hidden button's empty click - run on every refresh before
+-- the planners, even while auras are secret. They get `combatStart` and whether auras are
+-- readable.
 ns.onSettings = {}
 -- The blessing and Salvation buttons (Queue.lua)
 ns.queueButtons = {}
@@ -403,10 +405,11 @@ function ns.Refresh(combatStart)
         Arrange(shown)
     end
     -- What comes from the settings alone, also while the client keeps auras secret
-    for _, fn in ipairs(ns.onSettings) do fn() end
+    local readable = ns.Blessings.AurasReadable()
+    for _, fn in ipairs(ns.onSettings) do fn(combatStart, readable) end
     -- The planners read auras: not while the client keeps them secret, then the buttons keep
     -- what they had (third release review: the layout and settings must not wait for it)
-    if not ns.Blessings.AurasReadable() then return end
+    if not readable then return end
     -- One read of the group for every planner and the overview
     ns.Blessings.WithRead(function()
         for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end

@@ -6,7 +6,7 @@
 local ADDON_NAME, ns = ...
 if not ns.enabled then return end
 
-local L = ns.L
+local D, L = ns.D, ns.L
 local SetL = ns.SetL
 
 local db
@@ -49,26 +49,26 @@ minimapBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
 minimapBtn:RegisterForDrag("LeftButton")
 minimapBtn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
 
--- The ring's circle sits off its texture's centre: the ring moves by RING_OFFSET, and the
--- highlight, background and round icon centre in it at INNER_OFFSET (measured in game by
--- Michel, 2026-10-20)
-local RING_OFFSET_X, RING_OFFSET_Y = 10, -10
-local INNER_OFFSET_X, INNER_OFFSET_Y = -0.4, 0.4
+-- Centred in the ring (Data.lua, D.MINIMAP_*)
 do
+    local INNER_X, INNER_Y = D.MINIMAP_INNER_OFFSET[1], D.MINIMAP_INNER_OFFSET[2]
+    local ICON_SIZE = D.MINIMAP_ICON_SIZE
+    -- One anchor sets no size: the highlight takes the button's, the client gave it none
     local highlight = minimapBtn:GetHighlightTexture()
     highlight:ClearAllPoints()
-    highlight:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
+    highlight:SetSize(minimapBtn:GetSize())
+    highlight:SetPoint("CENTER", INNER_X, INNER_Y)
 
     local bg = minimapBtn:CreateTexture(nil, "BACKGROUND")
     bg:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-    bg:SetSize(23, 23)
-    bg:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
+    bg:SetSize(ICON_SIZE + 2, ICON_SIZE + 2)
+    bg:SetPoint("CENTER", INNER_X, INNER_Y)
     minimapBtn.background = bg
 
     local icon = minimapBtn:CreateTexture(nil, "ARTWORK")
     icon:SetTexture(ICON)
-    icon:SetSize(21, 21)
-    icon:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
+    icon:SetSize(ICON_SIZE, ICON_SIZE)
+    icon:SetPoint("CENTER", INNER_X, INNER_Y)
     icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
     -- Round, as the client's own minimap buttons: no corner reaches past the ring
     local mask = minimapBtn:CreateMaskTexture()
@@ -80,7 +80,7 @@ do
     local ring = minimapBtn:CreateTexture(nil, "OVERLAY")
     ring:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
     ring:SetSize(53, 53)
-    ring:SetPoint("CENTER", RING_OFFSET_X, RING_OFFSET_Y)
+    ring:SetPoint("CENTER", D.MINIMAP_RING_OFFSET[1], D.MINIMAP_RING_OFFSET[2])
     minimapBtn.ring = ring
 end
 

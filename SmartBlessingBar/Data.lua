@@ -138,6 +138,13 @@ D.GLOW_SCALE = 1.4
 D.GLOW_DURATIONS = { 2, 1.5, 1, 0.75, 0.5 }
 D.ANTS_COLOR  = { r = 1, g = 0.82, b = 0.2, a = 1 } -- SimpleConjureBar's default gold
 
+-- The minimap button's ring sits off its texture's centre: the ring moves by RING_OFFSET, and
+-- the highlight, background and round icon centre in it at INNER_OFFSET (measured in game by
+-- Michel, 2026-10-20). The background is 2 px wider than the icon.
+D.MINIMAP_RING_OFFSET  = { 10, -10 }
+D.MINIMAP_INNER_OFFSET = { -0.4, 0.4 }
+D.MINIMAP_ICON_SIZE    = 21
+
 ---------------------------------------------------------------------------
 -- Defaults
 ---------------------------------------------------------------------------

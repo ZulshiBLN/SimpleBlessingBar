@@ -81,6 +81,20 @@ describe("the blessing and Salvation buttons", function()
         assert.are.same({ "spell", K.normal[1], "raid1" }, head(bless))
     end)
 
+    -- Final release review: a combat starting while auras are already secret still holds the
+    -- Greater entry back, from the last queue - and the buff key follows
+    it("put no Greater entry first at combat start, also while auras are secret", function()
+        local units = { raid1 = { class = "WARRIOR", auras = { aura(M.normal[6]) } } }
+        for i = 2, 4 do units["raid" .. i] = { class = "WARRIOR" } end
+        local ns, bless = login({ group = "raid", units = units }, { M.greater[1] }, 5)
+        assert.are.equal(M.greater[1], bless:GetAttribute("spell1"))
+        STATE.aurasSecret = true
+        FIRE("PLAYER_REGEN_DISABLED")
+        assert.are.same({ "spell", K.normal[1], "raid1" }, head(bless))
+        assert.are.equal(K.normal[1], ns.buffKey:GetAttribute("spell1"))
+        assert.are.same({}, STATE.errors)
+    end)
+
     it("put no Mass Salvation first at combat start for a class with tanks", function()
         local units = { raid1 = { class = "WARRIOR", role = "TANK" } }
         for i = 2, 5 do units["raid" .. i] = { class = "WARRIOR" } end

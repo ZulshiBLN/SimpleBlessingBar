@@ -38,14 +38,17 @@ describe("the minimap button", function()
     -- so the ring is moved and the round icon centred in it
     it("centres a round icon in its ring", function()
         local ns = login()
-        local btn = ns.minimapButton
-        local icon, bg, ring = btn.icon, btn.background, btn.ring
-        assert.are.same({ 21, 21 }, { icon:GetSize() })
-        assert.are.same({ 23, 23 }, { bg:GetSize() })
-        assert.are.same({ "CENTER", -0.4, 0.4 }, { icon:GetPoint() })
-        assert.are.same({ "CENTER", -0.4, 0.4 }, { bg:GetPoint() })
-        assert.are.same({ "CENTER", -0.4, 0.4 }, { btn:GetHighlightTexture():GetPoint() })
-        assert.are.same({ "CENTER", 10, -10 }, { ring:GetPoint() })
+        local D, btn = ns.D, ns.minimapButton
+        local icon, bg, ring, highlight = btn.icon, btn.background, btn.ring, btn:GetHighlightTexture()
+        local inner, ringAt = D.MINIMAP_INNER_OFFSET, D.MINIMAP_RING_OFFSET
+        assert.are.same({ D.MINIMAP_ICON_SIZE, D.MINIMAP_ICON_SIZE }, { icon:GetSize() })
+        assert.are.same({ D.MINIMAP_ICON_SIZE + 2, D.MINIMAP_ICON_SIZE + 2 }, { bg:GetSize() })
+        for _, t in ipairs({ icon, bg, highlight }) do
+            assert.are.same({ "CENTER", inner[1], inner[2] }, { t:GetPoint() })
+        end
+        assert.are.same({ "CENTER", ringAt[1], ringAt[2] }, { ring:GetPoint() })
+        -- One anchor sets no size: the highlight keeps the button's, or it would not show
+        assert.are.same({ btn:GetSize() }, { highlight:GetSize() })
         assert.are.equal(1, #icon.masks)
         assert.are.equal("Interface\\CharacterFrame\\TempPortraitAlphaMask", icon.masks[1]:GetTexture())
     end)

@@ -74,16 +74,32 @@ describe("the buff key", function()
         assert.are.equal(M.normal[1], key:GetAttribute("spell1"))
     end)
 
-    it("keeps its action in combat", function()
+    -- PLAYER_REGEN_DISABLED fires before the lockdown: its refresh writes the key once more,
+    -- then nothing changes it until combat ends
+    it("takes the combat start's action and keeps it in combat", function()
         local _, key = login()
-        STATE.combat = true
-        FIRE("PLAYER_REGEN_DISABLED")
         STATE.units.player.auras = { mine(DEVOTION) }
+        FIRE("PLAYER_REGEN_DISABLED")
+        assert.are.same({ "spell", D.RIGHTEOUS_FURY, "player" }, action(key))
+        STATE.combat = true
+        STATE.units.player.auras = { mine(DEVOTION), mine(D.RIGHTEOUS_FURY) }
         FIRE("UNIT_AURA", "player")
         RUNTIMERS()
         TICK()
-        assert.are.same({ "spell", DEVOTION, "player" }, action(key))
+        assert.are.same({ "spell", D.RIGHTEOUS_FURY, "player" }, action(key))
         assert.are.same({}, STATE.errors)
+    end)
+
+    -- Final release review: a button switched off while auras are secret takes its action
+    -- with it, so the key cannot cast what the bar no longer shows
+    it("follows a switched-off button also while auras are secret", function()
+        local ns, key = login()
+        assert.are.equal(DEVOTION, key:GetAttribute("spell1"))
+        STATE.aurasSecret = true
+        SmartBlessingBarDB.showAura = false
+        ns.Refresh()
+        assert.is_nil(ns.auraButton:GetAttribute("type1"))
+        assert.are_not.equal(DEVOTION, key:GetAttribute("spell1"))
     end)
 
     it("has no action in demo mode, also while auras are secret, and a press prints once", function()

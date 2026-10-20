@@ -64,7 +64,8 @@ local function Update()
 
     -- Righteous Fury matters to a tank only: the role the game reports - a group's role
     -- check sets it; alone the game reports none (Michel, 2026-10-19). Demo mode reads no role.
-    local known = B.Known(D.RIGHTEOUS_FURY)
+    -- Hidden, it casts nothing and does not glow, as the aura button
+    local known = db.showFury and B.Known(D.RIGHTEOUS_FURY)
     local tank = not ns.IsDemo() and UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
     ns.SetIcon(fury, C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY), not (known and tank))
@@ -73,8 +74,11 @@ end
 table.insert(ns.onRefresh, Update)
 
 -- From the settings alone, also while auras are secret: the icons before the first plan (the
--- Priorities tab shows the aura button's spell) and no click action in demo mode
+-- Priorities tab shows the aura button's spell), nothing on a hidden button - a /click or the
+-- buff key could cast it - and no click action in demo mode
 table.insert(ns.onSettings, function()
+    if not db.showAura then SetSpell(aura, nil) ns.SetAnts(aura, false) end
+    if not db.showFury then SetSpell(fury, nil) ns.SetAnts(fury, false) end
     if not aura.shownSpell then
         aura.shownSpell = D.AURAS[db.auraList[1]][1]
         ns.SetIcon(aura, C_Spell.GetSpellTexture(aura.shownSpell), true)

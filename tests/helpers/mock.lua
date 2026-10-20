@@ -588,6 +588,8 @@ issecretvalue = function(v)
   if STATE.secrets and STATE.secrets[v] then return true end
   return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar")
 end
+-- The client's stack text; a fixed mark the specs find
+debugstack = function() return "STACK" end
 -- BugGrabber: its errors are STATE.bugs; addon.load removes it for world.bugGrabber == false
 BugGrabber = { GetDB = function() return STATE.bugs or {} end }
 

@@ -47,8 +47,7 @@ function B.EndRead() read = nil end
 
 -- The error with the stack where it happened, for BugSack, as a rethrow would lose it
 local function WithStack(err)
-    if debugstack then return tostring(err) .. "\n" .. debugstack(2) end
-    return err
+    return tostring(err) .. "\n" .. debugstack(2)
 end
 
 -- fn inside a read: the running one, or one of its own, closed also when fn errors - a
