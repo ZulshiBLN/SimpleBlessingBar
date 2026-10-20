@@ -53,7 +53,7 @@ minimapBtn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highli
 -- highlight, background and round icon centre in it at INNER_OFFSET (measured in game by
 -- Michel, 2026-10-20)
 local RING_OFFSET_X, RING_OFFSET_Y = 10, -10
-local INNER_OFFSET_X, INNER_OFFSET_Y = -1, 1.2
+local INNER_OFFSET_X, INNER_OFFSET_Y = -0.4, 0.4
 do
     local highlight = minimapBtn:GetHighlightTexture()
     highlight:ClearAllPoints()
