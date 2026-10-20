@@ -23,7 +23,9 @@ dir="$work/$addon"
 toc="$dir/$addon.toc"
 [ -f "$toc" ] || fail "no $addon.toc in $addon/"
 
-for file in README.md LICENSE CHANGELOG.md; do
+# Bindings.xml is read by the client itself, the TOC does not list it (ruleset plan
+# 2026-10-20-key-bindings)
+for file in README.md LICENSE CHANGELOG.md Bindings.xml; do
     [ -f "$dir/$file" ] || fail "$file is missing"
 done
 
