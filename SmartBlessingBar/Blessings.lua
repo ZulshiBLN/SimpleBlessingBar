@@ -45,13 +45,14 @@ local read -- { auras = key -> list, known = id -> bool, level = unit -> level }
 function B.BeginRead() read = { auras = {}, known = {}, level = {} } end
 function B.EndRead() read = nil end
 
--- fn inside a read: the running one, or one of its own. A read an error left open is closed
--- by the next refresh's B.BeginRead.
+-- fn inside a read: the running one, or one of its own, closed also when fn errors - a
+-- read left open would serve its old snapshot to the next click. The error goes on.
 function B.WithRead(fn)
     if read then return fn() end
     B.BeginRead()
-    local result = fn()
+    local ok, result = pcall(fn)
     B.EndRead()
+    if not ok then error(result, 0) end
     return result
 end
 

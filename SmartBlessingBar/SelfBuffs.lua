@@ -42,6 +42,14 @@ local function OwnAuraUp(family)
     return false
 end
 
+-- Whether a buff of this spell is on the paladin, from the same read
+local function OwnBuff(spell)
+    for _, a in ipairs(B.Auras("player", true)) do
+        if a.id == spell then return true end
+    end
+    return false
+end
+
 local function Update()
     -- None known: the first family on the list, rank 1, greyed and without ants. Hidden, the
     -- button chooses nothing and leaves nothing a /click could cast.
@@ -58,6 +66,6 @@ local function Update()
     local tank = not ns.IsDemo() and UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
     ns.SetIcon(fury, C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY), not (known and tank))
-    ns.SetAnts(fury, known and tank and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
+    ns.SetAnts(fury, known and tank and not OwnBuff(D.RIGHTEOUS_FURY))
 end
 table.insert(ns.onRefresh, Update)

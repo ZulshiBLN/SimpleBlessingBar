@@ -1,7 +1,7 @@
 -- SmartBlessingBar - the bar
 -- Handle, position and lock, the look, and the layout of its four buttons: aura, Righteous
 -- Fury, blessing and Salvation (ruleset plan 2026-10-19-blessing-core). Out of combat the
--- refresh writes everything; in combat nothing is rewritten and the buttons keep what they
+-- refresh writes what changed; in combat nothing is rewritten and the buttons keep what they
 -- had.
 
 local _, ns = ...
@@ -368,7 +368,7 @@ local function LayoutKey()
     return table.concat(parts, ",")
 end
 
--- Reads the group out of combat and writes everything to the buttons. In combat it does
+-- Reads the group out of combat and writes what changed to the buttons. In combat it does
 -- nothing: aura data is unreadable then and the buttons are protected. The same while the
 -- client keeps auras secret out of combat: the buttons keep what they had.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
@@ -396,10 +396,11 @@ function ns.Refresh(combatStart)
         if not handle.moving then ns.ReAnchor() end
         Arrange(shown)
     end
-    -- One read of the group for every planner and the overview
-    ns.Blessings.BeginRead()
-    for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
+    -- One fresh read of the group for every planner and the overview, closed also on an error
     ns.Blessings.EndRead()
+    ns.Blessings.WithRead(function()
+        for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
+    end)
 end
 
 -- Several events arrive together (a raid's UNIT_AURA); they share one refresh.

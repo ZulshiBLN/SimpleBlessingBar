@@ -158,6 +158,12 @@ describe("the refresh", function()
         TICK()
         assert.is_false(ns.furyButton:IsShown())
         assert.is_truthy(table.concat(writes, " "):find("salvation:SetPoint", 1, true))
+        for i = #writes, 1, -1 do writes[i] = nil end
+        TICK()
+        assert.are.same({}, writes)
+        SmartBlessingBarDB.order = { "SALVATION", "BLESSING", "FURY", "AURA" }
+        TICK()
+        assert.is_truthy(table.concat(writes, " "):find("salvation:SetPoint", 1, true))
     end)
 
     -- A raid's nameplates and targets fire UNIT_AURA all the time; a member's change also

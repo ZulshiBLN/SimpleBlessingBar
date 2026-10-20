@@ -101,3 +101,19 @@ describe("a spell's level", function()
         assert.are.equal(might[1], forParty1())
     end)
 end)
+
+-- A read an error broke off must not serve its old snapshot to the next click or build
+describe("a read broken off by an error", function()
+    it("is closed, so the next read scans fresh", function()
+        local ns = addon.load("enUS", addon.mightFirst())
+        STATE.known = { [D.BLESSINGS.MIGHT.normal[1]] = true }
+        FIRE("PLAYER_LOGIN")
+        local B, plan = ns.Blessings, ns.Blessings.PlanBlessings
+        B.PlanBlessings = function() B.Auras("player") error("broken") end
+        pcall(ns.Refresh)
+        B.PlanBlessings = plan
+        STATE.scans = {}
+        B.WithRead(function() B.Auras("player") end)
+        assert.are.equal(1, (STATE.scans[STATE.units.player] or {}).HELPFUL)
+    end)
+end)
