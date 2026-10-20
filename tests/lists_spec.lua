@@ -90,10 +90,10 @@ describe("the Priorities tab", function()
         assert.are.equal(at.TAB_SUPPLIES + 1, at.TAB_PRIORITIES)
         assert.are.equal(at.TAB_PRIORITIES + 1, at.TAB_ORDER)
         local c = ns.UI.controls
-        -- renewal, Auras title, aura row, an empty line, Blessings title, class rows, buttons,
-        -- overview (ruleset plan 2026-10-19-tab-layout)
-        local order = { top(c.renewMinutes), top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle), top(c.listRows[1]),
-                        top(c.listsDefault), top(c.overviewScroll) }
+        -- renewal title and row, Auras title, aura row, an empty line, Blessings title, class
+        -- rows, buttons, overview (ruleset plans 2026-10-19-tab-layout, 2026-10-20-fury-renew)
+        local order = { top(c.renewTitle), top(c.renewRow), top(c.auraTitle), top(c.auraRow), top(c.blessingsTitle),
+                        top(c.listRows[1]), top(c.listsDefault), top(c.overviewScroll) }
         for i = 2, #order do assert.is_true(order[i] < order[i - 1], "element " .. i) end
         -- half a line between the lists (Michel): the row, then 18 px
         assert.are.equal(24 + 18, top(c.auraRow) - top(c.blessingsTitle))
@@ -102,6 +102,31 @@ describe("the Priorities tab", function()
         assert.is_true(top(c.listRows[1]) < top(c.blessingsTitle))
         assert.is_true(top(c.listRows[5]) > top(c.listsDefault))
         assert.are.equal(page, ns.overviewHost.page)
+    end)
+
+    -- Ruleset plan 2026-10-20-fury-renew, criterion 3: the two renewal times in one row
+    it("puts the two renewal times side by side under their title, the window wide enough", function()
+        local ns = login()
+        openTab(ns)
+        local c = ns.UI.controls
+        local lx, ly = offsets(c.renewRow)
+        local rx, ry = offsets(c.furyRenewRow)
+        assert.are.equal(ly, ry)
+        assert.is_true(lx < rx)
+        assert.is_true(ly < top(c.renewTitle))
+        assert.is_true(ly > top(c.auraTitle))
+        local need = 0
+        for _, renew in ipairs({ c.renewRow, c.furyRenewRow }) do
+            need = math.max(need, renew.label:GetStringWidth() + 16 + 40)
+        end
+        assert.is_true(ns.UI.window:GetWidth() >= 2 * ns.UI.INSET + 2 * need + 20)
+        assert.is_true(rx + c.furyRenewRow:GetWidth() <= ns.UI.window:GetWidth() - ns.UI.INSET)
+        local blessings, fury = D.NUMBER_DEFAULTS.renewMinutes, D.NUMBER_DEFAULTS.furyRenewMinutes
+        assert.are.same({ blessings.min, blessings.max }, { c.renewMinutes.min, c.renewMinutes.max })
+        assert.are.same({ fury.min, fury.max }, { c.furyRenewMinutes.min, c.furyRenewMinutes.max })
+        c.furyRenewMinutes:SetValue(4)
+        assert.are.equal(4, SmartBlessingBarDB.furyRenewMinutes)
+        assert.are.equal(5, SmartBlessingBarDB.renewMinutes)
     end)
 
     it("titles the aura and blessing lists in gold, centred", function()

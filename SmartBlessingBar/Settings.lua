@@ -255,18 +255,29 @@ end
 
 -- Whole-number slider with an input box on the right, bound to a number setting with its
 -- range from D.NUMBER_DEFAULTS. o = { label, key, gap, rows (collects the row frames),
--- onChange }. Returns the slider and the box.
+-- onChange, column }. `column` "left" or "right" puts two sliders side by side in one row,
+-- each half as wide, the right one after the left (ruleset plan 2026-10-20-fury-renew).
+-- Returns the slider, the box and the row (its label as row.label).
+local COLUMN_GAP = 20
 function UI.AddNumberSlider(o)
     local range = D.NUMBER_DEFAULTS[o.key]
     local ROW = 42
     local row = CreateFrame("Frame", nil, page)
     row:SetHeight(ROW)
-    row:SetPoint("TOPLEFT", INSET, Place(ROW, o.gap or 6))
+    local y
+    if o.column == "right" then
+        y = page.columnY -- the left column's row
+    else
+        y = Place(ROW, o.gap or 6)
+        page.columnY = y
+    end
+    row:SetPoint("TOPLEFT", INSET, y)
     if o.rows then o.rows[#o.rows + 1] = row end
 
     local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     label:SetPoint("TOPLEFT", 0, -4)
     SetL(label, o.label)
+    row.label = label
 
     local box = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
     box:SetSize(40, 20)
@@ -314,12 +325,22 @@ function UI.AddNumberSlider(o)
         updating = false
         box:SetText(tostring(db[o.key]))
     end
-    measures[#measures + 1] = function() return label:GetStringWidth() + 16 + 40 end
-    stretchers[#stretchers + 1] = function(w)
-        row:SetWidth(w)
-        slider:SetWidth(w - 4)
+    -- A column needs room for two halves its width, so no label in either is cut
+    measures[#measures + 1] = function()
+        local need = label:GetStringWidth() + 16 + 40
+        if o.column then return 2 * need + COLUMN_GAP end
+        return need
     end
-    return slider, box
+    stretchers[#stretchers + 1] = function(w)
+        local rowW = o.column and (w - COLUMN_GAP) / 2 or w
+        row:SetWidth(rowW)
+        slider:SetWidth(rowW - 4)
+        if o.column == "right" then
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", INSET + (w + COLUMN_GAP) / 2, y)
+        end
+    end
+    return slider, box, row
 end
 
 -- A highlight's speed, 5 steps, 3 = default; a change shows at once (ns.ApplyLook sets the

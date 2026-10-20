@@ -262,8 +262,16 @@ local prioritiesPage = UI.NewPage("TAB_PRIORITIES")
 do
     local B = ns.Blessings
 
-    controls.renewMinutes = UI.AddNumberSlider({ label = "RENEW_LABEL", key = "renewMinutes", gap = 6,
-        onChange = function() ns.Refresh() end })
+    -- The renewal times: blessings and Salvation left, Righteous Fury right (ruleset plan
+    -- 2026-10-20-fury-renew); spell names from the client (localization.md)
+    controls.renewTitle = UI.AddNote("RENEW_LABEL", 6)
+    local function SpellName(id, key) return ns.LocalName(C_Spell.GetSpellName(id), key) end
+    controls.renewMinutes, _, controls.renewRow = UI.AddNumberSlider({
+        label = function() return L.RENEW_BLESSINGS:format(SpellName(D.SALVATION, "SALVATION")) end,
+        key = "renewMinutes", gap = 4, column = "left", onChange = function() ns.Refresh() end })
+    controls.furyRenewMinutes, _, controls.furyRenewRow = UI.AddNumberSlider({
+        label = function() return SpellName(D.RIGHTEOUS_FURY, "RIGHTEOUS_FURY") end,
+        key = "furyRenewMinutes", column = "right", onChange = function() ns.Refresh() end })
     UI.AddSeparator()
 
     local ICON, ICON_GAP, LABEL_W, ROW_GAP = 24, 6, 90, 6

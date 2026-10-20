@@ -21,7 +21,7 @@ The addon loads for paladins only.
 | Button | Left click | Right click |
 |---|---|---|
 | Aura | Cast the first aura of your list no other paladin runs, highest rank you know - highlighted until it runs | – |
-| Righteous Fury | Cast Righteous Fury - highlighted while it is missing and your group's role check made you tank; greyed otherwise, also alone | – |
+| Righteous Fury | Cast Righteous Fury - highlighted while it is missing or about to run out (see the Priorities tab) and your group's role check made you tank; greyed otherwise, also alone | – |
 | Blessings | Cast the next blessing your group needs - highlighted while one is left | Open the Priorities tab |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
 | Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
@@ -135,8 +135,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
   The chat says what was bought and what it cost.
 
 **Priorities** - a middle click on the minimap button opens the window here.
-- Renew with less than this many minutes left: 0 to 15, 5 by default; 0 renews only once a
-  blessing has run out.
+- Renew with less than this many minutes left (0 = once run out), side by side: blessings and
+  Salvation, 0 to 15, 5 by default; Righteous Fury, 0 to 5, 3 by default.
 - **Auras:** the aura list - drag an aura left or right to reorder it.
 - **Blessings:** a row per class, named in its class colour, with its priority list, in two
   columns: drag a blessing left or right to reorder it; a right click switches it off for
