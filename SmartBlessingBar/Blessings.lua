@@ -249,11 +249,14 @@ end
 local IS_BLESSING = {}
 for _, family in ipairs(D.BLESSING_ORDER) do IS_BLESSING[family] = true end
 
--- Whether an aura of mine runs out within the renewal time, so it is renewed before it is
--- gone (ruleset plan 2026-10-19-blessing-steering). An aura without expiry never is.
-local function Expiring(a)
-    return a.expires > 0 and a.expires - GetTime() < db.renewMinutes * 60
+-- Whether a buff runs out within `minutes`, so it is renewed before it is gone (ruleset plan
+-- 2026-10-19-blessing-steering; Righteous Fury's own time, plan 2026-10-20-fury-renew). A
+-- buff without expiry never is.
+function B.Expiring(a, minutes)
+    return a.expires > 0 and a.expires - GetTime() < minutes * 60
 end
+-- Blessings and Salvation renew with the Priorities tab's time
+local function Expiring(a) return B.Expiring(a, db.renewMinutes) end
 
 -- The family of this paladin's blessing on a unit, normal or Greater, or nil - also when it
 -- is about to run out

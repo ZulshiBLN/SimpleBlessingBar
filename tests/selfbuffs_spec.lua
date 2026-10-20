@@ -258,3 +258,60 @@ describe("the Righteous Fury button", function()
         assert.is_nil(ns.furyButton:GetAttribute("type1"))
     end)
 end)
+
+-- Ruleset plan 2026-10-20-fury-renew: Fury is renewed before it runs out, with its own time
+-- (db.furyRenewMinutes), for a tank only
+describe("Righteous Fury's renewal", function()
+    local function tankLogin(role)
+        local units = { player = { class = "PALADIN", role = role } }
+        local ns = addon.load("enUS", { group = "party", units = units })
+        STATE.known[ns.D.RIGHTEOUS_FURY] = true
+        STATE.now = 1000
+        FIRE("PLAYER_LOGIN")
+        return ns
+    end
+    local function furyLeft(ns, seconds)
+        STATE.units.player.auras = { { spellId = ns.D.RIGHTEOUS_FURY, expirationTime = STATE.now + seconds, mine = true } }
+        ns.Refresh()
+        return ns.furyButton.ants:IsShown()
+    end
+
+    it("glows for a tank once less than its renewal time is left", function()
+        local ns = tankLogin("TANK")
+        local minutes = SmartBlessingBarDB.furyRenewMinutes
+        assert.are.equal(ns.D.NUMBER_DEFAULTS.furyRenewMinutes.default, minutes)
+        assert.is_false(furyLeft(ns, minutes * 60 + 30))
+        assert.is_true(furyLeft(ns, minutes * 60 - 30))
+    end)
+
+    it("at 0 glows only once Fury is gone", function()
+        local ns = tankLogin("TANK")
+        SmartBlessingBarDB.furyRenewMinutes = 0
+        assert.is_false(furyLeft(ns, 10))
+        STATE.units.player.auras = {}
+        ns.Refresh()
+        assert.is_true(ns.furyButton.ants:IsShown())
+    end)
+
+    it("never glows without the tank role", function()
+        local ns = tankLogin(nil)
+        assert.is_false(furyLeft(ns, 10))
+        STATE.units.player.auras = {}
+        ns.Refresh()
+        assert.is_false(ns.furyButton.ants:IsShown())
+    end)
+
+    it("is added by settings version 11 to a version 10 file, a saved value kept and clamped", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 10 } })
+        ns.InitDB()
+        local range = ns.D.NUMBER_DEFAULTS.furyRenewMinutes
+        assert.are.equal(ns.D.DB_VERSION, SmartBlessingBarDB.dbVersion)
+        assert.are.equal(range.default, SmartBlessingBarDB.furyRenewMinutes)
+        for saved, expected in pairs({ [1] = 1, [9] = range.max, x = range.default }) do
+            local value = saved == "x" and "soon" or saved
+            ns = addon.load("enUS", { db = { dbVersion = 10, furyRenewMinutes = value } })
+            ns.InitDB()
+            assert.are.equal(expected, SmartBlessingBarDB.furyRenewMinutes, tostring(saved))
+        end
+    end)
+end)

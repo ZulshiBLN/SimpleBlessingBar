@@ -42,10 +42,11 @@ local function OwnAuraUp(family)
     return false
 end
 
--- Whether a buff of this spell is on the paladin, from the same read
-local function OwnBuff(spell)
+-- Whether Righteous Fury holds: on the paladin with more than its own renewal time left
+-- (ruleset plan 2026-10-20-fury-renew). It is self-only, so any Fury on him is his.
+local function FuryHolds()
     for _, a in ipairs(B.Auras("player", true)) do
-        if a.id == spell then return true end
+        if a.id == D.RIGHTEOUS_FURY then return not B.Expiring(a, db.furyRenewMinutes) end
     end
     return false
 end
@@ -66,7 +67,7 @@ local function Update()
     local tank = not ns.IsDemo() and UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
     ns.SetIcon(fury, C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY), not (known and tank))
-    ns.SetAnts(fury, known and tank and not OwnBuff(D.RIGHTEOUS_FURY))
+    ns.SetAnts(fury, known and tank and not FuryHolds())
 end
 table.insert(ns.onRefresh, Update)
 

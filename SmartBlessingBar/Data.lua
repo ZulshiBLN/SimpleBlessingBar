@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SmartBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 10
+D.DB_VERSION = 11
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
@@ -167,6 +167,9 @@ D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
     -- Minutes before an aura of mine runs out at which it is renewed; 0 = once it ran out
     renewMinutes        = { default = 5, min = 0, max = 15, integer = true },
+    -- The same for Righteous Fury, which lasts 30 minutes; version 11 (ruleset plan
+    -- 2026-10-20-fury-renew)
+    furyRenewMinutes    = { default = 3, min = 0, max = 5, integer = true },
     auraAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     furyAntsSpeed       = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
     blessingAntsSpeed   = { default = 3, min = D.ANTS_SPEED_MIN, max = D.ANTS_SPEED_MAX, integer = true },
