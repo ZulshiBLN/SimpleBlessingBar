@@ -1,8 +1,9 @@
 <!-- The keys the game's Key Bindings offer in a section of their own, SmartBlessingBar (ruleset
      plan 2026-10-20-key-bindings). The client reads this file by itself; Locales.lua names the
-     section (BINDING_HEADER_SMARTBLESSINGBAR) and the keys. -->
+     section (BINDING_HEADER_SMARTBLESSINGBAR) and the keys. No header attribute: beside the
+     category it added a sub-header of the same name that broke the list in game. -->
 <Bindings>
-    <Binding name="CLICK SmartBlessingBarBuffAll:LeftButton" header="SMARTBLESSINGBAR" category="BINDING_HEADER_SMARTBLESSINGBAR"/>
+    <Binding name="CLICK SmartBlessingBarBuffAll:LeftButton" category="BINDING_HEADER_SMARTBLESSINGBAR"/>
     <Binding name="CLICK SmartBlessingBarBlessing:MiddleButton" category="BINDING_HEADER_SMARTBLESSINGBAR"/>
     <Binding name="CLICK SmartBlessingBarPrioritiesKey:LeftButton" category="BINDING_HEADER_SMARTBLESSINGBAR"/>
 </Bindings>
