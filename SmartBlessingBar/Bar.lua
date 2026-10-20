@@ -370,8 +370,15 @@ for _, event in ipairs({ "GROUP_ROSTER_UPDATE", "UNIT_AURA", "SPELLS_CHANGED", "
                          "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
     events:RegisterEvent(event)
 end
-events:SetScript("OnEvent", function(_, event)
+-- The unit tokens of group members. A member's aura change fires for his group token too, so
+-- the many from nameplates, the target and pets change nothing the buttons show.
+local function GroupUnit(unit)
+    return unit == "player" or unit:match("^party%d+$") ~= nil or unit:match("^raid%d+$") ~= nil
+end
+
+events:SetScript("OnEvent", function(_, event, unit)
     if not db then return end
+    if event == "UNIT_AURA" and not GroupUnit(unit) then return end
     if event == "PLAYER_REGEN_DISABLED" then
         -- Fires right before the lockdown: the last moment to stop a drag and to write
         -- the freshest state.

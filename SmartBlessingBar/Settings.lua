@@ -631,13 +631,6 @@ function UI.CreateTabs()
     measures[#measures + 1] = ArrangeTabs
 end
 
--- Reloads all values into an open window (after chat commands)
-function ns.RefreshSettingsWindow()
-    if settings:IsShown() then
-        for _, f in ipairs(refreshers) do f() end
-    end
-end
-
 ns.OnLanguageChanged(function()
     ArrangeTabs()
     if settings:IsShown() then RefreshAll() end

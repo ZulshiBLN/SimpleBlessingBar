@@ -106,6 +106,10 @@ end
 -- x ~= x is true only for NaN; math.huge passes the type check but is no number to use
 local function finite(v) return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge end
 
+-- The client's anchor names; SetPoint raises an error on any other
+local ANCHORS = { TOPLEFT = true, TOP = true, TOPRIGHT = true, LEFT = true, CENTER = true, RIGHT = true,
+                  BOTTOMLEFT = true, BOTTOM = true, BOTTOMRIGHT = true }
+
 -- A number from saved data, clamped to [lo, hi]; a wrong type, NaN or infinity becomes the
 -- default.
 local function Num(v, lo, hi, default, integer)
@@ -242,7 +246,7 @@ function ns.InitDB()
     -- that follow create them, so the migration is these checks, and running it twice
     -- changes nothing.
     if type(db.locked) ~= "boolean" then db.locked = false end
-    if type(db.point) ~= "string" or type(db.rel) ~= "string" or not finite(db.x) or not finite(db.y) then
+    if not ANCHORS[db.point] or not ANCHORS[db.rel] or not finite(db.x) or not finite(db.y) then
         db.point, db.rel, db.x, db.y = nil, nil, nil, nil
     end
 

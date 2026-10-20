@@ -14,6 +14,13 @@ ns.OnDBReady(function(d) db = d end)
 local B = {}
 ns.Blessings = B
 
+-- An aura's spell ID, or nil while the game keeps it secret: such a buff counts as unread
+-- (code.md)
+function B.SpellOf(aura)
+    local id = aura.spellId
+    if not issecretvalue(id) then return id end
+end
+
 -- The one test of a known spell; in demo mode every spell counts as known
 function B.Known(id)
     return ns.IsDemo() or IsPlayerSpell(id)
@@ -153,7 +160,7 @@ function B.GivenByOthers(unit, family)
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
         if not aura then return false end
-        local rank = RANKS[aura.spellId]
+        local rank = RANKS[B.SpellOf(aura) or 0]
         if rank and rank.family == family and not mine[aura.auraInstanceID]
            and (rank.greater or rank.strength >= best) then
             return true
@@ -184,7 +191,7 @@ local function MyBlessingOn(unit)
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return end
-        local rank = RANKS[aura.spellId]
+        local rank = RANKS[B.SpellOf(aura) or 0]
         if rank and IS_BLESSING[rank.family] then
             if Expiring(aura) then return end
             return rank.family
@@ -260,7 +267,7 @@ local function Roster()
     return list
 end
 
--- The blessing queue: entries { spell, unit, greater, hold }, Greater entries first, then
+-- The blessing queue: entries { spell, unit, greater, hold, class }, Greater entries first, then
 -- normal ones in group order. `hold`: a Greater entry for a class with exceptions, which must
 -- not come first at combat start - the exceptions after it could not follow in combat. Also
 -- returns the Symbols its Greater entries use. Out of combat only.
@@ -303,7 +310,7 @@ function B.PlanBlessings()
             if useGreater and (lacking == 0 or symbols > 0) then
                 if lacking > 0 then
                     symbols = symbols - 1
-                    queue[#queue + 1] = { spell = spell, unit = target, greater = true, hold = exceptions }
+                    queue[#queue + 1] = { spell = spell, unit = target, greater = true, hold = exceptions, class = class }
                 end
                 for _, m in ipairs(members) do
                     if m.chosen == family and m.fitsGreater then covered[m] = true end
@@ -332,7 +339,8 @@ local function HasSalvation(unit, renew)
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
         if not aura then return false end
-        if (aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION)
+        local id = B.SpellOf(aura)
+        if (id == D.SALVATION or id == D.MASS_SALVATION)
            and not (mine[aura.auraInstanceID] and Expiring(aura)) then
             return true
         end
@@ -383,7 +391,8 @@ function B.PlanSalvation(symbolsUsed)
         if useMass then
             symbols = symbols - 1
             -- `hold`: with tanks it reaches, their Revokes could not follow in combat
-            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = massLacking[1].unit, greater = true, hold = massTanks > 0 }
+            mass[#mass + 1] = { spell = D.MASS_SALVATION, unit = massLacking[1].unit, greater = true,
+                                hold = massTanks > 0, class = class }
         end
         for _, m in ipairs(lacking) do
             if not (useMass and m.fitsMass) and B.Fits(D.SALVATION, m.unit) then
@@ -417,16 +426,16 @@ function B.Describe(unit, class)
         while true do
             local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
             if not aura then break end
-            local id, source = aura.spellId, aura.sourceUnit
-            if class == "PALADIN" and not issecretvalue(id) and B.AURA_FAMILY[id]
+            local id, source = B.SpellOf(aura), aura.sourceUnit
+            if class == "PALADIN" and B.AURA_FAMILY[id or 0]
                and source and UnitIsUnit(source, unit) then
                 d.aura = { spell = id, source = source, expires = 0 }
             end
-            local rank = RANKS[aura.spellId]
+            local rank = RANKS[id or 0]
             local key = rank and IS_BLESSING[rank.family] and rank.family
-                or (aura.spellId == D.SALVATION or aura.spellId == D.MASS_SALVATION) and "SALVATION"
+                or (id == D.SALVATION or id == D.MASS_SALVATION) and "SALVATION"
             if key then
-                d.carried[key] = { spell = aura.spellId, mine = mine[aura.auraInstanceID] == true,
+                d.carried[key] = { spell = id, mine = mine[aura.auraInstanceID] == true,
                                    source = aura.sourceUnit, expires = aura.expirationTime }
             end
             i = i + 1
@@ -491,8 +500,8 @@ local function TakenAuras()
             while true do
                 local aura = C_UnitAuras.GetAuraDataByIndex(unit, n, "HELPFUL")
                 if not aura then break end
-                local id, source = aura.spellId, aura.sourceUnit
-                if not issecretvalue(id) and AURA_FAMILY[id]
+                local id, source = B.SpellOf(aura), aura.sourceUnit
+                if AURA_FAMILY[id or 0]
                    and not (source and UnitIsUnit(source, "player")) then
                     taken[AURA_FAMILY[id]] = true
                 end
@@ -528,7 +537,7 @@ function B.HasMyBlessing(unit)
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return false end
-        if not issecretvalue(aura.spellId) and RANKS[aura.spellId] then return true end
+        if RANKS[B.SpellOf(aura) or 0] then return true end
         i = i + 1
     end
 end

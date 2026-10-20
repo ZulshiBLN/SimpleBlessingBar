@@ -271,3 +271,18 @@ describe("Salvation", function()
         assert.are.same({}, B.PlanSalvation())
     end)
 end)
+
+-- code.md: a secret value is never used. A buff whose spell the game keeps secret counts as
+-- unread - as the aura choice and Buff & Run already treat it
+describe("a buff whose spell is secret", function()
+    it("counts as not given for blessings and Salvation", function()
+        local B = plan({ group = "party", units = { party1 = { class = "WARRIOR",
+            auras = { aura(M.normal[6]), aura(D.SALVATION) } } } }, basics())
+        STATE.secrets = { [M.normal[6]] = true, [D.SALVATION] = true }
+        local blessings = entries((B.PlanBlessings()))
+        assert.are.same({ M.normal[6], "party1" }, blessings[#blessings])
+        local salvation = entries(B.PlanSalvation())
+        assert.are.same({ D.SALVATION, "party1" }, salvation[#salvation])
+        assert.are.same({}, STATE.errors)
+    end)
+end)

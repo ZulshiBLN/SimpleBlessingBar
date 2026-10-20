@@ -54,7 +54,17 @@ function Methods:SetWordWrap(v) self.wordWrap = v end
 function Methods:GetWordWrap() return rawget(self, "wordWrap") ~= false end
 -- The client keeps a moved frame's place unless told not to
 function Methods:SetDontSavePosition(v) self.dontSavePosition = v end
-function Methods:SetPoint(...) Guard(self, "SetPoint"); self.points[#self.points + 1] = { ... } end
+-- The client refuses an anchor name it does not know, for the point and the relative point
+local ANCHORS = { TOPLEFT = true, TOP = true, TOPRIGHT = true, LEFT = true, CENTER = true, RIGHT = true,
+                  BOTTOMLEFT = true, BOTTOM = true, BOTTOMRIGHT = true }
+function Methods:SetPoint(...)
+  Guard(self, "SetPoint")
+  for i = 1, 3 do
+    local v = select(i, ...)
+    if (i == 1 or type(v) == "string") and not ANCHORS[v] then error("SetPoint: invalid anchor " .. tostring(v), 2) end
+  end
+  self.points[#self.points + 1] = { ... }
+end
 function Methods:ClearAllPoints() Guard(self, "ClearAllPoints"); self.points = {} end
 function Methods:GetPoint(i) local p = self.points[i or 1]; if p then return unpack(p) end end
 function Methods:SetSize(w, h) self.w, self.h = w, h end

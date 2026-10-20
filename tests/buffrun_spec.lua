@@ -142,6 +142,23 @@ describe("Buff & Run's middle click", function()
     end)
 end)
 
+-- After a /reload in combat the files load in the lockdown, where no secure attribute can be
+-- written: the hidden button gets its action from the first refresh after combat
+describe("Buff & Run after a /reload in combat", function()
+    it("blesses once combat has ended", function()
+        local ns = addon.load("enUS", { combat = true })
+        STATE.known = {}
+        for i = 1, 6 do STATE.known[M.normal[i]] = true end
+        STATE.units.target = { class = "WARRIOR" }
+        FIRE("PLAYER_LOGIN")
+        STATE.combat = false
+        FIRE("PLAYER_REGEN_ENABLED")
+        RUNCLICK(ns.blessingButton, "MiddleButton", true)
+        assert.are.same({ { spell = M.normal[6], unit = "target" } }, STATE.casts)
+        assert.are.same({}, STATE.errors)
+    end)
+end)
+
 -- The switch on the General tab, the tooltip line and settings version 9 (ruleset plan
 -- 2026-10-20-buff-and-run, phase 4)
 describe("Buff & Run's switch and tooltip", function()

@@ -127,6 +127,27 @@ describe("the refresh", function()
         RUNTIMERS()
         assert.are.equal("2", b.count:GetText())
     end)
+
+    -- A raid's nameplates and targets fire UNIT_AURA all the time; a member's change also
+    -- fires for his group token
+    it("follows the auras of group members only", function()
+        local _, D, b = login({ known = known(19740), group = "party", units = { party1 = { class = "WARRIOR" } } })
+        assert.are.equal("2", b.count:GetText())
+        STATE.units.player.auras = myMight(D)
+        for _, unit in ipairs({ "nameplate1", "target", "focus", "partypet1" }) do
+            FIRE("UNIT_AURA", unit)
+            RUNTIMERS()
+            assert.are.equal("2", b.count:GetText(), unit)
+        end
+        FIRE("UNIT_AURA", "party1")
+        RUNTIMERS()
+        assert.are.equal("1", b.count:GetText())
+        STATE.units.party1.auras = myMight(D)
+        STATE.units.party1.auras[1].mine = true
+        FIRE("UNIT_AURA", "raid1")
+        RUNTIMERS()
+        assert.are.equal("", b.count:GetText())
+    end)
 end)
 
 describe("the handle", function()
@@ -153,6 +174,19 @@ describe("the handle", function()
         RUNSCRIPT(ns.handle, "OnMouseDown", "LeftButton")
         assert.is_not_true(ns.bar.moving)
         assert.are.same({ "LEFT", UIParent, "BOTTOMLEFT", 300, 400 }, { ns.bar:GetPoint() })
+    end)
+
+    -- project.md: a damaged file must not break the addon. The client refuses an unknown
+    -- anchor name, which stopped the login before the minimap button and the options.
+    it("starts at the start position when the saved anchor is no anchor", function()
+        for _, saved in ipairs({ { point = "FOO", rel = "BOTTOMLEFT" }, { point = "LEFT", rel = "left" } }) do
+            local ns = addon.load("enUS", { db = { dbVersion = 9, point = saved.point, rel = saved.rel, x = 300, y = 400 } })
+            FIRE("PLAYER_LOGIN")
+            assert.are.same({}, STATE.errors)
+            assert.is_truthy(STATE.options and STATE.options.registered)
+            assert.are.equal("LEFT", SmartBlessingBarDB.point) -- re-anchored from the start position
+            assert.is_truthy(ns)
+        end
     end)
 end)
 

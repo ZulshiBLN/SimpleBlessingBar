@@ -90,6 +90,16 @@ describe("the aura button", function()
         assert.is_false(b.ants:IsShown())
     end)
 
+    -- code.md: a secret value is never used; an aura whose spell is secret counts as unread
+    it("glows on while the game keeps my aura's spell secret", function()
+        local _, D, b = withAuras()
+        STATE.units.player.auras = { { spellId = D.AURAS.DEVOTION[1], expirationTime = 0, mine = true } }
+        STATE.secrets = { [D.AURAS.DEVOTION[1]] = true }
+        refresh()
+        assert.is_true(b.ants:IsShown())
+        assert.are.same({}, STATE.errors)
+    end)
+
     it("moves on from an aura another paladin runs, also one I run too", function()
         local _, D, b = withAuras(own({ group = "party", units = { party1 = paladin(D_DEV) } }))
         assert.are.equal(D.AURAS.RETRIBUTION[1], b:GetAttribute("spell1"))

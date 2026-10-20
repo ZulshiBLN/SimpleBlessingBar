@@ -185,6 +185,26 @@ describe("the queue buttons' tooltips and right click", function()
         assert.are.same({ { L.LEFTCLICK, className(ns, "WARRIOR") } }, tip(salv))
     end)
 
+    it("name the class of a Greater Blessing whose target left the raid in combat", function()
+        local units = {}
+        for i = 1, 4 do units["raid" .. i] = { class = "WARRIOR", subgroup = 1 } end
+        local ns, bless = login({ group = "raid", units = units }, { M.greater[1] }, 5)
+        assert.are.equal(M.greater[1], bless:GetAttribute("spell1"))
+        STATE.combat = true
+        STATE.units[bless:GetAttribute("unit1")] = nil
+        assert.are.same({ ns.L.LEFTCLICK, className(ns, "WARRIOR") }, tip(bless)[1])
+        assert.are.same({}, STATE.errors)
+    end)
+
+    -- After a /reload in combat the first refresh waits for its end
+    it("say nothing is left before the first refresh", function()
+        local ns = addon.load("enUS", addon.mightFirst({ combat = true }))
+        FIRE("PLAYER_LOGIN")
+        tip(ns.blessingButton)
+        assert.are.same({}, STATE.errors)
+        assert.are.equal(ns.L.QUEUE_EMPTY, GameTooltip.lines[1][1])
+    end)
+
     it("name the right click on the blessing button also with nothing to cast", function()
         local ns, bless = login()
         STATE.units.player.auras = { aura(M.normal[6], true) }

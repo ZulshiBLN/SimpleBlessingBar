@@ -41,7 +41,7 @@ local function OwnAuraUp(family)
     while true do
         local data = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL|PLAYER")
         if not data then return false end
-        if B.AURA_FAMILY[data.spellId] == family then return true end
+        if B.AURA_FAMILY[B.SpellOf(data) or 0] == family then return true end
         i = i + 1
     end
 end

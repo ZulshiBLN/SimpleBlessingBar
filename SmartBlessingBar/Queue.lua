@@ -17,11 +17,11 @@ local function SalvationName()
 end
 
 -- Whom the head reaches: the class for a Greater Blessing or Mass Salvation, which reach all
--- of it, else the member (ruleset plan 2026-10-20-button-tips-glow)
+-- of it, else the member (ruleset plan 2026-10-20-button-tips-glow). The planner names the
+-- class: in combat the member may have left the group.
 local function Target(head)
     if head.greater then
-        local class = select(2, UnitClass(head.unit))
-        return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[class], "CLASS_" .. class)
+        return ns.LocalName(LOCALIZED_CLASS_NAMES_MALE[head.class], "CLASS_" .. head.class)
     end
     return (UnitName(head.unit))
 end
@@ -47,7 +47,8 @@ end
 
 local function NewQueueButton(name, colorKey, speedKey, idleSpell, title)
     local b = ns.CreateSecureButton(name, ns.bar)
-    b.idleSpell, b.title = idleSpell, title
+    -- Nothing left until the first refresh, which waits for the end of combat after a /reload
+    b.idleSpell, b.title, b.left = idleSpell, title, 0
     ns.AttachAnts(b, colorKey, speedKey)
     b:SetScript("OnEnter", ShowTooltip)
     b:SetScript("OnLeave", ns.HideTooltip)
@@ -69,17 +70,18 @@ ns.blessingButton, ns.salvationButton = blessing, salvation
 -- ActionButtonUseKeyDown on and off.
 local buffRun = CreateFrame("Button", "SmartBlessingBarBuffRun", UIParent, "SecureActionButtonTemplate")
 buffRun:RegisterForClicks("AnyUp", "AnyDown")
-SetAttr(buffRun, "type", "spell")
-SetAttr(buffRun, "unit", "target")
 local BUFF_RUN_MACRO = "/click SmartBlessingBarBuffRun LeftButton 1\n/targetfriendplayer"
 
 -- The middle click's attributes as every refresh leaves them, also at combat start: the
 -- macro while the switch is on (General tab), and no spell, so in combat a middle click only
--- moves on
+-- moves on. The hidden button's action is written here too, not at load: after a /reload in
+-- combat the files load in the lockdown, where SetAttr writes nothing.
 local function ArmBuffRun()
     local on = db.buffRun
     SetAttr(blessing, "type3", on and "macro" or nil)
     SetAttr(blessing, "macrotext3", on and BUFF_RUN_MACRO or nil)
+    SetAttr(buffRun, "type", "spell")
+    SetAttr(buffRun, "unit", "target")
     SetAttr(buffRun, "spell", nil)
 end
 
