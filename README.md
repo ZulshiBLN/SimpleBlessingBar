@@ -8,7 +8,9 @@ Exceptions for single characters come later.
 
 ## Installation
 
-Install it with the CurseForge app, Wago or WowUp, which also keep it up to date. By hand:
+Install it with the CurseForge app,
+[Wago](https://addons.wago.io/addons/smartblessingbar) or WowUp, which also keep it up to
+date. By hand:
 download `SmartBlessingBar-vX.Y.Z-forever.zip` from the
 [GitHub releases](https://github.com/ZulshiBLN/SmartBlessingBar/releases) and unpack it into
 `Interface\AddOns` of your WoW Forever installation, so that
