@@ -147,8 +147,6 @@ function ns.RefreshSymbols()
     ns.UpdateSymbols(blessing, B.AnyGreaterKnown())
 end
 
--- From the settings alone, also while auras are secret: Buff & Run's macro, no click action in
--- demo mode, and an icon before the first plan
 ---------------------------------------------------------------------------
 -- The buff key (ruleset plan 2026-10-20-key-bindings): a hidden button a key binding clicks.
 -- It carries the left-click action of the first switched-on, glowing button in the bar's
@@ -159,6 +157,8 @@ end
 local buffKey = CreateFrame("Button", "SmartBlessingBarBuffAll", UIParent, "SecureActionButtonTemplate")
 buffKey:RegisterForClicks("AnyUp", "AnyDown")
 ns.buffKey = buffKey
+-- The left-click action it copies; made once, as it is read every refresh
+local ACTION = { "type1", "spell1", "unit1" }
 
 local function ArmBuffKey()
     local source
@@ -170,7 +170,7 @@ local function ArmBuffKey()
             break
         end
     end
-    for _, attr in ipairs({ "type1", "spell1", "unit1" }) do
+    for _, attr in ipairs(ACTION) do
         SetAttr(buffKey, attr, source and source:GetAttribute(attr) or nil)
     end
 end
@@ -182,12 +182,16 @@ buffKey:HookScript("OnClick", function(self, _, down)
     if spell then ns.DemoCast(spell) end
 end)
 
+-- From the settings alone, also while auras are secret: Buff & Run's macro, no click action in
+-- demo mode - the buff key's too - and an icon before the first plan. The lists are made
+-- once, as this runs every refresh.
+local CLICK_BUTTONS, ICON_BUTTONS = { blessing, salvation, buffKey }, { blessing, salvation }
 table.insert(ns.onSettings, function()
     ArmBuffRun()
-    for _, b in ipairs({ blessing, salvation, buffKey }) do
-        if ns.IsDemo() then SetAttr(b, "type1", nil) end
+    if ns.IsDemo() then
+        for _, b in ipairs(CLICK_BUTTONS) do SetAttr(b, "type1", nil) end
     end
-    for _, b in ipairs({ blessing, salvation }) do
+    for _, b in ipairs(ICON_BUTTONS) do
         if not b.iconTexture then ns.SetIcon(b, C_Spell.GetSpellTexture(b.idleSpell), true) end
     end
 end)

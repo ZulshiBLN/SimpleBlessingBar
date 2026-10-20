@@ -75,7 +75,7 @@ describe("the buff key", function()
     end)
 
     it("keeps its action in combat", function()
-        local ns, key = login()
+        local _, key = login()
         STATE.combat = true
         FIRE("PLAYER_REGEN_DISABLED")
         STATE.units.player.auras = { mine(DEVOTION) }
@@ -84,7 +84,6 @@ describe("the buff key", function()
         TICK()
         assert.are.same({ "spell", DEVOTION, "player" }, action(key))
         assert.are.same({}, STATE.errors)
-        assert.is_truthy(ns)
     end)
 
     it("has no action in demo mode, also while auras are secret, and a press prints once", function()
@@ -166,8 +165,16 @@ describe("the key bindings", function()
         assert.is_nil(xml:find('category="ADDONS"', 1, true))
     end)
 
+    -- The labels a load leaves behind stay in the shared globals: cleared before each load, so
+    -- each class shows its own
+    local function clearLabels()
+        BINDING_HEADER_SMARTBLESSINGBAR = nil
+        for _, b in ipairs(BINDINGS) do _G["BINDING_NAME_" .. b[1]] = nil end
+    end
+
     it("carry the locale's texts for every class and follow a paladin's language switch", function()
         for _, class in ipairs({ "PALADIN", "MAGE" }) do
+            clearLabels()
             local ns = addon.load("deDE", { class = class })
             assert.are.equal("SmartBlessingBar", BINDING_HEADER_SMARTBLESSINGBAR)
             for _, b in ipairs(BINDINGS) do
@@ -183,7 +190,8 @@ describe("the key bindings", function()
     end)
 
     -- code.md's list of globals, which luacheck cannot see in `_G["..."]` writes: the
-    -- .luacheckrc names, the binding labels and frame names starting SmartBlessingBar
+    -- .luacheckrc names and the binding labels. Frame names are written by the mock's
+    -- CreateFrame, outside the recording, as the ruleset README's K3 says.
     it("leave no global outside the rule's list, for a paladin and another class", function()
         local config = { files = {} }
         local chunk = assert(loadfile(".luacheckrc"))
