@@ -196,17 +196,6 @@ describe("Buff & Run's switch and tooltip", function()
         assert.are.equal(1, #STATE.casts)
     end)
 
-    it("is not switched in combat, and says so", function()
-        local ns = login({ class = "MAGE" })
-        local check = general(ns)
-        STATE.combat = true
-        check:SetChecked(false)
-        RUNSCRIPT(check, "OnClick")
-        assert.is_true(SmartBlessingBarDB.buffRun)
-        assert.is_true(check:GetChecked())
-        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
-    end)
-
     it("names the middle click in the blessing tooltip while switched on", function()
         local ns, b = login({ class = "MAGE" })
         local L = ns.L

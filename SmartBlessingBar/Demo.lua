@@ -56,7 +56,7 @@ local SYLLABLES = { "ar", "bel", "cor", "dra", "el", "fen", "gor", "hal", "is", 
 -- (Michel's look in game)
 local WIDE_SYLLABLES = { "maw", "wan", "dom", "mag", "wom", "dum", "mow", "gan" }
 local WISDOM_CLASSES = { PALADIN = true, PRIEST = true, SHAMAN = true, MAGE = true, WARLOCK = true, DRUID = true }
-local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
+local DAMAGE_ROLES = D.DAMAGE_ROLES
 local DPS_CLASSES = { "WARRIOR", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID" }
 local RAID_SIZE, HOLDERS = 40, 3
 

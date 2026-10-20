@@ -280,7 +280,7 @@ local function UpdateSymbols(b, shown)
         b.symbols:SetText("")
         return
     end
-    local n = ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
+    local n = ns.Blessings.Symbols()
     local c = WHITE
     if n == 0 then c = db.symbolZeroColor
     elseif db.symbolWarn > 0 and n <= db.symbolWarn then c = db.symbolWarnColor end

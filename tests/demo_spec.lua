@@ -117,16 +117,14 @@ describe("demo mode", function()
         assert.is_false(db.demo)
     end)
 
+    -- The window closes at combat start and does not open in it, so the switch is out of reach
     it("cannot be switched in combat", function()
-        local ns, db = login()
+        local ns = login()
         SlashCmdList.SMARTBLESSINGBAR("")
         STATE.combat = true
-        local cb = ns.UI.controls.demo
-        cb:SetChecked(true)
-        RUNSCRIPT(cb, "OnClick")
-        assert.is_false(db.demo)
-        assert.is_false(cb:GetChecked())
-        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
-        assert.are.same({}, STATE.errors)
+        FIRE("PLAYER_REGEN_DISABLED")
+        assert.is_false(ns.UI.window:IsShown())
+        SlashCmdList.SMARTBLESSINGBAR("")
+        assert.is_false(ns.UI.window:IsShown())
     end)
 end)

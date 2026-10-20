@@ -91,8 +91,6 @@ end
 ---------------------------------------------------------------------------
 -- Roles and presence (ruleset plan 2026-10-19-blessing-core)
 ---------------------------------------------------------------------------
--- The game's group roles, mapped onto ours
-local DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 
 -- A member's role: the one the game reports, where the class can play it - a damage dealer
 -- gets the class's first damage role - else the class default. Nothing sets a role by hand
@@ -104,7 +102,7 @@ function B.RoleOf(unit, class)
     if ns.IsDemo() then return roles[1] end
     local reported = UnitGroupRolesAssigned(unit)
     for _, role in ipairs(roles) do
-        if role == reported or (reported == "DAMAGER" and DAMAGE_ROLES[role]) then return role end
+        if role == reported or (reported == "DAMAGER" and D.DAMAGE_ROLES[role]) then return role end
     end
     return roles[1]
 end
@@ -212,9 +210,11 @@ local function BestGreater(family)
     return best, strength
 end
 
-local function Symbols()
+-- The Symbols of Kings in the bags; demo mode's sample count
+function B.Symbols()
     return ns.IsDemo() and D.DEMO_SYMBOLS or C_Item.GetItemCount(D.SYMBOL_OF_KINGS)
 end
+local Symbols = B.Symbols
 
 -- The first family of the unit's class list, as the player edited it, this paladin can give
 -- the unit - a normal rank or the best known Greater one fits - and others have not given

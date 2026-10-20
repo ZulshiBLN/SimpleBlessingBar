@@ -141,28 +141,12 @@ end)
 
 UI.AddSeparator()
 
--- Demo mode changes the protected bar, so it is refused in combat
-controls.demo = UI.AddCheck("OPT_DEMO", "demo", function()
-    if InCombatLockdown() then
-        db.demo = not db.demo
-        controls.demo:SetChecked(db.demo)
-        ns.Print(L.NOT_IN_COMBAT)
-        return
-    end
-    ns.Refresh()
-end)
+-- Demo mode and Buff & Run change the protected bar's buttons; neither can be switched in
+-- combat, as the window closes at its start and does not open in it
+controls.demo = UI.AddCheck("OPT_DEMO", "demo", function() ns.Refresh() end)
 
--- Buff & Run on the blessing button's middle click (ruleset plan 2026-10-20-buff-and-run):
--- it writes the button's attributes, so it is refused in combat as demo mode is
-controls.buffRun = UI.AddCheck("OPT_BUFF_RUN", "buffRun", function()
-    if InCombatLockdown() then
-        db.buffRun = not db.buffRun
-        controls.buffRun:SetChecked(db.buffRun)
-        ns.Print(L.NOT_IN_COMBAT)
-        return
-    end
-    ns.Refresh()
-end)
+-- Buff & Run on the blessing button's middle click (ruleset plan 2026-10-20-buff-and-run)
+controls.buffRun = UI.AddCheck("OPT_BUFF_RUN", "buffRun", function() ns.Refresh() end)
 
 -- Bottom row: "Report bug" left, "Reload UI" right (own translations, so they follow the language)
 do

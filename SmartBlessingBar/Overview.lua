@@ -13,7 +13,9 @@ if not ns.enabled then return end
 local D, L, B = ns.D, ns.L, ns.Blessings
 
 local ROW_H, ICON, ICON_GAP, GLOW = 20, 16, 3, 1.8
-local SLOTS = { "MIGHT", "WISDOM", "KINGS", "LIGHT", "SALVATION" } -- D.BLESSING_ORDER, Salvation last
+-- The blessing families, Salvation last
+local SLOTS = { unpack(D.BLESSING_ORDER) }
+SLOTS[#SLOTS + 1] = "SALVATION"
 -- A row (Michel): 10 px, the name, 10 px, the aura, 5 px, the slots, 10 px to the column's edge
 local MARGIN, NAME_GAP, AURA_GAP = 10, 10, 5
 local SLOTS_W = #SLOTS * (ICON + ICON_GAP)

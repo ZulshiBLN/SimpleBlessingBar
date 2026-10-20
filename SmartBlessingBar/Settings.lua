@@ -65,7 +65,6 @@ function UI.NewPage(titleKey)
     page = pg
     return pg
 end
-function UI.CurrentPage() return page end
 
 -- Reserves vertical space on the current page and returns its top offset
 function UI.Place(height, gap)
@@ -362,7 +361,6 @@ end
 local DD_WIDTH = 180
 -- Room a dropdown keeps beside its text: the text inset and the arrow
 local DD_TEXT_PAD = 50
-UI.DD_TEXT_PAD = DD_TEXT_PAD
 function UI.AddDropdown(labelKey, options, get, set)
     local ROW = 28
     local row = CreateFrame("Frame", nil, page)

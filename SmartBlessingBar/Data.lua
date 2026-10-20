@@ -44,6 +44,8 @@ D.GREATER_EQUALS = {
 -- Roles (ruleset plan 2026-10-19-blessing-core)
 ---------------------------------------------------------------------------
 D.ROLES = { "TANK", "HEALER", "MELEE", "RANGED", "CASTER" }
+-- The roles the game reports as one, "DAMAGER"
+D.DAMAGE_ROLES = { MELEE = true, RANGED = true, CASTER = true }
 -- The roles a class can play, its default first: the role used when the game reports none.
 -- The shaman counts as one that can tank, as sources disagree (ruleset decisions 2026-10-19).
 D.CLASS_ROLES = {

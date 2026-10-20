@@ -149,5 +149,4 @@ function ns.RegisterOptionsPanel()
 
     local category = Settings.RegisterCanvasLayoutCategory(panel, "SmartBlessingBar")
     Settings.RegisterAddOnCategory(category)
-    ns.settingsCategory = category
 end
