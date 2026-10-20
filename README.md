@@ -179,7 +179,7 @@ paste it as a new issue on GitHub. It contains no character name or realm.
 
 ## Key bindings
 
-Under Options > Key Bindings > AddOns > SmartBlessingBar:
+In a section of their own under Options > Key Bindings > SmartBlessingBar:
 
 | Key | Action |
 |---|---|

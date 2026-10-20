@@ -139,8 +139,8 @@ end)
 describe("the key bindings", function()
     local BINDINGS = {
         { "CLICK SmartBlessingBarBuffAll:LeftButton", "KEY_BUFF_ALL" },
-        { "CLICK SmartBlessingBarBlessing:MiddleButton", "KEY_BUFF_RUN" },
-        { "CLICK SmartBlessingBarPrioritiesKey:LeftButton", "KEY_PRIORITIES" },
+        { "CLICK SmartBlessingBarBlessing:MiddleButton", "BUFF_RUN" },
+        { "CLICK SmartBlessingBarPrioritiesKey:LeftButton", "SET_PRIORITIES" },
     }
 
     it("are exactly the three in Bindings.xml, under the addon's header", function()
@@ -149,6 +149,10 @@ describe("the key bindings", function()
         for name in xml:gmatch('<Binding name="([^"]+)"') do names[#names + 1] = name end
         assert.are.same({ BINDINGS[1][1], BINDINGS[2][1], BINDINGS[3][1] }, names)
         assert.is_truthy(xml:find('header="SMARTBLESSINGBAR"', 1, true))
+        -- A section of their own (Michel), not the shared AddOns one
+        local _, inSection = xml:gsub('category="BINDING_HEADER_SMARTBLESSINGBAR"', "")
+        assert.are.equal(3, inSection)
+        assert.is_nil(xml:find('category="ADDONS"', 1, true))
     end)
 
     it("carry the locale's texts for every class and follow a paladin's language switch", function()
