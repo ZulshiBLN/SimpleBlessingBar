@@ -364,7 +364,7 @@ do
             icon:SetScript("OnEnter", function(self)
                 local ids = row.spells(self.family)
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
-                GameTooltip:SetSpellByID(B.Rank(ids) or ids[1])
+                GameTooltip:SetSpellByID(B.Best(ids) or ids[1])
                 GameTooltip:Show()
             end)
             icon:SetScript("OnLeave", ns.HideTooltip)

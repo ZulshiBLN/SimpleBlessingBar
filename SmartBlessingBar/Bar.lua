@@ -351,7 +351,10 @@ function ns.Refresh(combatStart)
     -- A drag in progress keeps its own anchor; it re-anchors when it ends
     if not handle.moving then ns.ReAnchor() end
     Arrange(shown)
+    -- One read of the group for every planner and the overview
+    ns.Blessings.BeginRead()
     for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end
+    ns.Blessings.EndRead()
 end
 
 -- Several events arrive together (a raid's UNIT_AURA); they share one refresh.

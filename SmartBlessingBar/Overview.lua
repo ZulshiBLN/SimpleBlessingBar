@@ -185,7 +185,7 @@ end
 -- Members sorted by class in D.CLASS_ORDER, in group order within a class; the first half,
 -- rounded up, in the left column, the rest in the right, both from the top
 local function Build()
-    local members = B.Overview()
+    local members = B.WithRead(B.Overview)
     for i, d in ipairs(members) do d.index = i end
     table.sort(members, function(a, b)
         if a.class ~= b.class then return CLASS_RANK[a.class] < CLASS_RANK[b.class] end

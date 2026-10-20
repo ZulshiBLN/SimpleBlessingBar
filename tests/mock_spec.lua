@@ -219,3 +219,21 @@ describe("secret auras in the mock", function()
         assert.is_false(pcall(f.SetPoint, f, "LEFT", UIParent, "left"))
     end)
 end)
+
+-- The counts the read specs rely on (reads_spec.lua): a scan per person and filter, and every
+-- IsPlayerSpell question
+describe("the mock's read counts", function()
+    it("count a scan per person and filter, and each spell question", function()
+        addon.load("enUS", { group = "party", units = { party1 = { class = "MAGE", auras = {
+            { spellId = 1, expirationTime = 0 }, { spellId = 2, expirationTime = 0, mine = true } } } } })
+        local r = STATE.units.party1
+        STATE.units.raid9 = r -- a second token of the same person
+        for i = 1, 3 do C_UnitAuras.GetAuraDataByIndex("party1", i, "HELPFUL") end
+        C_UnitAuras.GetAuraDataByIndex("raid9", 1, "HELPFUL")
+        C_UnitAuras.GetAuraDataByIndex("party1", 1, "HELPFUL|PLAYER")
+        assert.are.same({ HELPFUL = 2, ["HELPFUL|PLAYER"] = 1 }, STATE.scans[r])
+        IsPlayerSpell(5)
+        IsPlayerSpell(5)
+        assert.are.equal(2, STATE.spellChecks[5])
+    end)
+end)

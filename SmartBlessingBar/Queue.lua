@@ -90,7 +90,7 @@ end
 -- nothing and says once, on the press, what it would cast.
 blessing:SetScript("PreClick", function(_, mouseButton, down)
     if mouseButton ~= "MiddleButton" or InCombatLockdown() or not db.buffRun then return end
-    local spell = B.BuffRunSpell("target")
+    local spell = B.WithRead(function() return B.BuffRunSpell("target") end)
     if spell and C_Spell.GetSpellCooldown(spell).startTime > 0 then
         SetAttr(blessing, "type3", nil)
         return

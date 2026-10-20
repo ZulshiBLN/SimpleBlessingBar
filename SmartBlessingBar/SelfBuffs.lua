@@ -36,21 +36,19 @@ ns.auraButton, ns.furyButton = aura, fury
 fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
 
 -- Whether the paladin's own aura of this family is on him; another paladin's does not count
+-- Read in demo mode too: the glow follows the real aura there
 local function OwnAuraUp(family)
-    local i = 1
-    while true do
-        local data = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL|PLAYER")
-        if not data then return false end
-        if B.AURA_FAMILY[B.SpellOf(data) or 0] == family then return true end
-        i = i + 1
+    for _, a in ipairs(B.Auras("player", true)) do
+        if a.mine and B.AURA_FAMILY[a.id] == family then return true end
     end
+    return false
 end
 
 local function Update()
     -- None known: the first family on the list, rank 1, greyed and without ants. Hidden, the
     -- button chooses nothing and leaves nothing a /click could cast.
     local family = db.showAura and B.ChooseAura() or nil
-    local spell = family and B.Rank(D.AURAS[family])
+    local spell = family and B.Best(D.AURAS[family])
     aura.shownSpell = spell or D.AURAS[db.auraList[1]][1]
     SetSpell(aura, spell)
     aura.icon:SetTexture(C_Spell.GetSpellTexture(aura.shownSpell))

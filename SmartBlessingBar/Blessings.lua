@@ -34,25 +34,93 @@ function B.SpellOf(aura)
     return aura.spellId
 end
 
--- The one test of a known spell; in demo mode every spell counts as known
-function B.Known(id)
-    return ns.IsDemo() or IsPlayerSpell(id)
+---------------------------------------------------------------------------
+-- One read of the group (ruleset plan 2026-10-20-performance-pvp): between B.BeginRead and
+-- B.EndRead - a refresh, a Buff & Run click, an overview build - each person's buffs are
+-- scanned once and each spell's "known" and each member's level asked once. Outside a read
+-- every call asks the client fresh.
+---------------------------------------------------------------------------
+local read -- { auras = key -> list, known = id -> bool, level = unit -> level } during a read
+
+function B.BeginRead() read = { auras = {}, known = {}, level = {} } end
+function B.EndRead() read = nil end
+
+-- fn inside a read: the running one, or one of its own. A read an error left open is closed
+-- by the next refresh's B.BeginRead.
+function B.WithRead(fn)
+    if read then return fn() end
+    B.BeginRead()
+    local result = fn()
+    B.EndRead()
+    return result
 end
 
--- The highest known entry of a list ordered by rank, or nil
-function B.Rank(list)
-    local best
-    for _, id in ipairs(list) do
-        if B.Known(id) then best = id end
+-- A person's key: his GUID, so `player`, `raidN` and `target` share one snapshot; a GUID the
+-- client withholds or keeps secret falls back to the token
+local function PersonKey(unit)
+    local guid = UnitGUID(unit)
+    if guid == nil or issecretvalue(guid) then return unit end
+    return guid
+end
+
+-- A unit's readable buffs, { id, expires, mine, source } each, in the client's order
+local function Scan(unit)
+    local mineIds, list = {}, {}
+    local i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
+        if not aura then break end
+        if B.SpellOf(aura) then mineIds[aura.auraInstanceID] = true end
+        i = i + 1
     end
-    return best
+    i = 1
+    while true do
+        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
+        if not aura then break end
+        local id = B.SpellOf(aura)
+        if id then
+            list[#list + 1] = { id = id, expires = aura.expirationTime,
+                                mine = mineIds[aura.auraInstanceID] == true, source = aura.sourceUnit }
+        end
+        i = i + 1
+    end
+    return list
+end
+
+local NONE = {}
+
+-- The buffs a unit carries. Demo mode reads none; `real` reads them there too - the aura
+-- button's own aura - kept apart from demo mode's empty answer.
+function B.Auras(unit, real)
+    local demo = ns.IsDemo()
+    if demo and not real then return NONE end
+    if not read then return Scan(unit) end
+    local key = PersonKey(unit)
+    local list = read.auras[key]
+    if not list then
+        list = Scan(unit)
+        read.auras[key] = list
+    end
+    return list
+end
+
+-- The one test of a known spell; in demo mode every spell counts as known
+function B.Known(id)
+    if ns.IsDemo() then return true end
+    if not read then return IsPlayerSpell(id) end
+    local known = read.known[id]
+    if known == nil then
+        known = IsPlayerSpell(id)
+        read.known[id] = known
+    end
+    return known
 end
 
 -- Whether any Greater Blessing or Mass Salvation is known - only then is a Symbol of Kings
 -- of use
 function B.AnyGreaterKnown()
     for _, family in ipairs(D.BLESSING_ORDER) do
-        if B.Rank(D.BLESSINGS[family].greater) then return true end
+        if B.Best(D.BLESSINGS[family].greater) then return true end
     end
     return B.Known(D.MASS_SALVATION)
 end
@@ -80,22 +148,45 @@ function B.InRange(spell, unit)
     return UnitIsUnit(unit, "player") or C_Spell.IsSpellInRange(spell, unit) == true
 end
 
+-- The level a spell is learned at, a constant of the spell, kept for the session. Only a
+-- positive answer is kept: nil means the client has not loaded it yet (code.md).
+local learnedAt = {}
+local function Learned(spell)
+    local learned = learnedAt[spell]
+    if not learned then
+        learned = C_Spell.GetSpellLevelLearned(spell)
+        if learned and learned > 0 then learnedAt[spell] = learned end
+    end
+    return learned
+end
+
+local function LevelOf(unit)
+    if not read then return UnitLevel(unit) end
+    local level = read.level[unit]
+    if level == nil then
+        level = UnitLevel(unit) or false
+        read.level[unit] = level
+    end
+    return level or nil
+end
+
 -- Whether the game lets a spell land on a unit's level. A level the game does not give sets
 -- no limit; demo mode sets none either.
 function B.Fits(spell, unit)
     if ns.IsDemo() then return true end
-    local learned, level = C_Spell.GetSpellLevelLearned(spell), UnitLevel(unit)
+    local learned, level = Learned(spell), LevelOf(unit)
     if not learned or learned <= 0 or not level or level <= 0 then return true end
     return level >= learned - D.LEVEL_GAP
 end
 
--- The highest known entry of a list ordered by rank that fits the unit, or nil
-function B.RankFor(list, unit)
-    local best
-    for _, id in ipairs(list) do
-        if B.Known(id) and B.Fits(id, unit) then best = id end
+-- The best known entry of a list ordered by rank - IDs do not rise with rank (Data.lua) - and
+-- its index, or nil. With a unit only ranks that fit him count.
+function B.Best(list, unit)
+    local best, index
+    for i, id in ipairs(list) do
+        if B.Known(id) and (not unit or B.Fits(id, unit)) then best, index = id, i end
     end
-    return best
+    return best, index
 end
 
 ---------------------------------------------------------------------------
@@ -129,55 +220,18 @@ for family, f in pairs(D.BLESSINGS) do
 end
 B.RANKS = RANKS
 
--- The index of the best normal rank of a family this paladin knows, 0 for none
-function B.BestKnownNormal(family)
-    local best = 0
-    for i, id in ipairs(D.BLESSINGS[family].normal) do
-        if B.Known(id) then best = i end
-    end
-    return best
-end
-
--- The aura instances on a unit this paladin cast ("HELPFUL|PLAYER")
-local function MineOn(unit)
-    local mine, i = {}, 1
-    if ns.IsDemo() then return mine end
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
-        if not aura then return mine end
-        if B.SpellOf(aura) then mine[aura.auraInstanceID] = true end
-        i = i + 1
-    end
-end
-
--- The index of the best normal rank of a family this paladin knows that fits the unit, 0 for
--- none
-local function BestFittingNormal(family, unit)
-    local best = 0
-    for i, id in ipairs(D.BLESSINGS[family].normal) do
-        if B.Known(id) and B.Fits(id, unit) then best = i end
-    end
-    return best
-end
-
 -- Whether another paladin gave the unit this family: in its Greater form, or a normal rank
 -- at least the best one of this paladin's that fits the unit. A lower rank counts as missing
 -- - casting it again is worth it (Michel, 2026-10-19). Read out of combat only.
 function B.GivenByOthers(unit, family)
-    if ns.IsDemo() then return false end -- demo mode reads no auras
-    local mine = MineOn(unit)
-    local best = BestFittingNormal(family, unit)
-    local i = 1
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
-        if not aura then return false end
-        local rank = RANKS[B.SpellOf(aura) or 0]
-        if rank and rank.family == family and not mine[aura.auraInstanceID]
-           and (rank.greater or rank.strength >= best) then
+    local best = select(2, B.Best(D.BLESSINGS[family].normal, unit)) or 0
+    for _, a in ipairs(B.Auras(unit)) do
+        local rank = RANKS[a.id]
+        if rank and rank.family == family and not a.mine and (rank.greater or rank.strength >= best) then
             return true
         end
-        i = i + 1
     end
+    return false
 end
 
 ---------------------------------------------------------------------------
@@ -190,34 +244,26 @@ for _, family in ipairs(D.BLESSING_ORDER) do IS_BLESSING[family] = true end
 
 -- Whether an aura of mine runs out within the renewal time, so it is renewed before it is
 -- gone (ruleset plan 2026-10-19-blessing-steering). An aura without expiry never is.
-local function Expiring(aura)
-    return aura.expirationTime > 0 and aura.expirationTime - GetTime() < db.renewMinutes * 60
+local function Expiring(a)
+    return a.expires > 0 and a.expires - GetTime() < db.renewMinutes * 60
 end
 
 -- The family of this paladin's blessing on a unit, normal or Greater, or nil - also when it
 -- is about to run out
 local function MyBlessingOn(unit)
-    if ns.IsDemo() then return end
-    local i = 1
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
-        if not aura then return end
-        local rank = RANKS[B.SpellOf(aura) or 0]
+    for _, a in ipairs(B.Auras(unit)) do
+        local rank = a.mine and RANKS[a.id]
         if rank and IS_BLESSING[rank.family] then
-            if Expiring(aura) then return end
+            if Expiring(a) then return end
             return rank.family
         end
-        i = i + 1
     end
 end
 
 -- The best known Greater rank of a family: its ID and strength, or nil
 local function BestGreater(family)
-    local best, strength
-    for i, id in ipairs(D.BLESSINGS[family].greater) do
-        if B.Known(id) then best, strength = id, D.GREATER_EQUALS[family][i] end
-    end
-    return best, strength
+    local best, index = B.Best(D.BLESSINGS[family].greater)
+    if best then return best, D.GREATER_EQUALS[family][index] end
 end
 
 -- The Symbols of Kings in the bags; demo mode's sample count
@@ -232,8 +278,8 @@ local Symbols = B.Symbols
 function B.ChosenFamily(unit, class)
     for _, family in ipairs(db.classLists[class or select(2, UnitClass(unit))].order) do
         local f = D.BLESSINGS[family]
-        local greater = B.Rank(f.greater)
-        if (B.RankFor(f.normal, unit) or (greater and B.Fits(greater, unit)))
+        local greater = B.Best(f.greater)
+        if (B.Best(f.normal, unit) or (greater and B.Fits(greater, unit)))
            and not B.GivenByOthers(unit, family) then
             return family
         end
@@ -318,7 +364,7 @@ function B.PlanBlessings()
                 end
             end
             -- The stronger form wins; between equals the group decides (Michel, 2026-10-19)
-            local normalStrength = B.BestKnownNormal(family)
+            local normalStrength = select(2, B.Best(D.BLESSINGS[family].normal)) or 0
             local useGreater = greaterStrength > normalStrength
                 or (greaterStrength == normalStrength and IsInRaid() and lacking >= D.RAID_GREATER_MIN)
             if useGreater and (lacking == 0 or symbols > 0) then
@@ -335,7 +381,7 @@ function B.PlanBlessings()
 
     for _, m in ipairs(order) do
         if m.chosen and not m.done and not covered[m] then
-            local spell = B.RankFor(D.BLESSINGS[m.chosen].normal, m.unit)
+            local spell = B.Best(D.BLESSINGS[m.chosen].normal, m.unit)
             if spell and B.InRange(spell, m.unit) then
                 queue[#queue + 1] = { spell = spell, unit = m.unit }
             end
@@ -347,19 +393,12 @@ end
 -- Whether a unit carries Salvation or Mass Salvation, from anyone. With `renew`, one of mine
 -- about to run out counts as absent - for a non-tank; a tank's Revoke sees every Salvation.
 local function HasSalvation(unit, renew)
-    if ns.IsDemo() then return false end
-    local mine = renew and MineOn(unit) or {}
-    local i = 1
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
-        if not aura then return false end
-        local id = B.SpellOf(aura)
-        if (id == D.SALVATION or id == D.MASS_SALVATION)
-           and not (mine[aura.auraInstanceID] and Expiring(aura)) then
+    for _, a in ipairs(B.Auras(unit)) do
+        if (a.id == D.SALVATION or a.id == D.MASS_SALVATION) and not (renew and a.mine and Expiring(a)) then
             return true
         end
-        i = i + 1
     end
+    return false
 end
 
 -- The Salvation queue: Salvation for every member whose role is not tank, Revoke for a tank
@@ -435,30 +474,22 @@ function B.Describe(unit, class)
     local d = { unit = unit, class = class, role = B.RoleOf(unit, class), carried = {} }
     d.visible = demo or UnitIsVisible(unit)
     if d.visible and not demo then
-        local mine = MineOn(unit)
-        local i = 1
-        while true do
-            local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL")
-            if not aura then break end
-            local id, source = B.SpellOf(aura), aura.sourceUnit
-            if class == "PALADIN" and B.AURA_FAMILY[id or 0]
-               and source and UnitIsUnit(source, unit) then
-                d.aura = { spell = id, source = source, expires = 0 }
+        for _, a in ipairs(B.Auras(unit)) do
+            if class == "PALADIN" and B.AURA_FAMILY[a.id] and a.source and UnitIsUnit(a.source, unit) then
+                d.aura = { spell = a.id, source = a.source, expires = 0 }
             end
-            local rank = RANKS[id or 0]
+            local rank = RANKS[a.id]
             local key = rank and IS_BLESSING[rank.family] and rank.family
-                or (id == D.SALVATION or id == D.MASS_SALVATION) and "SALVATION"
+                or (a.id == D.SALVATION or a.id == D.MASS_SALVATION) and "SALVATION"
             if key then
-                d.carried[key] = { spell = id, mine = mine[aura.auraInstanceID] == true,
-                                   source = aura.sourceUnit, expires = aura.expirationTime }
+                d.carried[key] = { spell = a.id, mine = a.mine, source = a.source, expires = a.expires }
             end
-            i = i + 1
         end
     end
     local chosen = B.ChosenFamily(unit, class)
     if chosen and not Done(chosen, MyBlessingOn(unit)) then
         local f = D.BLESSINGS[chosen]
-        d.next = { family = chosen, spell = B.RankFor(f.normal, unit) or B.Rank(f.greater) }
+        d.next = { family = chosen, spell = B.Best(f.normal, unit) or B.Best(f.greater) }
     end
     -- With no chosen family the range test is skipped
     d.greyed = not B.Eligible(unit) or (d.next ~= nil and not B.InRange(d.next.spell, unit))
@@ -500,7 +531,7 @@ B.AURA_FAMILY = AURA_FAMILY
 -- as with blessings (Michel, 2026-10-19).
 local function TakenAuras()
     local taken = {}
-    if ns.IsDemo() then return taken end
+    if ns.IsDemo() then return taken end -- reads no auras; skips the roster too
     local members, subgroup = B.Members(), nil
     if IsInRaid() then
         for i, unit in ipairs(members) do
@@ -510,16 +541,10 @@ local function TakenAuras()
     for i, unit in ipairs(members) do
         if not UnitIsUnit(unit, "player") and select(2, UnitClass(unit)) == "PALADIN" and UnitIsVisible(unit)
            and (not subgroup or select(3, GetRaidRosterInfo(i)) == subgroup) then
-            local n = 1
-            while true do
-                local aura = C_UnitAuras.GetAuraDataByIndex(unit, n, "HELPFUL")
-                if not aura then break end
-                local id, source = B.SpellOf(aura), aura.sourceUnit
-                if AURA_FAMILY[id or 0]
-                   and not (source and UnitIsUnit(source, "player")) then
-                    taken[AURA_FAMILY[id]] = true
+            for _, a in ipairs(B.Auras(unit)) do
+                if AURA_FAMILY[a.id] and not (a.source and UnitIsUnit(a.source, "player")) then
+                    taken[AURA_FAMILY[a.id]] = true
                 end
-                n = n + 1
             end
         end
     end
@@ -531,7 +556,7 @@ end
 function B.ChooseAura()
     local taken, firstKnown = TakenAuras(), nil
     for _, family in ipairs(db.auraList) do
-        if B.Rank(D.AURAS[family]) then
+        if B.Best(D.AURAS[family]) then
             firstKnown = firstKnown or family
             if not taken[family] then return family end
         end
@@ -546,14 +571,10 @@ end
 -- Whether the unit carries a blessing of mine, normal or Greater, also one running out: a
 -- second would replace it. Salvation and auras take no blessing slot and do not count.
 function B.HasMyBlessing(unit)
-    if ns.IsDemo() then return false end -- demo mode reads no auras
-    local i = 1
-    while true do
-        local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
-        if not aura then return false end
-        if RANKS[B.SpellOf(aura) or 0] then return true end
-        i = i + 1
+    for _, a in ipairs(B.Auras(unit)) do
+        if a.mine and RANKS[a.id] then return true end
     end
+    return false
 end
 
 -- The spell for the unit: nil unless it is a friendly player, alive and in reach, carrying
@@ -566,7 +587,7 @@ function B.BuffRunSpell(unit)
     local list = db.classLists[select(2, UnitClass(unit))]
     if not list then return end
     for _, family in ipairs(list.order) do
-        local spell = B.RankFor(D.BLESSINGS[family].normal, unit)
+        local spell = B.Best(D.BLESSINGS[family].normal, unit)
         if spell and not B.GivenByOthers(unit, family) then
             if B.InRange(spell, unit) then return spell end
             return

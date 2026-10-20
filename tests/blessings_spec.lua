@@ -25,19 +25,37 @@ local function first(list, n)
     return out
 end
 
-describe("rank", function()
+describe("the best rank", function()
     it("takes the highest known rank by rank order, not by ID", function()
         local ns = addon.load("enUS")
         local devotion = ns.D.AURAS.DEVOTION
         -- the premise that makes this test able to fail: rank 2 has the larger ID
         assert.is_true(devotion[2] > devotion[3])
         STATE.known = known(first(devotion, 3))
-        assert.are.equal(devotion[3], ns.Blessings.Rank(devotion))
+        assert.are.equal(devotion[3], (ns.Blessings.Best(devotion)))
     end)
 
     it("returns nothing when no rank is known", function()
         local ns = addon.load("enUS")
-        assert.is_nil(ns.Blessings.Rank(ns.D.AURAS.DEVOTION))
+        assert.is_nil(ns.Blessings.Best(ns.D.AURAS.DEVOTION))
+    end)
+
+    it("returns the rank's index in the list too", function()
+        local ns = addon.load("enUS")
+        local might = ns.D.BLESSINGS.MIGHT.normal
+        STATE.known = known(first(might, 4))
+        assert.are.same({ might[4], 4 }, { ns.Blessings.Best(might) })
+    end)
+
+    -- The game refuses a rank learned more than ten levels above the target (level_spec.lua)
+    it("with a unit, takes the best rank that fits him", function()
+        local ns = addon.load("enUS", { group = "party", units = { party1 = { class = "WARRIOR", level = 10 } } })
+        local might = ns.D.BLESSINGS.MIGHT.normal
+        STATE.known = known(might)
+        STATE.learned = {}
+        for i, id in ipairs(might) do STATE.learned[id] = ({ 4, 12, 22, 32, 42, 52, 60 })[i] end
+        assert.are.same({ might[2], 2 }, { ns.Blessings.Best(might, "party1") })
+        assert.are.same({ might[#might], #might }, { ns.Blessings.Best(might) })
     end)
 end)
 

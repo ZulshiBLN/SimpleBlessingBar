@@ -503,6 +503,13 @@ C_UnitAuras = {
     if STATE.aurasSecret then error("Auras cannot be accessed when secret while tainted by 'SmartBlessingBar'") end
     local r = U(u)
     if not r then return end
+    -- A scan is the reads from index 1 on: STATE.scans[record][filter] counts them, so the
+    -- tokens of one person count together
+    if i == 1 then
+      STATE.scans = STATE.scans or {}
+      STATE.scans[r] = STATE.scans[r] or {}
+      STATE.scans[r][filter or ""] = (STATE.scans[r][filter or ""] or 0) + 1
+    end
     local n = 0
     for _, a in ipairs(r.auras or {}) do
       if a.mine or not (filter or ""):find("PLAYER") then
@@ -608,4 +615,9 @@ C_ClassColor = {
 GetMoney = function() return STATE.money or 0 end
 GetTime = function() return STATE.now or 0 end
 C_CurrencyInfo = { GetCoinTextureString = function(copper) return copper .. "c" end }
-IsPlayerSpell = function(id) return STATE.known[id] == true end
+-- STATE.spellChecks[id] counts the questions
+IsPlayerSpell = function(id)
+  STATE.spellChecks = STATE.spellChecks or {}
+  STATE.spellChecks[id] = (STATE.spellChecks[id] or 0) + 1
+  return STATE.known[id] == true
+end
