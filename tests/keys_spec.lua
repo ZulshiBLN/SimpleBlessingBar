@@ -1,6 +1,6 @@
 -- The key bindings (ruleset plan 2026-10-20-key-bindings). The buff key carries the left-click
--- action of the first switched-on, glowing aura, Fury or blessing button in the bar's order -
--- the blessing button's being the group's next blessing; Salvation never.
+-- action of the first switched-on, glowing aura, Fury, blessing or Salvation button in the
+-- bar's order - the blessing button's being the group's next blessing.
 
 local addon = require("addon")
 
@@ -39,12 +39,23 @@ describe("the buff key", function()
         assert.are.same({}, STATE.errors)
     end)
 
-    -- Not a tank: a tank gets no Salvation, so its button would not glow
-    it("never carries Salvation, and nothing once none of the three glows", function()
+    -- Michel, after testing: Salvation too, in its place in the bar's order. Not a tank: a
+    -- tank gets no Salvation, so its button would not glow.
+    it("carries Salvation after the others, and nothing once none of the four glows", function()
         local ns, key = login({ units = { player = { class = "PALADIN" } } })
         carry(ns, mine(DEVOTION), mine(M.normal[1]))
         assert.are.equal(D.SALVATION, ns.salvationButton:GetAttribute("spell1"))
+        assert.are.same(action(ns.salvationButton), action(key))
+        carry(ns, mine(DEVOTION), mine(M.normal[1]), mine(D.SALVATION))
         assert.are.same({}, action(key))
+    end)
+
+    -- A tank carrying Salvation gets Revoke from the Salvation button, and so from the key
+    it("carries the Salvation button's Revoke for a tank", function()
+        local ns, key = login()
+        STATE.known[D.REVOKE] = true
+        carry(ns, mine(DEVOTION), mine(D.RIGHTEOUS_FURY), mine(M.normal[1]), mine(D.SALVATION))
+        assert.are.same({ "spell", D.REVOKE, "player" }, action(key))
     end)
 
     it("follows the bar's order and skips a switched-off button", function()

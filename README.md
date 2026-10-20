@@ -183,7 +183,7 @@ In a section of their own under Options > Key Bindings > SmartBlessingBar:
 
 | Key | Action |
 |---|---|
-| Cast next buff | One press, one cast: what the first highlighted of the aura, Righteous Fury and blessing buttons would cast, in the bar's order - the blessing button's being your group's next blessing. Never Salvation. |
+| Cast next buff | One press, one cast: what the first highlighted button of the bar would cast, in the bar's order - the aura, Righteous Fury, your group's next blessing, its next Salvation, Mass Salvation or Revoke. |
 | Buff & Run | The blessing button's middle click: blesses the target, then targets the next friendly player. Also with the blessing button hidden. One player per press - holding the key does not repeat it. |
 | Set priorities | Opens or closes the settings on the Priorities tab; not in combat. |
 

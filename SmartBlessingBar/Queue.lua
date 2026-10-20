@@ -151,21 +151,21 @@ end
 -- demo mode, and an icon before the first plan
 ---------------------------------------------------------------------------
 -- The buff key (ruleset plan 2026-10-20-key-bindings): a hidden button a key binding clicks.
--- It carries the left-click action of the first switched-on, glowing aura, Fury or blessing
--- button in the bar's order - the blessing button's being the group's next blessing
--- (Michel); Salvation never. Written with the bar, so it too keeps its action in combat.
+-- It carries the left-click action of the first switched-on, glowing button in the bar's
+-- order - the blessing button's being the group's next blessing, the Salvation button's its
+-- Salvation, Mass Salvation or Revoke (Michel). Written with the bar, so it too keeps its
+-- action in combat.
 ---------------------------------------------------------------------------
 local buffKey = CreateFrame("Button", "SmartBlessingBarBuffAll", UIParent, "SecureActionButtonTemplate")
 buffKey:RegisterForClicks("AnyUp", "AnyDown")
 ns.buffKey = buffKey
-local KEY_SOURCES = { AURA = true, FURY = true, BLESSING = true }
 
 local function ArmBuffKey()
     local source
     for _, key in ipairs(db.order) do
-        local entry = KEY_SOURCES[key] and ns.BAR_BUTTONS[key]
-        local b = entry and entry[1]()
-        if b and db[entry[2]] and b.antsShown then
+        local entry = ns.BAR_BUTTONS[key]
+        local b = entry[1]()
+        if db[entry[2]] and b.antsShown then
             source = b
             break
         end
@@ -193,7 +193,7 @@ table.insert(ns.onSettings, function()
 end)
 
 -- A hidden button plans nothing: its empty queue also leaves nothing a /click could cast.
--- After the aura and Fury buttons (SelfBuffs.lua loads first), so the buff key sees all three.
+-- After the aura and Fury buttons (SelfBuffs.lua loads first), so the buff key sees all four.
 table.insert(ns.onRefresh, function(combatStart)
     local queue, symbolsUsed = {}, 0
     if db.showBlessing then queue, symbolsUsed = B.PlanBlessings() end
