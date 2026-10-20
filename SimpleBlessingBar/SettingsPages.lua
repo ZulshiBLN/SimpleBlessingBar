@@ -152,6 +152,18 @@ controls.demo = UI.AddCheck("OPT_DEMO", "demo", function()
     ns.Refresh()
 end)
 
+-- Buff & Run on the blessing button's middle click (ruleset plan 2026-10-20-buff-and-run):
+-- it writes the button's attributes, so it is refused in combat as demo mode is
+controls.buffRun = UI.AddCheck("OPT_BUFF_RUN", "buffRun", function()
+    if InCombatLockdown() then
+        db.buffRun = not db.buffRun
+        controls.buffRun:SetChecked(db.buffRun)
+        ns.Print(L.NOT_IN_COMBAT)
+        return
+    end
+    ns.Refresh()
+end)
+
 -- Bottom row: "Report bug" left, "Reload UI" right (own translations, so they follow the language)
 do
     local reload = UI.AddButton(general, "RELOAD_UI", function() ReloadUI() end)

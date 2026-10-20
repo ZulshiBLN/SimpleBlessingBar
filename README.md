@@ -29,6 +29,13 @@ The addon loads for paladins only.
 A middle click on the handle opens or closes the settings; hover it for a tooltip with the
 lock state and its clicks.
 
+**Buff & Run** - a middle click on the blessing button blesses the player you target and then
+targets the next friendly player, so you can bless passing players by clicking again and
+again. Each gets the first blessing of his class's list he lacks, in the highest normal rank
+that fits him; one carrying a blessing of yours is passed. A click during the global cooldown
+does nothing, so nobody is skipped; in combat a click only moves on. It can be switched off on
+the General tab.
+
 **Auras** come from a priority list on the Priorities tab, so paladins need not agree who runs
 which: the button casts the first aura on your list that you know and no other paladin of your
 group runs - in a raid, of your subgroup, as an aura reaches no further. An aura you share with
@@ -105,8 +112,9 @@ closes when combat starts and opens again when combat ends. Every change takes e
 - **Demo mode**: plans a blessing and Salvation for every class, each with its default role,
   shows a sample Symbol count, and treats every aura and blessing as learned. Clicks cast
   nothing; the chat says what would be cast. The overview shows a made-up raid of 40 instead
-  of your group. Demo mode is off after every login and cannot be
-  switched in combat.
+  of your group. Demo mode is off after every login and cannot be switched in combat.
+- **Buff & Run** on the blessing button's middle click, on by default; not switched in
+  combat.
 - Report bug, and Reload UI.
 
 **Tracking**

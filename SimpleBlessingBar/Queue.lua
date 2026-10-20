@@ -9,6 +9,8 @@ if not ns.enabled then return end
 
 local D, L, B = ns.D, ns.L, ns.Blessings
 local SetAttr = ns.SetAttr
+local db
+ns.OnDBReady(function(d) db = d end)
 
 local function SalvationName()
     return ns.LocalName(C_Spell.GetSpellName(D.SALVATION), "SALVATION")
@@ -37,6 +39,8 @@ local function ShowTooltip(b)
         -- Entries left but none to cast: every one held at combat start
         GameTooltip:AddLine(b.left > 0 and L.QUEUE_HELD or L.QUEUE_EMPTY, 1, 1, 1)
     end
+    local middle = b.middleClickText and b.middleClickText()
+    if middle then GameTooltip:AddDoubleLine(L.MIDDLECLICK, middle, 1, 1, 1) end
     if b.rightClickText then GameTooltip:AddDoubleLine(L.RIGHTCLICK, b.rightClickText(), 1, 1, 1) end
     GameTooltip:Show()
 end
@@ -70,10 +74,12 @@ SetAttr(buffRun, "unit", "target")
 local BUFF_RUN_MACRO = "/click SimpleBlessingBarBuffRun LeftButton 1\n/targetfriendplayer"
 
 -- The middle click's attributes as every refresh leaves them, also at combat start: the
--- macro, and no spell, so in combat a middle click only moves on
+-- macro while the switch is on (General tab), and no spell, so in combat a middle click only
+-- moves on
 local function ArmBuffRun()
-    SetAttr(blessing, "type3", "macro")
-    SetAttr(blessing, "macrotext3", BUFF_RUN_MACRO)
+    local on = db.buffRun
+    SetAttr(blessing, "type3", on and "macro" or nil)
+    SetAttr(blessing, "macrotext3", on and BUFF_RUN_MACRO or nil)
     SetAttr(buffRun, "spell", nil)
 end
 
@@ -81,7 +87,7 @@ end
 -- global cooldown the click does nothing at all, so no player is passed by. Demo mode casts
 -- nothing and says once, on the press, what it would cast.
 blessing:SetScript("PreClick", function(_, mouseButton, down)
-    if mouseButton ~= "MiddleButton" or InCombatLockdown() then return end
+    if mouseButton ~= "MiddleButton" or InCombatLockdown() or not db.buffRun then return end
     local spell = B.BuffRunSpell("target")
     if spell and C_Spell.GetSpellCooldown(spell).startTime > 0 then
         SetAttr(blessing, "type3", nil)
@@ -98,6 +104,7 @@ end)
 -- A right click on the blessing button opens the lists that steer it, on its release; it
 -- casts nothing, as no type2 is set. Not in combat, as the minimap button's middle click.
 blessing.rightClickText = function() return L.SET_PRIORITIES end
+blessing.middleClickText = function() return db.buffRun and L.BUFF_RUN end
 blessing:HookScript("OnClick", function(_, mouseButton, down)
     if mouseButton ~= "RightButton" or down then return end
     if InCombatLockdown() then ns.Print(L.NOT_IN_COMBAT) return end

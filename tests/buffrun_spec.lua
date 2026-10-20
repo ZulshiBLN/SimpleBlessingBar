@@ -141,3 +141,75 @@ describe("Buff & Run's middle click", function()
         assert.is_truthy(CHAT[#CHAT]:find(ns.LocalName(C_Spell.GetSpellName(best), "BLESSING_WISDOM"), 1, true))
     end)
 end)
+
+-- The switch on the General tab, the tooltip line and settings version 9 (ruleset plan
+-- 2026-10-20-buff-and-run, phase 4)
+describe("Buff & Run's switch and tooltip", function()
+    local function general(ns)
+        SlashCmdList.SIMPLEBLESSINGBAR("")
+        for i, page in ipairs(ns.UI.pages) do
+            if page.titleKey == "TAB_GENERAL" then RUNSCRIPT(ns.UI.tabs[i], "OnClick") end
+        end
+        return ns.UI.controls.buffRun
+    end
+
+    local function tip(b)
+        RUNSCRIPT(b, "OnEnter")
+        local out = {}
+        for i, l in ipairs(GameTooltip.lines) do out[i] = { l[1], l[2] } end
+        return out
+    end
+
+    it("is on by default; switched off, the middle click does nothing", function()
+        local ns, b = login({ class = "MAGE" }, { { class = "ROGUE" } })
+        assert.is_true(SimpleBlessingBarDB.buffRun)
+        local check = general(ns)
+        assert.is_true(check:GetChecked())
+        check:SetChecked(false)
+        RUNSCRIPT(check, "OnClick")
+        assert.is_false(SimpleBlessingBarDB.buffRun)
+        assert.is_nil(b:GetAttribute("type3"))
+        press(b)
+        assert.are.same({}, STATE.casts)
+        assert.is_nil(STATE.targetedNext)
+        assert.is_nil(b:GetAttribute("type3")) -- the click does not set it again
+        check:SetChecked(true)
+        RUNSCRIPT(check, "OnClick")
+        press(b)
+        assert.are.equal(1, #STATE.casts)
+    end)
+
+    it("is not switched in combat, and says so", function()
+        local ns = login({ class = "MAGE" })
+        local check = general(ns)
+        STATE.combat = true
+        check:SetChecked(false)
+        RUNSCRIPT(check, "OnClick")
+        assert.is_true(SimpleBlessingBarDB.buffRun)
+        assert.is_true(check:GetChecked())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
+    end)
+
+    it("names the middle click in the blessing tooltip while switched on", function()
+        local ns, b = login({ class = "MAGE" })
+        local L = ns.L
+        local lines = tip(b)
+        assert.are.same({ L.MIDDLECLICK, L.BUFF_RUN }, lines[#lines - 1])
+        assert.are.same({ L.RIGHTCLICK, L.SET_PRIORITIES }, lines[#lines])
+        SimpleBlessingBarDB.buffRun = false
+        ns.Refresh()
+        lines = tip(b)
+        assert.are.same({ L.RIGHTCLICK, L.SET_PRIORITIES }, lines[#lines])
+        for _, l in ipairs(lines) do assert.are_not.equal(L.MIDDLECLICK, l[1]) end
+    end)
+
+    it("is added on by settings version 9, a saved choice kept", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 8 } })
+        ns.InitDB()
+        assert.are.equal(9, SimpleBlessingBarDB.dbVersion)
+        assert.is_true(SimpleBlessingBarDB.buffRun)
+        ns = addon.load("enUS", { db = { dbVersion = 9, buffRun = false } })
+        ns.InitDB()
+        assert.is_false(SimpleBlessingBarDB.buffRun)
+    end)
+end)

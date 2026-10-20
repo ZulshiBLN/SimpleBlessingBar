@@ -165,7 +165,8 @@ describe("the queue buttons' tooltips and right click", function()
         local ns, bless, salv = login({ group = "party", units = { party1 = { class = "MAGE", name = "Jaina" } } })
         local L = ns.L
         assert.are.equal(M.normal[6], bless:GetAttribute("spell1"))
-        assert.are.same({ { L.LEFTCLICK, "player" }, { L.RIGHTCLICK, L.SET_PRIORITIES } }, tip(bless))
+        assert.are.same({ { L.LEFTCLICK, "player" }, { L.MIDDLECLICK, L.BUFF_RUN }, { L.RIGHTCLICK, L.SET_PRIORITIES } },
+            tip(bless))
         assert.are.equal(D.SALVATION, salv:GetAttribute("spell1"))
         assert.are.same({ { L.LEFTCLICK, "player" } }, tip(salv)) -- the player first, then Jaina
         STATE.units.player.auras = { aura(D.SALVATION, true) }

@@ -369,7 +369,7 @@ describe("settings version 8", function()
                           TANK = { order = { "LIGHT" }, off = {} } } } })
         ns.InitDB()
         local db = SimpleBlessingBarDB
-        assert.are.equal(8, db.dbVersion)
+        assert.are.equal(D.DB_VERSION, db.dbVersion)
         assert.are.same({ "KINGS", "MIGHT", "LIGHT" }, db.classLists.WARRIOR.order) -- melee, no Wisdom
         assert.are.same({ order = { "KINGS" }, off = { WISDOM = true, LIGHT = true, MIGHT = true } }, db.classLists.MAGE)
         assert.are.same(default("PRIEST"), db.classLists.PRIEST) -- healer, not saved: default
