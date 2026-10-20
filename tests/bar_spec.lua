@@ -128,6 +128,38 @@ describe("the refresh", function()
         assert.are.equal("2", b.count:GetText())
     end)
 
+    -- Ruleset plan 2026-10-20-performance-pvp, criterion 2: the 1 s ticker re-wrote the
+    -- layout, the saved position and every icon each time
+    it("writes nothing on a tick with nothing changed, and re-arranges on a change", function()
+        local ns = login({ known = known(19740, 25782), group = "party", units = { party1 = { class = "WARRIOR" } } })
+        STATE.bags = { [ns.D.SYMBOL_OF_KINGS] = 4 }
+        ns.Refresh()
+        local writes = {}
+        local function spy(obj, name, methods)
+            for _, m in ipairs(methods) do
+                local orig = obj[m]
+                obj[m] = function(self, ...) writes[#writes + 1] = name .. ":" .. m return orig(self, ...) end
+            end
+        end
+        spy(ns.bar, "bar", { "SetPoint", "ClearAllPoints", "SetSize" })
+        spy(ns.handle, "handle", { "SetPoint", "ClearAllPoints" })
+        for name, b in pairs({ aura = ns.auraButton, fury = ns.furyButton, blessing = ns.blessingButton,
+                               salvation = ns.salvationButton }) do
+            spy(b, name, { "SetPoint", "ClearAllPoints", "Show" })
+            spy(b.icon, name .. ".icon", { "SetTexture", "SetDesaturated" })
+            spy(b.count, name .. ".count", { "SetText" })
+        end
+        spy(ns.blessingButton.symbols, "symbols", { "SetText", "SetTextColor" })
+        SmartBlessingBarDB.point = nil -- a saved position would come back
+        TICK()
+        assert.are.same({}, writes)
+        assert.is_nil(SmartBlessingBarDB.point)
+        SmartBlessingBarDB.showFury = false
+        TICK()
+        assert.is_false(ns.furyButton:IsShown())
+        assert.is_truthy(table.concat(writes, " "):find("salvation:SetPoint", 1, true))
+    end)
+
     -- A raid's nameplates and targets fire UNIT_AURA all the time; a member's change also
     -- fires for his group token
     it("follows the auras of group members only", function()

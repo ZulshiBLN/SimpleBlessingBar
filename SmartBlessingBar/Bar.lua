@@ -58,6 +58,26 @@ function ns.CreateSecureButton(name, parent)
     return b
 end
 
+-- A button's icon, and a font string's text, written only when they change: the refresh
+-- runs every second (ruleset plan 2026-10-20-performance-pvp)
+function ns.SetIcon(b, texture, desaturated)
+    if b.iconTexture ~= texture then
+        b.iconTexture = texture
+        b.icon:SetTexture(texture)
+    end
+    if b.iconDesaturated ~= desaturated then
+        b.iconDesaturated = desaturated
+        b.icon:SetDesaturated(desaturated)
+    end
+end
+
+function ns.SetText(fs, text)
+    if fs.shownText ~= text then
+        fs.shownText = text
+        fs:SetText(text)
+    end
+end
+
 -- The spell a main button casts, as the game's own tooltip
 function ns.ShowSpellTooltip(self)
     local spell = self:GetAttribute("spell1")
@@ -158,7 +178,11 @@ handle:SetScript("OnLeave", function(self)
     GameTooltip:Hide()
 end)
 
+-- The layout the refresh last wrote; nil makes the next refresh lay out and re-anchor
+local layoutKey
+
 function ns.LoadPosition()
+    layoutKey = nil
     bar:ClearAllPoints()
     bar:SetPoint(db.point or "CENTER", UIParent, db.rel or "CENTER", db.x or 0, db.y or -150)
 end
@@ -277,15 +301,19 @@ handle:SetScript("OnMouseUp", StopDrag)
 local WHITE = { r = 1, g = 1, b = 1, a = 1 }
 local function UpdateSymbols(b, shown)
     if not shown then
-        b.symbols:SetText("")
+        ns.SetText(b.symbols, "")
         return
     end
     local n = ns.Blessings.Symbols()
     local c = WHITE
     if n == 0 then c = db.symbolZeroColor
     elseif db.symbolWarn > 0 and n <= db.symbolWarn then c = db.symbolWarnColor end
-    b.symbols:SetText(tostring(n))
-    b.symbols:SetTextColor(c.r, c.g, c.b, c.a)
+    ns.SetText(b.symbols, tostring(n))
+    -- A colour the settings change is a new table, so the table tells a change
+    if b.symbolsColor ~= c then
+        b.symbolsColor = c
+        b.symbols:SetTextColor(c.r, c.g, c.b, c.a)
+    end
 end
 ns.UpdateSymbols = UpdateSymbols
 
@@ -325,6 +353,21 @@ local function Arrange(shown)
     end
 end
 
+-- The four buttons by order key, each with the setting that shows it
+local BUTTONS = {
+    AURA = { function() return ns.auraButton end, "showAura" },
+    FURY = { function() return ns.furyButton end, "showFury" },
+    BLESSING = { function() return ns.blessingButton end, "showBlessing" },
+    SALVATION = { function() return ns.salvationButton end, "showSalvation" },
+}
+
+-- What the layout depends on; layoutKey (above ns.LoadPosition) is the last one laid out
+local function LayoutKey()
+    local parts = { tostring(db.vertical), tostring(db.growRev), tostring(db.scale) }
+    for _, k in ipairs(db.order) do parts[#parts + 1] = k .. "=" .. tostring(db[BUTTONS[k][2]]) end
+    return table.concat(parts, ",")
+end
+
 -- Reads the group out of combat and writes everything to the buttons. In combat it does
 -- nothing: aura data is unreadable then and the buttons are protected. The same while the
 -- client keeps auras secret out of combat: the buttons keep what they had.
@@ -332,25 +375,27 @@ end
 function ns.Refresh(combatStart)
     if not db or InCombatLockdown() or not ns.Blessings.AurasReadable() then return end
 
-    -- The four buttons in the order set on the Order page, each if the settings show it. A
-    -- hidden button leaves no gap.
-    local byKey = {
-        AURA = { ns.auraButton, "showAura" }, FURY = { ns.furyButton, "showFury" },
-        BLESSING = { ns.blessingButton, "showBlessing" }, SALVATION = { ns.salvationButton, "showSalvation" },
-    }
-    local shown = {}
-    for _, key in ipairs(db.order) do
-        local b, showKey = byKey[key][1], byKey[key][2]
-        if db[showKey] then
-            b:Show()
-            shown[#shown + 1] = b
-        else
-            b:Hide()
+    -- The layout only when it changed (ruleset plan 2026-10-20-performance-pvp): the ticker runs
+    -- this every second
+    local key = LayoutKey()
+    if key ~= layoutKey then
+        layoutKey = key
+        -- The four buttons in the order set on the Order page, each if the settings show it.
+        -- A hidden button leaves no gap.
+        local shown = {}
+        for _, k in ipairs(db.order) do
+            local b, showKey = BUTTONS[k][1](), BUTTONS[k][2]
+            if db[showKey] then
+                b:Show()
+                shown[#shown + 1] = b
+            else
+                b:Hide()
+            end
         end
+        -- A drag in progress keeps its own anchor; it re-anchors when it ends
+        if not handle.moving then ns.ReAnchor() end
+        Arrange(shown)
     end
-    -- A drag in progress keeps its own anchor; it re-anchors when it ends
-    if not handle.moving then ns.ReAnchor() end
-    Arrange(shown)
     -- One read of the group for every planner and the overview
     ns.Blessings.BeginRead()
     for _, fn in ipairs(ns.onRefresh) do fn(combatStart) end

@@ -27,13 +27,11 @@ local function SetSpell(b, spell)
     SetAttr(b, "type1", (spell and not ns.IsDemo()) and "spell" or nil)
     SetAttr(b, "spell1", spell)
     SetAttr(b, "unit1", spell and "player" or nil)
-    b.icon:SetDesaturated(not spell)
 end
 
 local aura = NewButton("SmartBlessingBarAura", "auraAntsColor", "auraAntsSpeed")
 local fury = NewButton("SmartBlessingBarFury", "furyAntsColor", "furyAntsSpeed")
 ns.auraButton, ns.furyButton = aura, fury
-fury.icon:SetTexture(C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY))
 
 -- Whether the paladin's own aura of this family is on him; another paladin's does not count
 -- Read in demo mode too: the glow follows the real aura there
@@ -51,7 +49,7 @@ local function Update()
     local spell = family and B.Best(D.AURAS[family])
     aura.shownSpell = spell or D.AURAS[db.auraList[1]][1]
     SetSpell(aura, spell)
-    aura.icon:SetTexture(C_Spell.GetSpellTexture(aura.shownSpell))
+    ns.SetIcon(aura, C_Spell.GetSpellTexture(aura.shownSpell), not spell)
     ns.SetAnts(aura, family ~= nil and not OwnAuraUp(family))
 
     -- Righteous Fury matters to a tank only: the role the game reports - a group's role
@@ -59,7 +57,7 @@ local function Update()
     local known = B.Known(D.RIGHTEOUS_FURY)
     local tank = not ns.IsDemo() and UnitGroupRolesAssigned("player") == "TANK"
     SetSpell(fury, known and D.RIGHTEOUS_FURY or nil)
-    fury.icon:SetDesaturated(not (known and tank))
+    ns.SetIcon(fury, C_Spell.GetSpellTexture(D.RIGHTEOUS_FURY), not (known and tank))
     ns.SetAnts(fury, known and tank and not C_UnitAuras.GetPlayerAuraBySpellID(D.RIGHTEOUS_FURY))
 end
 table.insert(ns.onRefresh, Update)
