@@ -3,7 +3,7 @@
 This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - 2026-10-20
+## [1.0.0] - 2026-10-21
 
 ### Added
 - The addon loads for paladins on WoW Forever and says so with its version at login, in the
