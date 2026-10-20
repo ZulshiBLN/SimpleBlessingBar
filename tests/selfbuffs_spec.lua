@@ -90,6 +90,16 @@ describe("the aura button", function()
         assert.is_false(b.ants:IsShown())
     end)
 
+    it("chooses no aura while its button is hidden", function()
+        local ns, _, b = withAuras()
+        local calls, choose = 0, ns.Blessings.ChooseAura
+        ns.Blessings.ChooseAura = function() calls = calls + 1 return choose() end
+        SmartBlessingBarDB.showAura = false
+        ns.Refresh()
+        assert.are.equal(0, calls)
+        assert.is_nil(b:GetAttribute("spell1"))
+    end)
+
     -- code.md: a secret value is never used; an aura whose spell is secret counts as unread
     it("glows on while the game keeps my aura's spell secret", function()
         local _, D, b = withAuras()

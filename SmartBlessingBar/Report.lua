@@ -27,7 +27,8 @@ local function Identity()
     local first, second = UnitFullName("player")
     for _, part in ipairs({ { first, "<player>" }, { second, "<player>" }, { GetRealmName(), "<realm>" } }) do
         local value = part[1]
-        if type(value) == "string" and value ~= "" and not issecretvalue(value) then
+        -- issecretvalue first: comparing a secret, even with "", raises an error
+        if type(value) == "string" and not issecretvalue(value) and value ~= "" then
             list[#list + 1] = part
         end
     end

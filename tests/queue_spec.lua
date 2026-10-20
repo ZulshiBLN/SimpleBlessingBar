@@ -110,6 +110,24 @@ describe("the blessing and Salvation buttons", function()
         assert.are.equal(D.PAD + 2 * step - D.GAP + D.PAD, ns.bar:GetWidth())
     end)
 
+    it("plan nothing and cast nothing while their button is hidden", function()
+        local ns, bless, salv, db = login({ group = "party", units = { party1 = { class = "MAGE" } } })
+        local B, calls = ns.Blessings, {}
+        for _, name in ipairs({ "PlanBlessings", "PlanSalvation" }) do
+            local fn = B[name]
+            B[name] = function(...) calls[name] = (calls[name] or 0) + 1 return fn(...) end
+        end
+        db.showBlessing, db.showSalvation = false, false
+        ns.Refresh()
+        assert.are.same({}, calls)
+        assert.is_nil(bless:GetAttribute("spell1"))
+        assert.is_nil(salv:GetAttribute("spell1"))
+        db.showSalvation = true
+        ns.Refresh()
+        assert.are.same({ PlanSalvation = 1 }, calls)
+        assert.are.equal(D.SALVATION, salv:GetAttribute("spell1"))
+    end)
+
     it("show the head's spell and target in the tooltip, or that nothing is left", function()
         local ns, bless = login()
         RUNSCRIPT(bless, "OnEnter")

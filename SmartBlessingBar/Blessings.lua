@@ -14,11 +14,14 @@ ns.OnDBReady(function(d) db = d end)
 local B = {}
 ns.Blessings = B
 
--- An aura's spell ID, or nil while the game keeps it secret: such a buff counts as unread
--- (code.md)
+-- An aura's spell ID, or nil while the game keeps any field the addon reads secret: such a
+-- buff counts as unread (code.md). Every reader asks this before using the others.
 function B.SpellOf(aura)
-    local id = aura.spellId
-    if not issecretvalue(id) then return id end
+    if issecretvalue(aura.spellId) or issecretvalue(aura.expirationTime)
+       or issecretvalue(aura.auraInstanceID) or issecretvalue(aura.sourceUnit) then
+        return
+    end
+    return aura.spellId
 end
 
 -- The one test of a known spell; in demo mode every spell counts as known
@@ -134,7 +137,7 @@ local function MineOn(unit)
     while true do
         local aura = C_UnitAuras.GetAuraDataByIndex(unit, i, "HELPFUL|PLAYER")
         if not aura then return mine end
-        mine[aura.auraInstanceID] = true
+        if B.SpellOf(aura) then mine[aura.auraInstanceID] = true end
         i = i + 1
     end
 end
@@ -261,8 +264,9 @@ local function Roster()
         return list
     end
     for _, unit in ipairs(B.Members()) do
+        -- A class without a list in Data.lua is left out: UnitClass is outside data
         local class = select(2, UnitClass(unit))
-        if class and B.Eligible(unit) then list[#list + 1] = { unit = unit, class = class } end
+        if D.CLASS_LISTS[class or ""] and B.Eligible(unit) then list[#list + 1] = { unit = unit, class = class } end
     end
     return list
 end
@@ -465,7 +469,7 @@ function B.Overview()
     local list = {}
     for _, unit in ipairs(B.Members()) do
         local class = select(2, UnitClass(unit))
-        if class then list[#list + 1] = B.Describe(unit, class) end
+        if D.CLASS_LISTS[class or ""] then list[#list + 1] = B.Describe(unit, class) end
     end
     return list
 end

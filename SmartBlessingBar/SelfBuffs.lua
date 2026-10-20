@@ -47,8 +47,9 @@ local function OwnAuraUp(family)
 end
 
 local function Update()
-    -- None known: the first family on the list, rank 1, greyed and without ants
-    local family = B.ChooseAura()
+    -- None known: the first family on the list, rank 1, greyed and without ants. Hidden, the
+    -- button chooses nothing and leaves nothing a /click could cast.
+    local family = db.showAura and B.ChooseAura() or nil
     local spell = family and B.Rank(D.AURAS[family])
     aura.shownSpell = spell or D.AURAS[db.auraList[1]][1]
     SetSpell(aura, spell)

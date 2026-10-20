@@ -414,10 +414,11 @@ function ns.InitBar()
     ns.ApplyLock()
     ns.ApplyCombatHide()
     ns.ApplyLook()
-    ns.Refresh()
+    -- The ticker before the first refresh, so an error in it does not stop the updates
     if not ticker then
         ticker = C_Timer.NewTicker(1, function()
             if not InCombatLockdown() then ns.Refresh() end
         end)
     end
+    ns.Refresh()
 end

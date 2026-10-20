@@ -432,11 +432,11 @@ end
 ---------------------------------------------------------------------------
 -- Color picker (the client's ColorPickerFrame)
 ---------------------------------------------------------------------------
--- After a color changes: the look, the counts colored by the refresh (the Symbols), and
--- whatever the caller adds
+-- After a color changes: the look, the Symbol count, and whatever the caller adds. The picker
+-- calls back on every mouse move while dragging, so nothing here plans the group.
 local function ColorChanged(onChange)
     ns.ApplyLook()
-    ns.Refresh()
+    ns.RefreshSymbols()
     if onChange then onChange() end
 end
 

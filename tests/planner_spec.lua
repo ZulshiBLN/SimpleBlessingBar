@@ -285,4 +285,27 @@ describe("a buff whose spell is secret", function()
         assert.are.same({ D.SALVATION, "party1" }, salvation[#salvation])
         assert.are.same({}, STATE.errors)
     end)
+
+    -- Its expiry, instance or caster may be secret too, e.g. while the paladin lies dead in a
+    -- boss fight
+    it("counts as not given when another of its fields is secret", function()
+        local secretExpiry = 3601
+        local B = plan({ group = "party", units = { party1 = { class = "WARRIOR",
+            auras = { { spellId = M.normal[6], expirationTime = secretExpiry } } } } }, basics())
+        STATE.secrets = { [secretExpiry] = true }
+        local blessings = entries((B.PlanBlessings()))
+        assert.are.same({ M.normal[6], "party1" }, blessings[#blessings])
+        assert.are.same({}, STATE.errors)
+    end)
+end)
+
+-- UnitClass is outside data: a class the addon has no list for is left out (code.md)
+describe("a member of a class the addon does not know", function()
+    it("is left out of the plans and the overview, with no error", function()
+        local B = plan({ group = "party", units = { party1 = { class = "DEATHKNIGHT" } } }, basics())
+        assert.are.same({ { M.normal[6], "player" } }, entries((B.PlanBlessings())))
+        assert.are.same({ { D.SALVATION, "player" } }, entries(B.PlanSalvation()))
+        for _, d in ipairs(B.Overview()) do assert.are_not.equal("DEATHKNIGHT", d.class) end
+        assert.are.same({}, STATE.errors)
+    end)
 end)

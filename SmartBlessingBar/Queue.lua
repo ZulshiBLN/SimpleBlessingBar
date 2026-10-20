@@ -140,10 +140,17 @@ local function Show(b, queue, combatStart)
     ns.SetAnts(b, head ~= nil)
 end
 
+-- The Symbol count on the blessing button, shown once a Greater form is known
+function ns.RefreshSymbols()
+    ns.UpdateSymbols(blessing, B.AnyGreaterKnown())
+end
+
+-- A hidden button plans nothing: its empty queue also leaves nothing a /click could cast
 table.insert(ns.onRefresh, function(combatStart)
-    local queue, symbolsUsed = B.PlanBlessings()
+    local queue, symbolsUsed = {}, 0
+    if db.showBlessing then queue, symbolsUsed = B.PlanBlessings() end
     Show(blessing, queue, combatStart)
     ArmBuffRun()
-    ns.UpdateSymbols(blessing, B.AnyGreaterKnown())
-    Show(salvation, B.PlanSalvation(symbolsUsed), combatStart)
+    ns.RefreshSymbols()
+    Show(salvation, db.showSalvation and B.PlanSalvation(symbolsUsed) or {}, combatStart)
 end)

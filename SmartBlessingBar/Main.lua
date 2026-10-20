@@ -14,10 +14,11 @@ events:SetScript("OnEvent", function()
     local lang = SmartBlessingBarGlobalDB.language
     if lang then ns.ApplyLanguage(lang) end
 
-    ns.InitBar()
+    -- The bar last: its first refresh reads the group, and an error there leaves the rest set up
     ns.ApplyMinimapButton()
     ns.RegisterOptionsPanel()
     ns.Print(L.LOADED:format(ns.VERSION))
+    ns.InitBar()
 end)
 
 ---------------------------------------------------------------------------

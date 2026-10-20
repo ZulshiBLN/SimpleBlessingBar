@@ -195,6 +195,20 @@ describe("the Supplies page", function()
         assert.are.same({ 0, 1, 0, 1 }, color(b.symbols))
     end)
 
+    -- The picker calls back on every mouse move while dragging: each recolours, none plans
+    -- the group again
+    it("recolours the count on every picker move without planning the group again", function()
+        local ns, c, _, _, b = open({ bags = 0 })
+        local plans, plan = 0, ns.Blessings.PlanBlessings
+        ns.Blessings.PlanBlessings = function(...) plans = plans + 1 return plan(...) end
+        RUNSCRIPT(c.symbolZeroColor, "OnClick")
+        STATE.pickedColor = { 0, 0, 1, 1 }
+        ColorPickerFrame.info.swatchFunc()
+        ColorPickerFrame.info.opacityFunc()
+        assert.are.equal(0, plans)
+        assert.are.same({ 0, 0, 1, 1 }, color(b.symbols))
+    end)
+
     it("dims the amounts while auto-buy is off, and sets them", function()
         local _, c, db = open()
         for _, row in ipairs(c.amountRows) do assert.are.equal(0.4, row:GetAlpha()) end

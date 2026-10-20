@@ -56,6 +56,22 @@ describe("login", function()
         assert.are.equal(SmartBlessingBarDB, after)
     end)
 
+    -- An error in the first plan must not take the minimap button, the options entry, the
+    -- greeting and the ticker with it
+    it("sets up everything even when the first refresh errors", function()
+        local ns = addon.load("enUS")
+        local plan = ns.Blessings.PlanBlessings
+        ns.Blessings.PlanBlessings = function() error("broken") end
+        FIRE("PLAYER_LOGIN")
+        assert.is_truthy(STATE.options and STATE.options.registered)
+        assert.is_true(ns.minimapButton:IsShown())
+        assert.are.equal(1, #addonLines())
+        ns.Blessings.PlanBlessings = plan
+        STATE.known = { [ns.D.BLESSINGS.MIGHT.normal[1]] = true }
+        TICK()
+        assert.are.equal("1", ns.blessingButton.count:GetText())
+    end)
+
     it("greets in the saved language, and drops an unknown one", function()
         local ns = addon.load("enUS", { globalDB = { language = "frFR" } })
         FIRE("PLAYER_LOGIN")
