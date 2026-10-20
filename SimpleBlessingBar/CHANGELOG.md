@@ -35,16 +35,16 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
 - The overview, on the Priorities tab: every group member in two columns, sorted by class and
-  named in its colour, a tank's or healer's role icon, a paladin's aura, the blessings and Salvation he
-  carries, yours glowing, the one you would give next faint. A middle click on the minimap
-  button opens it.
+  named in its colour, a tank's or healer's role icon, a paladin's aura, the blessings and
+  Salvation he carries, yours glowing, the one you would give next faint. A middle click on
+  the minimap button opens it.
 - The aura button casts the first aura of your list that no other paladin of your group runs,
   so paladins need not agree who runs which.
 - A settings window, opened with `/sbb`, a middle click on the handle, the minimap button, the
   AddOn menu or the game's Options. General: language, hide in combat, hide the minimap button,
   scale, border, background color, orientation and growth direction, demo mode, Buff & Run,
-  Report bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and speed, and
-  the color of the blessing and Salvation buttons' count.
+  Report bug, Reload UI. Tracking: show each of the four buttons, their highlight's color and
+  speed, and the color of the blessing and Salvation buttons' count.
   Supplies: the Symbol of Kings warning threshold and colors, and the auto-buy. Order: the
   order of the four buttons. Priorities: see above. Macros: prepared for a later version.
 - The blessing button shows your Symbols of Kings once you know a Greater Blessing, colored
