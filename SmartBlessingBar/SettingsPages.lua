@@ -266,6 +266,7 @@ do
     -- 2026-10-20-fury-renew); spell names from the client (localization.md)
     controls.renewTitle = UI.AddNote("RENEW_LABEL", 6)
     local function SpellName(id, key) return ns.LocalName(C_Spell.GetSpellName(id), key) end
+    local _
     controls.renewMinutes, _, controls.renewRow = UI.AddNumberSlider({
         label = function() return L.RENEW_BLESSINGS:format(SpellName(D.SALVATION, "SALVATION")) end,
         key = "renewMinutes", gap = 4, column = "left", onChange = function() ns.Refresh() end })

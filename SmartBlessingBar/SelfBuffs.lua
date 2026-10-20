@@ -1,8 +1,9 @@
 -- SmartBlessingBar - aura and Righteous Fury buttons
 -- The first two places on the bar. The aura button casts the highest known rank of the aura
 -- its list picks: the first one no other paladin runs (ruleset plan 2026-10-19-priorities).
--- Both buttons show the marching ants while what they cast is missing - known out of combat
--- only, so they freeze in combat like the counts.
+-- Both buttons glow while what they cast is missing, Righteous Fury also while it is about to
+-- run out (ruleset plan 2026-10-20-fury-renew) - known out of combat only, so they freeze in
+-- combat like the counts.
 
 local _, ns = ...
 if not ns.enabled then return end

@@ -26,8 +26,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   tooltip says so. The same while the game hides buffs out of combat, as it sometimes does
   in instances and PvP.
 - A Priorities tab: early renewal, 5 minutes before a blessing or Salvation of yours runs out
-  by default, and 3 minutes before your Righteous Fury, for a tank; the aura list; the priority list of each class, under its class colour,
-  reordered by drag and drop, with blessings switched off per class and "Enable all" to
+  by default, and 3 minutes before your Righteous Fury, for a tank; the aura list; the
+  priority list of each class, under its class colour, reordered by drag and drop, with blessings switched off per class and "Enable all" to
   switch them on again; and the overview. Each class has its own default list; Warriors and
   Rogues never get Wisdom.
 - A change of a list is cast at once, replacing your blessing of another kind.
