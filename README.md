@@ -32,8 +32,9 @@ lock state and its clicks.
 **Buff & Run** - a middle click on the blessing button blesses the player you target and then
 targets the next friendly player, so you can bless passing players by clicking again and
 again. Each gets the first blessing of his class's list he lacks, in the highest normal rank
-that fits him; one carrying a blessing of yours is passed. A click during the global cooldown
-does nothing, so nobody is skipped; in combat a click only moves on. It can be switched off on
+that fits him; one carrying a blessing of yours is passed. The game picks the next player,
+sometimes one beyond the blessing's 30 yards: then the click only moves on. A click during the
+global cooldown does nothing, so nobody is skipped; in combat a click only moves on. It can be switched off on
 the General tab.
 
 **Auras** come from a priority list on the Priorities tab, so paladins need not agree who runs
