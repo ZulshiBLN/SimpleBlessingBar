@@ -1,0 +1,51 @@
+## Interface: 16001
+## Title: SmartBlessingBar
+## IconTexture: Interface\Icons\Spell_Holy_SealOfWisdom
+## Notes: Paladin blessing manager: blesses your group by class, coordinates with other paladins and casts auras
+## Notes-deDE: Segensverwaltung für Paladine: segnet die Gruppe nach Klasse, stimmt sich mit anderen Paladinen ab und wirkt Auren
+## Notes-frFR: Gestion des bénédictions de paladin : bénit le groupe selon les classes, se coordonne avec les autres paladins et lance les auras
+## Notes-esES: Gestor de bendiciones de paladín: bendice al grupo según su clase, se coordina con otros paladines y lanza auras
+## Notes-esMX: Gestor de bendiciones de paladín: bendice al grupo según su clase, se coordina con otros paladines y lanza auras
+## Notes-itIT: Gestione delle benedizioni del paladino: benedice il gruppo per classe, si coordina con gli altri paladini e lancia aure
+## Notes-ptBR: Gerenciador de bênçãos de paladino: abençoa o grupo por classe, coordena com outros paladinos e lança auras
+## Notes-ruRU: Менеджер благословений паладина: благословляет группу по классам, согласуется с другими паладинами и накладывает ауры
+## Notes-koKR: 성기사 축복 관리: 직업에 따라 파티에 축복을 걸고, 다른 성기사와 조율하며 오라를 시전
+## Notes-zhCN: 圣骑士祝福管理：按职业为队伍施放祝福，与其他圣骑士协调并施放光环
+## Notes-zhTW: 聖騎士祝福管理：依職業為隊伍施放祝福，與其他聖騎士協調並施放光環
+## Author: ZulshiBLN
+## Version: 1.0.0
+## X-License: MIT
+## X-Curse-Project-ID: 1751962
+## X-Wago-ID: ZKxO5o6k
+## AddonCompartmentFunc: SmartBlessingBar_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: SmartBlessingBar_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: SmartBlessingBar_OnCompartmentLeave
+## Category: Class
+## Category-deDE: Klasse
+## Category-frFR: Classe
+## Category-esES: Clase
+## Category-esMX: Clase
+## Category-itIT: Classe
+## Category-ptBR: Classe
+## Category-ruRU: Класс
+## Category-koKR: 직업
+## Category-zhCN: 职业
+## Category-zhTW: 職業
+## SavedVariables: SmartBlessingBarGlobalDB
+## SavedVariablesPerCharacter: SmartBlessingBarDB
+
+Locales.lua
+Data.lua
+Core.lua
+Blessings.lua
+Bar.lua
+SelfBuffs.lua
+Queue.lua
+Demo.lua
+Merchant.lua
+Minimap.lua
+Report.lua
+Settings.lua
+SettingsPages.lua
+Overview.lua
+Main.lua
