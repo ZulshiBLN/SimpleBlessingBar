@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SmartBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 9
+D.DB_VERSION = 10
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
@@ -150,6 +150,7 @@ D.BOOL_DEFAULTS = {
     showAura = true, showFury = true,
     autoBuy = false, hideMinimap = false, showBlessing = true, showSalvation = true,
     buffRun = true, -- version 9 (ruleset plan 2026-10-20-buff-and-run)
+    pvpBlessing = false, -- version 10 (ruleset plan 2026-10-20-performance-pvp)
 }
 D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,

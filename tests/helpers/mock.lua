@@ -462,6 +462,8 @@ UnitIsUnit = function(a, b) return U(a) ~= nil and U(a) == U(b) end
 -- A record is a player unless `npc`, friendly unless `hostile`
 UnitIsPlayer = function(u) local r = U(u) return r ~= nil and r.npc ~= true end
 UnitCanAssist = function(_, u) local r = U(u) return r ~= nil and r.hostile ~= true end
+-- Flagged for PvP when the record says `pvp`
+UnitIsPVP = function(u) local r = U(u) return r ~= nil and r.pvp == true end
 -- A player's GUID: the record's guid, else one made from the record, the same for every token
 UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
 -- The group role the game reports: the record's role, else "NONE"

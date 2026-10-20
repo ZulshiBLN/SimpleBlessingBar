@@ -145,8 +145,18 @@ UI.AddSeparator()
 -- combat, as the window closes at its start and does not open in it
 controls.demo = UI.AddCheck("OPT_DEMO", "demo", function() ns.Refresh() end)
 
--- Buff & Run on the blessing button's middle click (ruleset plan 2026-10-20-buff-and-run)
-controls.buffRun = UI.AddCheck("OPT_BUFF_RUN", "buffRun", function() ns.Refresh() end)
+-- Buff & Run on the blessing button's middle click (ruleset plan 2026-10-20-buff-and-run), and
+-- under it whether it blesses PvP-flagged players, dimmed while Buff & Run is off as the
+-- auto-buy amounts are (ruleset plan 2026-10-20-performance-pvp)
+local function DimPvpBlessing()
+    controls.pvpBlessing:SetAlpha(db.buffRun and 1 or 0.4)
+end
+controls.buffRun = UI.AddCheck("OPT_BUFF_RUN", "buffRun", function()
+    DimPvpBlessing()
+    ns.Refresh()
+end)
+controls.pvpBlessing = UI.AddCheck("OPT_PVP_BLESSING", "pvpBlessing", nil, 1)
+refreshers[#refreshers + 1] = DimPvpBlessing
 
 -- Bottom row: "Report bug" left, "Reload UI" right (own translations, so they follow the language)
 do

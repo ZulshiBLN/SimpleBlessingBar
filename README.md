@@ -34,8 +34,9 @@ targets the next friendly player, so you can bless passing players by clicking a
 again. Each gets the first blessing of his class's list he lacks, in the highest normal rank
 that fits him; one carrying a blessing of yours is passed. The game picks the next player,
 sometimes one beyond the blessing's 30 yards: then the click only moves on. A click during the
-global cooldown does nothing, so nobody is skipped; in combat a click only moves on. It can be switched off on
-the General tab.
+global cooldown does nothing, so nobody is skipped; in combat a click only moves on. A player
+flagged for PvP is passed too - blessing him would flag you - unless "Allow PvP blessing" is
+on. Both are switched on the General tab.
 
 **Auras** come from a priority list on the Priorities tab, so paladins need not agree who runs
 which: the button casts the first aura on your list that you know and no other paladin of your
@@ -116,7 +117,8 @@ closes when combat starts and opens again when combat ends. Every change takes e
   nothing; the chat says what would be cast. The overview shows a made-up raid of 40 instead
   of your group. Demo mode is off after every login and cannot be switched in combat.
 - **Buff & Run** on the blessing button's middle click, on by default; not switched in
-  combat.
+  combat. Under it, **Allow PvP blessing**, off by default: off, Buff & Run passes players
+  flagged for PvP, whether you are flagged or not. Dimmed while Buff & Run is off.
 - Report bug, and Reload UI.
 
 **Tracking**

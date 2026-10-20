@@ -35,7 +35,7 @@ read_globals = {
     "Minimap", "Settings", "UnitFullName", "GetRealmName", "UnitLevel", "GetBuildInfo", "date", "issecretvalue",
     "BugGrabber", "UnitGroupRolesAssigned", "UnitName", "UnitGUID",
     "UnitClass", "UnitExists", "UnitIsConnected", "UnitIsDeadOrGhost", "UnitIsUnit", "UnitIsVisible",
-    "UnitIsPlayer", "UnitCanAssist",
+    "UnitIsPlayer", "UnitCanAssist", "UnitIsPVP",
     SlashCmdList = { fields = { SMARTBLESSINGBAR = { read_only = false } } },
 }
 
