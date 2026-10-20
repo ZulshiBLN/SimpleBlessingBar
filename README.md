@@ -177,6 +177,19 @@ paste it as a new issue on GitHub. It contains no character name or realm.
 | `/sbb reset` | Move the bar back to its start position (not in combat) |
 | `/sbb bug` | Open the bug report |
 
+## Key bindings
+
+Under Options > Key Bindings > AddOns > SmartBlessingBar:
+
+| Key | Action |
+|---|---|
+| Cast next buff | One press, one cast: what the first highlighted of the aura, Righteous Fury and blessing buttons would cast, in the bar's order - the blessing button's being your group's next blessing. Never Salvation. |
+| Buff & Run | The blessing button's middle click: blesses the target, then targets the next friendly player. Also with the blessing button hidden. One player per press - holding the key does not repeat it. |
+| Set priorities | Opens or closes the settings on the Priorities tab; not in combat. |
+
+In combat the keys do what the bar does: Cast next buff casts what it held when the fight
+started, Buff & Run only targets the next player.
+
 ## Languages
 
 enUS, deDE, frFR, esES, esMX, itIT, ptBR, ruRU, koKR, zhCN, zhTW. The language follows the client
@@ -192,11 +205,12 @@ unless you choose another in the settings.
 | `Blessings.lua` | Known spells and ranks, roles, group scan, what others gave, the blessing and Salvation planner, the aura choice |
 | `Bar.lua` | Bar, handle, position and lock, layout, scale and look, Symbol count, refresh |
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
-| `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip |
+| `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip, the buff key |
+| `Bindings.xml` | The key bindings the game's Key Bindings offer |
 | `Demo.lua` | Demo mode's chat output and the overview's made-up raid |
 | `Overview.lua` | The overview on the Priorities tab: members by class in two columns, their auras and what they carry |
 | `Merchant.lua` | Symbol of Kings auto-buy |
-| `Minimap.lua` | Minimap button, AddOn compartment, Options entry |
+| `Minimap.lua` | Minimap button, AddOn compartment, Options entry, the Priorities key |
 | `Report.lua` | Bug report window |
 | `Settings.lua` | Settings window, tabs, widgets, color picker |
 | `SettingsPages.lua` | The General, Tracking, Supplies, Priorities, Order and Macros pages |

@@ -34,6 +34,9 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Buff & Run: a middle click on the blessing button blesses the target as his class's list
   wants and then targets the next friendly player, one click per player. It passes players
   flagged for PvP unless "Allow PvP blessing" is on.
+- Key bindings under AddOns > SmartBlessingBar: "Cast next buff" casts what the aura,
+  Righteous Fury and blessing buttons want, one per press; "Buff & Run"; "Set priorities"
+  opens the Priorities tab.
 - Righteous Fury is only highlighted while the game reports you as tank (a group's role
   check); otherwise its button is greyed.
 - The overview, on the Priorities tab: every group member in two columns, sorted by class and
