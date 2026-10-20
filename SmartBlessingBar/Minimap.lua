@@ -49,23 +49,39 @@ minimapBtn:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
 minimapBtn:RegisterForDrag("LeftButton")
 minimapBtn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
 
+-- The ring's circle sits off its texture's centre: the ring moves by RING_OFFSET, and the
+-- highlight, background and round icon centre in it at INNER_OFFSET (measured in game by
+-- Michel, 2026-10-20)
+local RING_OFFSET_X, RING_OFFSET_Y = 10, -10
+local INNER_OFFSET_X, INNER_OFFSET_Y = -1, 1.2
 do
+    local highlight = minimapBtn:GetHighlightTexture()
+    highlight:ClearAllPoints()
+    highlight:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
+
     local bg = minimapBtn:CreateTexture(nil, "BACKGROUND")
     bg:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-    bg:SetSize(20, 20)
-    bg:SetPoint("TOPLEFT", 7, -5)
+    bg:SetSize(23, 23)
+    bg:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
+    minimapBtn.background = bg
 
     local icon = minimapBtn:CreateTexture(nil, "ARTWORK")
     icon:SetTexture(ICON)
-    icon:SetSize(17, 17)
-    icon:SetPoint("TOPLEFT", 7, -6)
+    icon:SetSize(21, 21)
+    icon:SetPoint("CENTER", INNER_OFFSET_X, INNER_OFFSET_Y)
     icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
+    -- Round, as the client's own minimap buttons: no corner reaches past the ring
+    local mask = minimapBtn:CreateMaskTexture()
+    mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    mask:SetAllPoints(icon)
+    icon:AddMaskTexture(mask)
     minimapBtn.icon = icon
 
-    local border = minimapBtn:CreateTexture(nil, "OVERLAY")
-    border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-    border:SetSize(53, 53)
-    border:SetPoint("TOPLEFT")
+    local ring = minimapBtn:CreateTexture(nil, "OVERLAY")
+    ring:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+    ring:SetSize(53, 53)
+    ring:SetPoint("CENTER", RING_OFFSET_X, RING_OFFSET_Y)
+    minimapBtn.ring = ring
 end
 
 -- On a circle around the minimap

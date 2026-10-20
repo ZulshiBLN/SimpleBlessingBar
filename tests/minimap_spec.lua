@@ -34,6 +34,22 @@ describe("the minimap button", function()
         assert.are.equal(C_AddOns.GetAddOnMetadata("SmartBlessingBar", "IconTexture"), ns.minimapButton.icon:GetTexture())
     end)
 
+    -- Measured in game by Michel (2026-10-20): the ring's circle sits off its texture's centre,
+    -- so the ring is moved and the round icon centred in it
+    it("centres a round icon in its ring", function()
+        local ns = login()
+        local btn = ns.minimapButton
+        local icon, bg, ring = btn.icon, btn.background, btn.ring
+        assert.are.same({ 21, 21 }, { icon:GetSize() })
+        assert.are.same({ 23, 23 }, { bg:GetSize() })
+        assert.are.same({ "CENTER", -1, 1.2 }, { icon:GetPoint() })
+        assert.are.same({ "CENTER", -1, 1.2 }, { bg:GetPoint() })
+        assert.are.same({ "CENTER", -1, 1.2 }, { btn:GetHighlightTexture():GetPoint() })
+        assert.are.same({ "CENTER", 10, -10 }, { ring:GetPoint() })
+        assert.are.equal(1, #icon.masks)
+        assert.are.equal("Interface\\CharacterFrame\\TempPortraitAlphaMask", icon.masks[1]:GetTexture())
+    end)
+
     it("moves around the minimap while dragged, and stops on release", function()
         local ns, db = login()
         local btn = ns.minimapButton

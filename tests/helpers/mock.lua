@@ -108,6 +108,13 @@ function Methods:StartMoving() Guard(self, "StartMoving"); self.moving = true en
 function Methods:StopMovingOrSizing() Guard(self, "StopMovingOrSizing"); self.moving = false end
 function Methods:RegisterForClicks(...) self.clicks = { ... } end
 function Methods:CreateTexture() return NEWOBJ("Texture") end
+-- A mask texture, and the masks a texture carries (texture.masks)
+function Methods:CreateMaskTexture() return NEWOBJ("MaskTexture") end
+function Methods:AddMaskTexture(mask)
+  self.masks = rawget(self, "masks") or {}
+  table.insert(self.masks, mask)
+end
+function Methods:GetSize() return self.w, self.h end
 function Methods:CreateFontString() return NEWOBJ("FontString") end
 function Methods:SetTexture(t) self.texture = t end
 function Methods:GetTexture() return self.texture end
