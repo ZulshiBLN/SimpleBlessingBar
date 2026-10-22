@@ -5,6 +5,13 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ## [Unreleased]
 
+### Added
+
+- **Show anchor** on the General tab, on by default: the bar's handle stays visible, so a new
+  player finds where to move the bar and open the settings. Off, it shows only under the mouse.
+- **Window background (%)** beside Scale: the settings and report windows' background from
+  none to solid; 60 keeps the look they always had.
+
 ### Changed
 
 - Buff & Run blesses players flagged for PvP while you are flagged for good yourself - /pvp,

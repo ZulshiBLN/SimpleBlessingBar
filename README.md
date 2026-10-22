@@ -26,7 +26,7 @@ The addon loads for paladins only.
 | Righteous Fury | Cast Righteous Fury - highlighted while it is missing or about to run out (see the Priorities tab) and your group's role check made you tank; greyed otherwise, also alone | – |
 | Blessings | Cast the next blessing your group needs - highlighted while one is left | Open the Priorities tab |
 | Salvation | Cast the next Salvation, Mass Salvation or Revoke your group needs - highlighted while one is left | – |
-| Handle (the side the bar grows from; shows under the mouse) | Drag to move | Lock or unlock |
+| Handle (the side the bar grows from; always shown, or only under the mouse with Show anchor off) | Drag to move | Lock or unlock |
 
 A middle click on the handle opens or closes the settings; hover it for a tooltip with the
 lock state and its clicks.
@@ -111,8 +111,11 @@ closes when combat starts and opens again when combat ends. Every change takes e
 
 **General**
 - Language: automatic (the client's) or any of the eleven, switched without a reload.
-- Hide the bar in combat; hide the minimap button.
-- Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too).
+- Hide the bar in combat; hide the minimap button; **Show anchor**, on by default: the handle
+  stays visible - off, it shows only under the mouse.
+- Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too). Beside it **Window
+  background (%)** for the settings and report windows: 0 shows none, 100 a solid one, 60 the
+  look they always had.
 - Border on or off, and the background color with its opacity.
 - Orientation (horizontal or vertical) and the direction the bar grows.
 - **Demo mode**: plans a blessing and Salvation for every class, each with its default role,
