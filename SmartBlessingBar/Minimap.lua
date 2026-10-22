@@ -24,12 +24,13 @@ local function ShowEntryTooltip(owner, anchor)
     GameTooltip:SetOwner(owner, anchor)
     GameTooltip:SetText("SmartBlessingBar |cffffffffv" .. ns.VERSION .. "|r")
     GameTooltip:AddLine(" ")
+    -- Left, middle, right, as in every tooltip; only the minimap button opens the Priorities tab
+    -- and can be dragged
+    local minimap = anchor == "ANCHOR_LEFT"
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
+    if minimap then GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.TAB_PRIORITIES, 0, 1, 0, 1, 1, 1) end
     GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
-    if anchor == "ANCHOR_LEFT" then -- only the minimap button opens the Priorities tab and can be dragged
-        GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.TAB_PRIORITIES, 0, 1, 0, 1, 1, 1)
-        GameTooltip:AddDoubleLine(L.DRAG, L.MOVE, 0, 1, 0, 1, 1, 1)
-    end
+    if minimap then GameTooltip:AddDoubleLine(L.DRAG, L.MOVE, 0, 1, 0, 1, 1, 1) end
     GameTooltip:Show()
 end
 

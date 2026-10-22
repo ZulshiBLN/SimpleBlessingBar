@@ -327,3 +327,14 @@ describe("Righteous Fury's renewal", function()
         end
     end)
 end)
+
+-- Every left click named, as on the blessing buttons (Michel, from SimpleConjureBar 2026-10-22)
+describe("the self-buff buttons' tooltip", function()
+    it("names whom the left click reaches under the spell", function()
+        local ns = login()
+        ns.auraButton:SetAttribute("spell1", ns.D.AURAS.DEVOTION[1])
+        RUNSCRIPT(ns.auraButton, "OnEnter")
+        local last = GameTooltip.lines[#GameTooltip.lines]
+        assert.are.same({ ns.L.LEFTCLICK, UnitName("player") }, { last[1], last[2] })
+    end)
+end)

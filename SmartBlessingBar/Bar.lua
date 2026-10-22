@@ -78,12 +78,13 @@ function ns.SetText(fs, text)
     end
 end
 
--- The spell a main button casts, as the game's own tooltip
+-- The spell a main button casts, as the game's own tooltip, and whom the left click reaches
 function ns.ShowSpellTooltip(self)
     local spell = self:GetAttribute("spell1")
     if not spell then return end
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:SetSpellByID(spell)
+    GameTooltip:AddDoubleLine(L.LEFTCLICK, (UnitName("player")), 1, 1, 1)
     GameTooltip:Show()
 end
 
@@ -165,8 +166,8 @@ local function ShowHandleTooltip(self)
     end
     GameTooltip:AddLine(" ")
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.MOVE, 0, 1, 0, 1, 1, 1)
-    GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
     GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
+    GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
     GameTooltip:Show()
 end
 handle:SetScript("OnEnter", function(self)
