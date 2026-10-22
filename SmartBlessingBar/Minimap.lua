@@ -24,7 +24,8 @@ local function ShowEntryTooltip(owner, anchor)
     local minimap = anchor == "ANCHOR_LEFT"
     GameTooltip:AddDoubleLine(L.LEFTCLICK, L.SETTINGS, 0, 1, 0, 1, 1, 1)
     if minimap then GameTooltip:AddDoubleLine(L.MIDDLECLICK, L.TAB_PRIORITIES, 0, 1, 0, 1, 1, 1) end
-    GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
+    -- Away from the bar "Lock" alone says nothing: it names what it locks
+    GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK_BAR or L.LOCK_BAR, 0, 1, 0, 1, 1, 1)
     if minimap then GameTooltip:AddDoubleLine(L.DRAG, L.MOVE, 0, 1, 0, 1, 1, 1) end
     GameTooltip:Show()
 end
