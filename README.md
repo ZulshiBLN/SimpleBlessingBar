@@ -111,12 +111,12 @@ closes when combat starts and opens again when combat ends. Every change takes e
 
 **General**
 - Language: automatic (the client's) or any of the eleven, switched without a reload.
-- Hide the bar in combat; hide the minimap button; **Show anchor**, on by default: the handle
-  stays visible - off, it shows only under the mouse.
+- Hide the bar in combat; hide the minimap button.
 - Scale, 0.5 to 2.0: drag the slider or type a number (a comma works too). Beside it **Window
   background (%)** for the settings and report windows: 0 shows none, 100 a solid one, 60 the
   look they always had.
-- Border on or off, and the background color with its opacity.
+- Border on or off; beside it **Show anchor**, on by default: the handle stays visible - off,
+  it shows only under the mouse. The background color with its opacity.
 - Orientation (horizontal or vertical) and the direction the bar grows.
 - **Demo mode**: plans a blessing and Salvation for every class, each with its default role,
   shows a sample Symbol count, and treats every aura and blessing as learned. Clicks cast

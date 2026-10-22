@@ -301,3 +301,13 @@ describe("the bar after a login in combat", function()
         assert.is_false(ns.barPending)
     end)
 end)
+
+describe("Show anchor's check box", function()
+    it("shares the row with Show border, to its right, as in SimpleConjureBar", function()
+        local ns = login()
+        SlashCmdList.SMARTBLESSINGBAR("") -- the row lays out its boxes when the window opens
+        local c = ns.UI.controls
+        assert.are.equal(c.border:GetParent(), c.showAnchor:GetParent())
+        assert.is_true(select(4, c.showAnchor:GetPoint(1)) > select(4, c.border:GetPoint(1)))
+    end)
+end)

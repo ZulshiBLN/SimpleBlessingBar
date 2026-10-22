@@ -39,7 +39,6 @@ controls.hideCombat, controls.hideMinimap = UI.AddCheckRow({
     { label = "OPT_HIDE_COMBAT",  key = "hideCombat",  onChange = function() ns.ApplyCombatHide() end },
     { label = "OPT_HIDE_MINIMAP", key = "hideMinimap", onChange = function() ns.ApplyMinimapButton() end },
 })
-controls.showAnchor = UI.AddCheck("OPT_SHOW_ANCHOR", "showAnchor", function() ns.ApplyAnchor() end)
 UI.AddSeparator()
 
 -- Scale: slider in 0.1 steps or number input (0.05 steps). It is the left column of its row;
@@ -131,7 +130,10 @@ controls.windowOpacity, controls.windowOpacityBox = UI.AddNumberSlider({
     end,
 })
 
-controls.border = UI.AddCheck("OPT_BORDER", "showBorder", function() ns.ApplyLook() end)
+controls.border, controls.showAnchor = UI.AddCheckRow({
+    { label = "OPT_BORDER",      key = "showBorder", onChange = function() ns.ApplyLook() end },
+    { label = "OPT_SHOW_ANCHOR", key = "showAnchor", onChange = function() ns.ApplyAnchor() end },
+})
 controls.bg = UI.AddSwatch("OPT_BG", "bg", 8)
 UI.AddSeparator()
 
