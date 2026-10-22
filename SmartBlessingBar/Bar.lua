@@ -387,7 +387,10 @@ end
 -- auras secret out of combat it lays out and writes the settings, and the planners wait.
 -- PLAYER_REGEN_ENABLED runs it again, which also applies anything ns.SetAttr skipped.
 function ns.Refresh(combatStart)
-    if not db or InCombatLockdown() then return end
+    -- Not before ns.InitBar placed the bar after a login in combat: re-anchoring the unplaced
+    -- bar would save its start position over the player's (ruleset plan
+    -- 2026-10-22-combat-login-position)
+    if not db or InCombatLockdown() or ns.barPending then return end
 
     -- The layout only when it changed (ruleset plan 2026-10-20-performance-pvp): the ticker runs
     -- this every second

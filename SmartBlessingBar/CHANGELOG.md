@@ -22,6 +22,9 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Fixed
 
+- After a login or `/reload` in combat the bar no longer jumps to its start place for good
+  when combat ends.
+
 - Buff & Run no longer raises a Lua error when the game reports no cooldown for the chosen
   blessing, as for a rank demo mode counts as known.
 

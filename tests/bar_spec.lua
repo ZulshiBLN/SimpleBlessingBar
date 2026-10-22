@@ -281,3 +281,23 @@ describe("Show anchor", function()
         assert.are.equal(1, h:GetAlpha())
     end)
 end)
+
+-- Ruleset plan 2026-10-22-combat-login-position (SimpleConjureBar's F-01): after a login in
+-- combat, a refresh that ran before the bar was positioned saved the start position over the
+-- player's
+describe("the bar after a login in combat", function()
+    it("keeps the saved position when a refresh runs before the end of combat is seen", function()
+        local ns = addon.load("enUS", { db = { point = "LEFT", rel = "BOTTOMLEFT", x = 300, y = 400 } })
+        STATE.combat = true
+        FIRE("PLAYER_LOGIN")
+        FIRE("UNIT_AURA", "player")
+        STATE.combat = false
+        RUNTIMERS()
+        assert.are.same({ "LEFT", "BOTTOMLEFT", 300, 400 },
+            { SmartBlessingBarDB.point, SmartBlessingBarDB.rel, SmartBlessingBarDB.x, SmartBlessingBarDB.y })
+        FIRE("PLAYER_REGEN_ENABLED")
+        assert.are.same({ "LEFT", "BOTTOMLEFT", 300, 400 },
+            { SmartBlessingBarDB.point, SmartBlessingBarDB.rel, SmartBlessingBarDB.x, SmartBlessingBarDB.y })
+        assert.is_false(ns.barPending)
+    end)
+end)
