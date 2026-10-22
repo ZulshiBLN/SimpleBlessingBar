@@ -94,7 +94,9 @@ blessing:SetScript("PreClick", function(_, mouseButton, down)
     -- No spell from an earlier click, should the choice below fail
     SetAttr(buffRun, "spell", nil)
     local spell = B.WithRead(function() return B.BuffRunSpell("target") end)
-    if spell and C_Spell.GetSpellCooldown(spell).startTime > 0 then
+    -- The client may answer no cooldown at all, as for a rank demo mode counts as known
+    local cd = spell and C_Spell.GetSpellCooldown(spell)
+    if cd and cd.startTime > 0 then
         SetAttr(blessing, "type3", nil)
         return
     end

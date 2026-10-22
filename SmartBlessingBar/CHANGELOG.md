@@ -3,6 +3,13 @@
 This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Buff & Run no longer raises a Lua error when the game reports no cooldown for the chosen
+  blessing, as for a rank demo mode counts as known.
+
 ## [1.0.0] - 2026-10-21
 
 ### Added

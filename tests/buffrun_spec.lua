@@ -103,6 +103,17 @@ describe("Buff & Run's middle click", function()
         assert.are.equal(1, STATE.targetedNext)
     end)
 
+    it("takes a spell the client answers no cooldown for, as an unlearned rank in demo mode", function()
+        local _, b = login({ class = "MAGE" }, { { class = "ROGUE" } })
+        local get = C_Spell.GetSpellCooldown
+        C_Spell.GetSpellCooldown = function() return nil end
+        local ok, err = pcall(press, b)
+        C_Spell.GetSpellCooldown = get
+        assert.is_true(ok, err)
+        assert.are.same({}, STATE.errors)
+        assert.are.equal(1, #STATE.casts)
+    end)
+
     it("only moves on in combat, also after a cooldown press just before it", function()
         local _, b = login({ class = "MAGE" }, { { class = "ROGUE" }, { class = "PRIEST" } })
         STATE.gcd = true
