@@ -22,6 +22,9 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Fixed
 
+- A right click on the minimap button or in the AddOn menu shows the new lock state in the
+  open tooltip at once, not only after the mouse left and came back.
+
 - In demo mode Buff & Run names what it would cast for other players too, not only for you:
   a rank you have not learned yet no longer counts as out of range.
 

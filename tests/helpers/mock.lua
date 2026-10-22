@@ -406,6 +406,7 @@ PixelUtil = { SetSize = function(f, w, h) f:SetSize(w, h) end }
 -- The tooltip records its lines: { left, right or nil, r, g, b } per AddLine / AddDoubleLine
 GameTooltip = NEWOBJ("GameTooltip")
 function GameTooltip:SetOwner(owner, anchor) self.owner, self.anchor, self.lines = owner, anchor, {} end
+function GameTooltip:IsOwned(frame) return self.shown == true and self.owner == frame end
 function GameTooltip:AddLine(text, r, g, b) table.insert(self.lines, { text, nil, r, g, b }) end
 function GameTooltip:AddDoubleLine(left, right, r, g, b) table.insert(self.lines, { left, right, r, g, b }) end
 function GameTooltip:SetSpellByID(id) self.spell = id; self.shown = true end

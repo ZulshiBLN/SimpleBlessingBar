@@ -141,3 +141,18 @@ describe("the options entry", function()
         assert.are.equal("DIALOG", window:GetFrameStrata())
     end)
 end)
+
+describe("the minimap button's right click", function()
+    it("shows the new lock state in the open tooltip at once", function()
+        local ns = login()
+        local L = ns.L
+        RUNSCRIPT(ns.minimapButton, "OnEnter")
+        RUNSCRIPT(ns.minimapButton, "OnClick", "RightButton")
+        assert.is_true(SmartBlessingBarDB.locked)
+        local found
+        for _, l in ipairs(GameTooltip.lines) do
+            if l[1] == L.RIGHTCLICK then found = l[2] end
+        end
+        assert.are.equal(L.UNLOCK, found)
+    end)
+end)
