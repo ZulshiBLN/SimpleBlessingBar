@@ -18,7 +18,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   the portrait menu, a battleground, an arena or a PvP zone. A flag that runs out, as after
   blessing a flagged player, does not count.
 - Every tooltip lists the clicks left, middle, right; the aura and Righteous Fury buttons name
-  whom their left click reaches.
+  whom their left click reaches. The minimap button and the AddOn menu say "Lock bar" and
+  "Unlock bar".
 
 ### Fixed
 
