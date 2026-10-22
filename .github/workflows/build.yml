@@ -90,6 +90,12 @@ jobs:
           fi
           echo "the checks refused all four wrong packages, as they must"
 
+      - name: A release's CHANGELOG entry is dated
+        if: inputs.tag != ''
+        run: |
+          version=$(grep -m1 -E '^## Version:' SmartBlessingBar/SmartBlessingBar.toc | sed -E 's/^## Version:[[:space:]]*//' | tr -d '\r[:space:]')
+          bash .github/scripts/check-changelog-heading.sh "$version" SmartBlessingBar/CHANGELOG.md
+
       # A develop commit is never a merge in main, so the release workflow's
       # first check must refuse it; on main, and on a release tag, it must pass.
       - name: Tag check
