@@ -146,7 +146,8 @@ bar:SetClampedToScreen(true)
 bar:SetPoint("CENTER", UIParent, "CENTER", 0, -150) -- start position, replaced at login
 ns.ApplyBackdrop(bar)
 
--- Drag handle; only visible while the mouse is over it, or while dragging
+-- Drag handle; visible while Show anchor is on, else only while the mouse is over it or while
+-- dragging (ruleset plan 2026-10-22-anchor-and-window-background)
 local handle = CreateFrame("Frame", nil, bar)
 ns.handle = handle
 handle:SetSize(10, SIZE)
@@ -170,12 +171,16 @@ local function ShowHandleTooltip(self)
     GameTooltip:AddDoubleLine(L.RIGHTCLICK, db.locked and L.UNLOCK or L.LOCK, 0, 1, 0, 1, 1, 1)
     GameTooltip:Show()
 end
+-- The handle's alpha is not protected: applied at once, in combat too
+function ns.ApplyAnchor()
+    handle:SetAlpha((db.showAnchor or handle.moving or handle:IsMouseOver()) and 1 or 0)
+end
 handle:SetScript("OnEnter", function(self)
     self:SetAlpha(1)
     ShowHandleTooltip(self)
 end)
 handle:SetScript("OnLeave", function(self)
-    if not self.moving then self:SetAlpha(0) end
+    if not self.moving then self:SetAlpha(db.showAnchor and 1 or 0) end
     GameTooltip:Hide()
 end)
 
@@ -291,7 +296,7 @@ local function StopDrag()
     if InCombatLockdown() then return end
     bar:StopMovingOrSizing()
     ns.ReAnchor()
-    if not handle:IsMouseOver() then handle:SetAlpha(0) end
+    ns.ApplyAnchor()
 end
 handle:SetScript("OnMouseUp", StopDrag)
 
@@ -467,6 +472,7 @@ local ticker
 -- At login. The bar is protected once it holds secure buttons, so after a /reload in
 -- combat its position waits for the end of combat.
 function ns.InitBar()
+    ns.ApplyAnchor()
     if InCombatLockdown() then
         ns.barPending = true
         return
