@@ -150,8 +150,13 @@ function B.Eligible(unit)
     return UnitExists(unit) and UnitIsConnected(unit) and not UnitIsDeadOrGhost(unit) and UnitIsVisible(unit)
 end
 
+-- The client gives no answer for a rank the player has not learned, which demo mode counts as
+-- known: there it counts as in range, so demo mode names what it would cast
 function B.InRange(spell, unit)
-    return UnitIsUnit(unit, "player") or C_Spell.IsSpellInRange(spell, unit) == true
+    if UnitIsUnit(unit, "player") then return true end
+    local answer = C_Spell.IsSpellInRange(spell, unit)
+    if answer == nil and ns.IsDemo() then return true end
+    return answer == true
 end
 
 -- The level a spell is learned at, a constant of the spell, kept for the session. Only a

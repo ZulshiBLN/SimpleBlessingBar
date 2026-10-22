@@ -557,7 +557,11 @@ C_Secrets = setmetatable({}, { __index = function(_, k)
   end
 end })
 C_Spell = {
-  IsSpellInRange = function(_, u) local r = U(u) return r ~= nil and r.range ~= false end,
+  -- The client gives no answer for a spell the player does not know
+  IsSpellInRange = function(id, u)
+    if not (STATE.known and STATE.known[id]) then return nil end
+    local r = U(u) return r ~= nil and r.range ~= false
+  end,
   GetSpellTexture = function(id) return "icon" .. id end,
   GetSpellName = function(id) return "spell" .. id end,
   GetSpellLevelLearned = function(id) return STATE.learned and STATE.learned[id] end,

@@ -22,6 +22,9 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Fixed
 
+- In demo mode Buff & Run names what it would cast for other players too, not only for you:
+  a rank you have not learned yet no longer counts as out of range.
+
 - After a login or `/reload` in combat the bar no longer jumps to its start place for good
   when combat ends.
 
