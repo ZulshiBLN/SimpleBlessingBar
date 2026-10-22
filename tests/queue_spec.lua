@@ -267,4 +267,17 @@ describe("the queue buttons' tooltips and right click", function()
         assert.is_false(ns.UI.window:IsShown())
         assert.is_truthy(CHAT[#CHAT]:find(ns.L.NOT_IN_COMBAT, 1, true))
     end)
+
+    -- SimpleConjureBar's F-04: "nothing left" hid that the ones in need are out of range
+    it("say that everyone in need is out of range, not that nothing is left", function()
+        local ns, bless = login({ group = "party", units = {
+            player = { class = "PALADIN", auras = { aura(M.normal[6], true) } },
+            party1 = { class = "MAGE", range = false } } })
+        assert.is_nil(bless:GetAttribute("spell1"))
+        assert.are.same({ ns.L.QUEUE_OUT_OF_RANGE }, tip(bless)[1])
+        STATE.units.party1.range = nil
+        FIRE("UNIT_AURA", "party1")
+        RUNTIMERS()
+        assert.are.same({ ns.L.LEFTCLICK, "party1" }, tip(bless)[1])
+    end)
 end)

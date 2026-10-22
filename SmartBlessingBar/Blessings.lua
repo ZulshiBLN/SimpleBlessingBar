@@ -357,7 +357,9 @@ function B.PlanBlessings()
     end
 
     local symbols = Symbols()
-    local queue, covered = {}, {}
+    -- `far`: members in need out of range, so the tooltip can say why nothing is left
+    -- (SimpleConjureBar's F-04)
+    local queue, covered, far = {}, {}, 0
     for _, class in ipairs(D.CLASS_ORDER) do
         local members = byClass[class]
         local family = members and GreaterFamily(members)
@@ -374,6 +376,8 @@ function B.PlanBlessings()
                     if B.InRange(spell, m.unit) then
                         target = target or m.unit
                         if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
+                    elseif m.chosen == family and m.mine ~= family then
+                        far = far + 1
                     end
                 end
             end
@@ -398,9 +402,12 @@ function B.PlanBlessings()
             local spell = B.Best(D.BLESSINGS[m.chosen].normal, m.unit)
             if spell and B.InRange(spell, m.unit) then
                 queue[#queue + 1] = { spell = spell, unit = m.unit }
+            elseif spell then
+                far = far + 1
             end
         end
     end
+    queue.far = far
     return queue, Symbols() - symbols
 end
 

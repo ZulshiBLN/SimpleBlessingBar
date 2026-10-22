@@ -37,7 +37,10 @@ local function ShowTooltip(b)
     else
         GameTooltip:SetText(b.title())
         -- Entries left but none to cast: every one held at combat start
-        GameTooltip:AddLine(b.left > 0 and L.QUEUE_HELD or L.QUEUE_EMPTY, 1, 1, 1)
+        -- Nothing to cast now: every entry held at combat start, or everyone in need out of range
+        local why = L.QUEUE_EMPTY
+        if b.left > 0 then why = L.QUEUE_HELD elseif (b.queue and b.queue.far or 0) > 0 then why = L.QUEUE_OUT_OF_RANGE end
+        GameTooltip:AddLine(why, 1, 1, 1)
     end
     local middle = b.middleClickText and b.middleClickText()
     if middle then GameTooltip:AddDoubleLine(L.MIDDLECLICK, middle, 1, 1, 1) end
