@@ -10,7 +10,7 @@ ns.D = D
 
 -- Schema version of SmartBlessingBarDB; a change to its shape raises it and ships a migration
 -- in ns.InitDB() (ruleset: project.md, Data)
-D.DB_VERSION = 11
+D.DB_VERSION = 12
 
 -- Salvation is no Blessing on Forever: it takes no blessing slot (checked in game,
 -- ruleset decisions 2026-10-19). Revoke, new on Forever, removes it.
@@ -151,6 +151,9 @@ D.MINIMAP_ICON_SIZE    = 21
 -- Settings with their defaults; numbers carry their range. Colors are copied into
 -- the settings, never referenced, so nothing written to the settings changes these tables.
 D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
+-- The settings and report windows' background as it looked before it could be set, in percent:
+-- matched by eye in game for SimpleConjureBar, which draws the same dialog texture
+D.WINDOW_OPACITY_TODAY = 60
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
@@ -158,6 +161,7 @@ D.BOOL_DEFAULTS = {
     autoBuy = false, hideMinimap = false, showBlessing = true, showSalvation = true,
     buffRun = true, -- version 9 (ruleset plan 2026-10-20-buff-and-run)
     pvpBlessing = false, -- version 10 (ruleset plan 2026-10-20-performance-pvp)
+    showAnchor = true, -- version 12 (ruleset plan 2026-10-22-anchor-and-window-background)
 }
 D.COLOR_DEFAULTS = {
     bg            = D.BG_COLOR,
@@ -172,6 +176,8 @@ D.COLOR_DEFAULTS = {
 }
 D.NUMBER_DEFAULTS = {
     scale               = { default = 1, min = D.SCALE_MIN, max = D.SCALE_MAX },
+    -- Version 12 (ruleset plan 2026-10-22-anchor-and-window-background)
+    windowOpacity       = { default = D.WINDOW_OPACITY_TODAY, min = 0, max = 100, integer = true },
     -- Minutes before an aura of mine runs out at which it is renewed; 0 = once it ran out
     renewMinutes        = { default = 5, min = 0, max = 15, integer = true },
     -- The same for Righteous Fury, which lasts 30 minutes; version 11 (ruleset plan

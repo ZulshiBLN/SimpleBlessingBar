@@ -215,3 +215,29 @@ describe("settings version 4", function()
         assert.are.same(once, SmartBlessingBarDB)
     end)
 end)
+
+-- Settings version 12 (ruleset plan 2026-10-22-anchor-and-window-background, criterion 1)
+describe("settings version 12", function()
+    it("adds Show anchor on and today's window background to a version 11 file", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 11 } })
+        ns.InitDB()
+        assert.are.equal(12, ns.D.DB_VERSION)
+        assert.are.equal(ns.D.DB_VERSION, SmartBlessingBarDB.dbVersion)
+        assert.is_true(SmartBlessingBarDB.showAnchor)
+        assert.are.equal(ns.D.WINDOW_OPACITY_TODAY, SmartBlessingBarDB.windowOpacity)
+    end)
+
+    it("keeps saved choices and repairs damaged ones", function()
+        local today = addon.load("enUS").D.WINDOW_OPACITY_TODAY
+        for saved, expected in pairs({ [30] = 30, [150] = 100, [-5] = 0, x = today }) do
+            local ns = addon.load("enUS", { db = { dbVersion = 12, showAnchor = false,
+                windowOpacity = saved == "x" and "x" or saved } })
+            ns.InitDB()
+            assert.is_false(SmartBlessingBarDB.showAnchor)
+            assert.are.equal(expected, SmartBlessingBarDB.windowOpacity, tostring(saved))
+        end
+        local ns = addon.load("enUS", { db = { dbVersion = 12, showAnchor = "yes" } })
+        ns.InitDB()
+        assert.is_true(SmartBlessingBarDB.showAnchor)
+    end)
+end)
