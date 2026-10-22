@@ -107,7 +107,14 @@ function Methods:SetBackdropBorderColor(r, g, b, a) self.borderColor = { r, g, b
 function Methods:StartMoving() Guard(self, "StartMoving"); self.moving = true end
 function Methods:StopMovingOrSizing() Guard(self, "StopMovingOrSizing"); self.moving = false end
 function Methods:RegisterForClicks(...) self.clicks = { ... } end
-function Methods:CreateTexture() return NEWOBJ("Texture") end
+-- A texture records its draw layer and sublevel, and its colour
+function Methods:CreateTexture(_, layer, _, sublevel)
+  local t = NEWOBJ("Texture")
+  t.layer, t.sublevel = layer, sublevel
+  return t
+end
+function Methods:SetDrawLayer(layer, sublevel) self.layer, self.sublevel = layer, sublevel end
+function Methods:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
 -- A mask texture, and the masks a texture carries (texture.masks)
 function Methods:CreateMaskTexture() return NEWOBJ("MaskTexture") end
 function Methods:AddMaskTexture(mask)
@@ -136,7 +143,15 @@ function Methods:IsMouseOver() return false end
 function Methods:GetName() return rawget(self, "name") end
 function Methods:GetPushedTexture() self.pushedTex = rawget(self, "pushedTex") or NEWOBJ("Texture"); return self.pushedTex end
 function Methods:GetHighlightTexture() self.hlTex = rawget(self, "hlTex") or NEWOBJ("Texture"); return self.hlTex end
-function Methods:SetBackdrop(b) self.backdrop = b end
+-- BackdropTemplate: SetBackdrop makes the centre piece the background is drawn on, in
+-- BACKGROUND
+function Methods:SetBackdrop(b)
+  self.backdrop = b
+  if not rawget(self, "Center") then
+    self.Center = NEWOBJ("Texture", nil, self)
+    self.Center.layer, self.Center.sublevel = "BACKGROUND", -8
+  end
+end
 function Methods:SetBackdropColor(r, g, b, a) self.backdropColor = { r, g, b, a } end
 function Methods:SetTexCoord(...) self.texCoord = { ... } end
 function Methods:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
