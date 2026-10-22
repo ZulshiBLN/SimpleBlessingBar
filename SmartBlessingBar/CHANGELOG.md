@@ -23,6 +23,9 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Fixed
 
+- The aura button moves on when another paladin runs the same aura as you. The game shows only
+  one of two equal auras, so his stayed hidden and yours looked free.
+
 - A right click on the minimap button or in the AddOn menu shows the new lock state in the
   open tooltip at once, not only after the mouse left and came back.
 

@@ -119,6 +119,25 @@ describe("the aura button", function()
         assert.is_true(b.ants:IsShown())
     end)
 
+    -- Ruleset plan 2026-10-22-hidden-equal-aura: equal auras do not stack, the game shows mine
+    -- on him and hides his
+    it("moves on from my aura on another paladin who shows none of his own", function()
+        local mine = { spellId = D_DEV, expirationTime = 0, source = "player", mine = true }
+        local _, D, b = withAuras({ group = "party", units = { party1 = { class = "PALADIN", auras = { mine } } } })
+        assert.are.equal(D.AURAS.RETRIBUTION[1], b:GetAttribute("spell1"))
+    end)
+
+    it("infers nothing beside his own aura, without my aura on him, or on a non-paladin", function()
+        local mine = { spellId = D_DEV, expirationTime = 0, source = "player", mine = true }
+        local his = { spellId = D_RET, expirationTime = 0, source = "party1" }
+        local _, D, b = withAuras({ group = "party", units = { party1 = { class = "PALADIN", auras = { mine, his } } } })
+        assert.are.equal(D.AURAS.DEVOTION[1], b:GetAttribute("spell1"))
+        _, D, b = withAuras({ group = "party", units = { party1 = { class = "PALADIN" } } })
+        assert.are.equal(D.AURAS.DEVOTION[1], b:GetAttribute("spell1"))
+        _, D, b = withAuras({ group = "party", units = { party1 = { class = "WARRIOR", auras = { mine } } } })
+        assert.are.equal(D.AURAS.DEVOTION[1], b:GetAttribute("spell1"))
+    end)
+
     it("takes the first known aura when every one is taken", function()
         local _, D, b = withAuras(own({ group = "party", units = { party1 = paladin(D_DEV), party2 = paladin(D_RET) } }))
         assert.are.equal(D.AURAS.DEVOTION[1], b:GetAttribute("spell1"))

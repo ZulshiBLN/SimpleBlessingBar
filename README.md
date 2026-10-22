@@ -44,7 +44,9 @@ a PvP zone; a flag that runs out does not count). Both are switched on the Gener
 **Auras** come from a priority list on the Priorities tab, so paladins need not agree who runs
 which: the button casts the first aura on your list that you know and no other paladin of your
 group runs - in a raid, of your subgroup, as an aura reaches no further. An aura you share with
-another paladin moves you on to your next one. With every aura taken, it casts the first you
+another paladin moves you on to your next one - also while the game shows only yours, as it
+does for two equal auras; both of you may then be offered the next one until one casts it.
+With every aura taken, it casts the first you
 know. In combat it keeps the aura chosen before.
 
 **Blessings.** Nothing is assigned: the addon decides for every member of your group.

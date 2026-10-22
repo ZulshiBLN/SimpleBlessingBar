@@ -555,11 +555,22 @@ local function TakenAuras()
     for i, unit in ipairs(members) do
         if not UnitIsUnit(unit, "player") and select(2, UnitClass(unit)) == "PALADIN" and UnitIsVisible(unit)
            and (not subgroup or select(3, GetRaidRosterInfo(i)) == subgroup) then
+            -- Equal auras do not stack: while he runs mine, the game shows mine on him and hides
+            -- his (ruleset plan 2026-10-22-hidden-equal-aura). My aura on him with none of his
+            -- own counts as his. An aura without a source is neither.
+            local myFamily, ownShown = nil, false
             for _, a in ipairs(B.Auras(unit)) do
-                if AURA_FAMILY[a.id] and not (a.source and UnitIsUnit(a.source, "player")) then
-                    taken[AURA_FAMILY[a.id]] = true
+                local family = AURA_FAMILY[a.id]
+                if family then
+                    if a.source and UnitIsUnit(a.source, "player") then
+                        myFamily = family
+                    else
+                        taken[family] = true
+                        ownShown = ownShown or (a.source ~= nil and UnitIsUnit(a.source, unit))
+                    end
                 end
             end
+            if myFamily and not ownShown then taken[myFamily] = true end
         end
     end
     return taken
