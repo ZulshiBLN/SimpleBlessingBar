@@ -5,6 +5,12 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ## [Unreleased]
 
+### Changed
+
+- Buff & Run blesses players flagged for PvP while you are flagged for good yourself - /pvp,
+  the portrait menu, a battleground, an arena or a PvP zone. A flag that runs out, as after
+  blessing a flagged player, does not count.
+
 ### Fixed
 
 - Buff & Run no longer raises a Lua error when the game reports no cooldown for the chosen

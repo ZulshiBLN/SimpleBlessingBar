@@ -593,8 +593,13 @@ function B.BuffRunSpell(unit)
     if not B.AurasReadable() then return end
     if not (UnitIsPlayer(unit) and UnitCanAssist("player", unit) and B.Eligible(unit)) then return end
     -- Blessing a PvP-flagged player flags the paladin too: only when allowed (Michel,
-    -- 2026-10-20), whether the paladin is flagged or not
-    if not db.pvpBlessing and UnitIsPVP(unit) then return end
+    -- 2026-10-20), or while the paladin is flagged for good - /pvp, the portrait menu, a
+    -- battleground, an arena or a PvP zone - and loses nothing. A flag that runs out came by
+    -- accident and does not count (Michel, 2026-10-22)
+    if UnitIsPVP(unit) and not db.pvpBlessing
+       and not (UnitIsPVP("player") and not IsPVPTimerRunning()) then
+        return
+    end
     if B.HasMyBlessing(unit) then return end
     local list = db.classLists[select(2, UnitClass(unit))]
     if not list then return end

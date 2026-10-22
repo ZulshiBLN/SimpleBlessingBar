@@ -471,6 +471,8 @@ UnitIsPlayer = function(u) local r = U(u) return r ~= nil and r.npc ~= true end
 UnitCanAssist = function(_, u) local r = U(u) return r ~= nil and r.hostile ~= true end
 -- Flagged for PvP when the record says `pvp`
 UnitIsPVP = function(u) local r = U(u) return r ~= nil and r.pvp == true end
+-- The player's PvP flag runs out (5 minutes) when STATE.pvpTimer is set
+IsPVPTimerRunning = function() return STATE.pvpTimer == true end
 -- A player's GUID: the record's guid, else one made from the record, the same for every token
 UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
 -- The group role the game reports: the record's role, else "NONE"
