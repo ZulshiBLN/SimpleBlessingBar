@@ -32,6 +32,21 @@ describe("settings", function()
         assert.are.same(once, SmartBlessingBarDB)
     end)
 
+    -- The 1.1.0 review's F-03: a lost version ran version 8's conversion again over current lists
+    it("keep a current aura list and class lists when the version is lost or damaged", function()
+        for _, version in ipairs({ "x", false, "none" }) do
+            local saved = { dbVersion = version ~= "none" and version or nil,
+                auraList = { "FIRE", "DEVOTION", "RETRIBUTION", "CONCENTRATION", "SHADOW", "FROST", "SANCTITY" },
+                classLists = { MAGE = { order = { "KINGS", "WISDOM" }, off = { MIGHT = true, LIGHT = true } } } }
+            local ns = addon.load("enUS", { db = saved })
+            ns.InitDB()
+            local db = SmartBlessingBarDB
+            assert.are.equal("FIRE", db.auraList[1], tostring(version))
+            assert.are.same({ "KINGS", "WISDOM" }, db.classLists.MAGE.order, tostring(version))
+            assert.are.same({ MIGHT = true, LIGHT = true }, db.classLists.MAGE.off, tostring(version))
+        end
+    end)
+
     it("replace a damaged aura, lock and position", function()
         local ns = addon.load("enUS", { db = {
             dbVersion = 2, assign = "x", aura = "FOO", locked = "yes",

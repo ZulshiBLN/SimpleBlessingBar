@@ -127,6 +127,18 @@ describe("the aura button", function()
         assert.are.equal(D.AURAS.RETRIBUTION[1], b:GetAttribute("spell1"))
     end)
 
+    -- The 1.1.0 review's F-05: a third paladin's aura on him is not his own
+    it("moves on from my aura on another paladin who shows only a third paladin's aura", function()
+        local mine = { spellId = D_DEV, expirationTime = 0, source = "player", mine = true }
+        local third = { spellId = D_RET, expirationTime = 0, source = "party2" }
+        local _, D, b = withAuras({ group = "party", units = {
+            party1 = { class = "PALADIN", auras = { mine, third } }, party2 = { class = "PALADIN" } } })
+        STATE.known[D.AURAS.CONCENTRATION[1]] = true
+        FIRE("UNIT_AURA", "party1")
+        refresh()
+        assert.are.equal(D.AURAS.CONCENTRATION[1], b:GetAttribute("spell1"))
+    end)
+
     it("infers nothing beside his own aura, without my aura on him, or on a non-paladin", function()
         local mine = { spellId = D_DEV, expirationTime = 0, source = "player", mine = true }
         local his = { spellId = D_RET, expirationTime = 0, source = "party1" }

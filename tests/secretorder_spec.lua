@@ -65,6 +65,20 @@ describe("secret values", function()
         assertCheckedFirst(loop, "realm", "KnownNames' name and realm")
     end)
 
+    -- The 1.1.0 review's F-05: a secret instance ID must not become a table key, and the mock
+    -- cannot catch a secret used as a key either
+    it("are not used as a key: Scan keys an aura by its instance only after B.SpellOf", function()
+        local scan = region(source("Blessings.lua"), "local function Scan", "^end")
+        local loops = 0
+        for body in scan:gmatch("while true do(.-)\n    end") do
+            loops = loops + 1
+            local key = body:find("[aura.auraInstanceID]", 1, true)
+            local check = body:find("B.SpellOf(aura)", 1, true)
+            assert.is_truthy(key and check and check < key, body)
+        end
+        assert.are.equal(2, loops)
+    end)
+
     it("are not asked for at all for a token outside the group", function()
         addon.load("enUS")
         FIRE("PLAYER_LOGIN"); RUNTIMERS()
