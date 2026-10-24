@@ -431,6 +431,80 @@ describe("the bug report window", function()
         assert.is_true(again.reportWindow:IsShown())
     end)
 
+    it("carries the area key and both texts, and offers every area", function()
+        local ns = login()
+        grabber({}, 1)
+        ns.OpenBugReport()
+        local f = ns.reportWindow
+        f.desc:SetText("The aura button does nothing"); RUNSCRIPT(f.desc, "OnTextChanged", true)
+        f.details:SetText("after a reload in combat"); RUNSCRIPT(f.details, "OnTextChanged", true)
+        local entries = MENU(f.areaMenu)
+        assert.are.equal(#ns.D.REPORT_AREAS, #entries)
+        for i, key in ipairs(ns.D.REPORT_AREAS) do
+            assert.are.equal(ns.ReportAreaText(key), entries[i].text)
+            assert.is_truthy(entries[i].text and entries[i].text ~= "", key)
+        end
+        assert.is_true(entries[#entries].selected) -- OTHER until one is chosen
+        entries[3].pick()                           -- AURA
+        local text = f.BuildText()
+        assert.is_truthy(text:find("**Area:** AURA", 1, true), text)
+        assert.is_truthy(text:find("The aura button does nothing", 1, true))
+        assert.is_truthy(text:find("after a reload in combat", 1, true))
+        assert.are.equal(text, f.report:GetText())
+    end)
+
+    it("names the areas in the language just switched to", function()
+        local ns = login()
+        ns.OpenBugReport()
+        local menu = ns.reportWindow.areaMenu
+        local before = rawget(menu, "generated") or 0
+        ns.ApplyLanguage("deDE")
+        assert.is_true((rawget(menu, "generated") or 0) > before)
+        assert.are.equal(ns.locales.deDE.AREA_OTHER, MENU(menu)[#ns.D.REPORT_AREAS].text)
+    end)
+
+    it("does not open in combat, closes when combat starts and comes back after it", function()
+        local ns = login()
+        grabber({}, 1)
+        _G.CHAT = {}
+        STATE.combat = true
+        ns.OpenBugReport()
+        assert.is_false(ns.reportWindow:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.REPORT_COMBAT, 1, true))
+        STATE.combat = false
+        ns.OpenBugReport()
+        assert.is_true(ns.reportWindow:IsShown())
+        FIRE("PLAYER_REGEN_DISABLED")
+        assert.is_false(ns.reportWindow:IsShown())
+        FIRE("PLAYER_REGEN_ENABLED"); RUNTIMERS()
+        assert.is_true(ns.reportWindow:IsShown())
+    end)
+
+    it("keeps the window shut while a name is secret, and keeps the last clean report", function()
+        local ns = login()
+        grabber({}, 1)
+        _G.CHAT = {}
+        STATE.secretName = true
+        ns.OpenBugReport()
+        assert.is_false(ns.reportWindow:IsShown())
+        assert.is_truthy(CHAT[#CHAT]:find(ns.L.REPORT_SECRET, 1, true))
+        STATE.secretName = false
+        ns.OpenBugReport()
+        local f = ns.reportWindow
+        local before = f.report:GetText()
+        STATE.secretName = true
+        f.desc:SetText("Aldric saw it"); RUNSCRIPT(f.desc, "OnTextChanged", true)
+        assert.are.equal(before, f.report:GetText())
+    end)
+
+    it("says what the report holds and that an issue is public", function()
+        local ns = login()
+        ns.OpenBugReport()
+        local f = ns.reportWindow
+        assert.are.equal(ns.L.REPORT_PRIVACY, f.privacy:GetText())
+        assert.are.equal(ns.L.REPORT_PUBLIC, f.public:GetText())
+    end)
+
     it("is listed by /sbb help", function()
         local ns = login()
         SlashCmdList.SMARTBLESSINGBAR("help")

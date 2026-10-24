@@ -6,7 +6,7 @@
 local _, ns = ...
 if not ns.enabled then return end
 
-local D = ns.D
+local D, L = ns.D, ns.L
 local SetL = ns.SetL
 
 local db
@@ -311,22 +311,63 @@ end
 -- Window
 ---------------------------------------------------------------------------
 local frame
+local MAX_TEXT = 500 -- letters of the description and of the details
+
+-- The text of an area: most areas are parts of the addon that already have a name
+local AREA_KEYS = { BLESSINGS = "BTN_BLESSINGS", SALVATION = "SALVATION", AURA = "TRACK_AURA",
+    FURY = "RIGHTEOUS_FURY", BUFF_RUN = "BUFF_RUN", PRIORITIES = "TAB_PRIORITIES",
+    SUPPLIES = "TAB_SUPPLIES", SETTINGS = "SETTINGS" }
+function ns.ReportAreaText(key)
+    return L[AREA_KEYS[key] or ("AREA_" .. key)]
+end
 
 local function SelectReport()
     frame.report:SetFocus()
     frame.report:HighlightText()
 end
 
+local function FormValues()
+    return { description = frame.desc:GetText(), area = frame.area, details = frame.details:GetText() }
+end
+
+-- Each keystroke rebuilds the report; while a name is secret the last clean one stays
 local function Refresh()
-    local text = ns.BuildReport({ description = frame.desc:GetText() })
-    if not text then return end -- a name is secret: the last clean report stays
+    local text = ns.BuildReport(FormValues())
+    if not text then
+        ns.Print(L.REPORT_SECRET)
+        return
+    end
     frame.reportText = text
     frame.report:SetText(frame.reportText)
     frame.report:SetCursorPosition(0)
 end
 
+-- A one-line text field: typing rebuilds the report, Enter selects it for copying
+local function AddInput(anchor, width)
+    local box = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    box:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 6, -4)
+    box:SetSize(width, 22)
+    box:SetAutoFocus(false)
+    box:SetMaxLetters(MAX_TEXT)
+    box:SetScript("OnTextChanged", function(_, userInput) if userInput then Refresh() end end)
+    box:SetScript("OnEnterPressed", SelectReport)
+    box:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    return box
+end
+
+local function AddText(anchor, font, key, width, gap)
+    local text = frame:CreateFontString(nil, "OVERLAY", font)
+    text:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, gap)
+    if width then
+        text:SetWidth(width)
+        text:SetJustifyH("LEFT")
+    end
+    SetL(text, key)
+    return text
+end
+
 local function CreateWindow()
-    local W, H, PAD = 520, 420, 22
+    local W, H, PAD = 520, 580, 22
     frame = CreateFrame("Frame", "SmartBlessingBarReport", UIParent, "BackdropTemplate")
     ns.reportWindow = frame
     frame:SetSize(W, H)
@@ -353,23 +394,47 @@ local function CreateWindow()
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", -6, -6)
 
-    -- Step 1: optional description
-    local step1 = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    step1:SetPoint("TOPLEFT", PAD, -50)
-    SetL(step1, "REPORT_STEP1")
-    local desc = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-    desc:SetPoint("TOPLEFT", step1, "BOTTOMLEFT", 6, -4)
-    desc:SetSize(W - 2 * PAD - 6, 22)
-    desc:SetAutoFocus(false)
-    desc:SetMaxLetters(300)
-    desc:SetScript("OnTextChanged", function(_, userInput) if userInput then Refresh() end end)
-    desc:SetScript("OnEnterPressed", SelectReport)
-    desc:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    frame.desc = desc
+    -- What the report holds and never holds, and that an issue is public (ruleset plan
+    -- 2026-10-24-bug-report)
+    local top = CreateFrame("Frame", nil, frame)
+    top:SetPoint("TOPLEFT", PAD, -40)
+    top:SetSize(1, 1)
+    frame.privacy = AddText(top, "GameFontHighlightSmall", "REPORT_PRIVACY", W - 2 * PAD, 0)
+    frame.public = AddText(frame.privacy, "GameFontNormalSmall", "REPORT_PUBLIC", W - 2 * PAD, -4)
+
+    -- Step 1: what happened, where (a list, so the developer knows where to look), details
+    local step1 = AddText(frame.public, "GameFontHighlight", "REPORT_STEP1", nil, -10)
+    frame.desc = AddInput(step1, W - 2 * PAD - 6)
+
+    local where = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    where:SetPoint("TOPLEFT", frame.desc, "BOTTOMLEFT", -6, -14)
+    SetL(where, "REPORT_WHERE")
+    frame.area = "OTHER"
+    local menu = CreateFrame("DropdownButton", nil, frame, "WowStyle1DropdownTemplate")
+    menu:SetPoint("LEFT", where, "RIGHT", 12, 0)
+    menu:SetWidth(240)
+    menu:SetupMenu(function(_, root)
+        for _, key in ipairs(D.REPORT_AREAS) do
+            root:CreateRadio(ns.ReportAreaText(key), function() return frame.area == key end,
+                function() frame.SetArea(key) end)
+        end
+    end)
+    frame.areaMenu = menu
+    function frame.SetArea(key)
+        frame.area = key
+        menu:GenerateMenu()
+        Refresh()
+    end
+    -- The dropdown shows its selection's text as of its last generation: regenerated so a
+    -- language switch does not keep the old language's word (as in SimpleConjureBar)
+    ns.OnLanguageChanged(function() menu:GenerateMenu() end)
+
+    local detailsLabel = AddText(where, "GameFontHighlight", "REPORT_DETAILS", nil, -16)
+    frame.details = AddInput(detailsLabel, W - 2 * PAD - 6)
 
     -- Step 2: the report, selected for Ctrl+C (read-only)
     local step2 = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    step2:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", -6, -12)
+    step2:SetPoint("TOPLEFT", frame.details, "BOTTOMLEFT", -6, -12)
     SetL(step2, "REPORT_STEP2")
 
     local scroll = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
@@ -420,12 +485,38 @@ local function CreateWindow()
     SetL(done, "CLOSE")
     done:SetScript("OnClick", function() frame:Hide() end)
 
+    -- Built out of combat only: names and auras are readable then. The window closes when
+    -- combat starts and comes back after it, as the settings window does.
     frame:SetScript("OnShow", function()
+        if InCombatLockdown() then
+            frame:Hide()
+            ns.Print(L.REPORT_COMBAT)
+            return
+        end
+        -- A secret name could not be filtered: no report until it is readable again
+        if not ns.KnownNames() then
+            frame:Hide()
+            ns.Print(L.REPORT_SECRET)
+            return
+        end
         -- also when the background was set while the window was closed
         ns.ApplyWindowOpacity(frame)
         Refresh()
         SelectReport()
     end)
+    local reopen = false
+    local events = CreateFrame("Frame")
+    events:RegisterEvent("PLAYER_REGEN_DISABLED")
+    events:RegisterEvent("PLAYER_REGEN_ENABLED")
+    events:SetScript("OnEvent", function(_, event)
+        if event == "PLAYER_REGEN_DISABLED" then
+            if frame:IsShown() then reopen = true; frame:Hide() end
+        elseif reopen then
+            reopen = false
+            C_Timer.After(0, function() frame:Show() end)
+        end
+    end)
+    function frame.BuildText() return ns.BuildReport(FormValues()) end
     frame:Hide()
 end
 
@@ -434,5 +525,8 @@ function ns.OpenBugReport()
     if not frame then CreateWindow() end
     ns.CloseSettings()
     frame.desc:SetText("")
+    frame.details:SetText("")
+    frame.area = "OTHER"
+    frame.areaMenu:GenerateMenu()
     if frame:IsShown() then Refresh() SelectReport() else frame:Show() end
 end
