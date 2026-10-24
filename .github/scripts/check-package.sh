@@ -49,7 +49,8 @@ trap 'rm -rf "$work" "$lists"' EXIT
         echo "${line//\\//}"
     done < "$toc"
 } | sort -u > "$lists/files"
-sed -n 's|/[^/]*$||p' "$lists/files" | sort -u > "$lists/folders"
+# every folder above a listed file: libs/X/X.lua allows libs/X and libs
+awk -F/ '{ p = ""; for (i = 1; i < NF; i++) { p = p (i > 1 ? "/" : "") $i; print p } }' "$lists/files" | sort -u > "$lists/folders"
 (cd "$dir" && find . -mindepth 1 ! -type d | sed 's|^\./||' | sort) > "$lists/shipped"
 (cd "$dir" && find . -mindepth 1 -type d | sed 's|^\./||' | sort) > "$lists/shipped-folders"
 extra=$(comm -23 "$lists/shipped" "$lists/files")
