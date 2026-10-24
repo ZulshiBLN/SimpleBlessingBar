@@ -510,8 +510,13 @@ UnitCanAssist = function(_, u) local r = U(u) return r ~= nil and r.hostile ~= t
 UnitIsPVP = function(u) local r = U(u) return r ~= nil and r.pvp == true end
 -- The player's PvP flag runs out (5 minutes) when STATE.pvpTimer is set
 IsPVPTimerRunning = function() return STATE.pvpTimer == true end
--- A player's GUID: the record's guid, else one made from the record, the same for every token
-UnitGUID = function(u) local r = U(u) return r and (r.guid or tostring(r)) end
+-- A player's GUID: the record's guid, else one made from the record, the same for every token.
+-- STATE.guidAsked counts the calls per token.
+UnitGUID = function(u)
+  STATE.guidAsked = STATE.guidAsked or {}
+  STATE.guidAsked[u] = (STATE.guidAsked[u] or 0) + 1
+  local r = U(u) return r and (r.guid or tostring(r))
+end
 -- The group role the game reports: the record's role, else "NONE"
 -- Forever has no realms: the second value is the character's second name (decisions.md,
 -- 2026-10-18), here the record's `surname`

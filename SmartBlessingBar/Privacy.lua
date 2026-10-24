@@ -56,7 +56,6 @@ local function Secret(v) return issecretvalue and issecretvalue(v) end
 function ns.KnownNames()
     local names, secret = {}, false
     local function Add(v)
-        if v == nil then return end
         if Secret(v) then secret = true return end
         if type(v) == "string" and #v >= 2 then names[#names + 1] = v end
     end
@@ -66,7 +65,7 @@ function ns.KnownNames()
     for _, u in ipairs(units) do
         local name, realm = UnitName(u)
         Add(name); Add(realm)
-        if name and realm and not Secret(name) and not Secret(realm) and realm ~= "" then
+        if not Secret(name) and not Secret(realm) and name and realm and realm ~= "" then
             Add(name .. "-" .. realm)
         end
     end

@@ -78,7 +78,7 @@ end
 -- client withholds or keeps secret falls back to the token
 local function PersonKey(unit)
     local guid = UnitGUID(unit)
-    if guid == nil or issecretvalue(guid) then return unit end
+    if issecretvalue(guid) or guid == nil then return unit end
     return guid
 end
 
@@ -147,8 +147,11 @@ keptEvents:RegisterEvent("GROUP_ROSTER_UPDATE")
 keptEvents:RegisterEvent("PLAYER_ENTERING_WORLD")
 keptEvents:SetScript("OnEvent", function(_, event, unit)
     if event == "UNIT_AURA" then
-        local guid = unit and UnitGUID(unit)
-        if guid ~= nil and not issecretvalue(guid) then kept[guid] = nil end
+        -- Lists are kept under group tokens only, and a member's group token always fires;
+        -- nameplates and the like fire far more often and need no GUID
+        if not (unit and GroupToken(unit)) then return end
+        local guid = UnitGUID(unit)
+        if not issecretvalue(guid) and guid then kept[guid] = nil end
     else
         kept = {}
     end
