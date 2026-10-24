@@ -98,7 +98,17 @@ jobs:
           if bash .github/scripts/check-package.sh "$RUNNER_TEMP/withtools-zip/$(basename "$zip")" .release/release.json; then
               echo "the check accepted a zip with tools/"; exit 1
           fi
-          echo "the checks refused all five wrong packages, as they must"
+          # Only the addon's own files ship: a stray file is refused too (ruleset plan
+          # 2026-10-24-review-code-fixes)
+          stray="$RUNNER_TEMP/stray"
+          mkdir -p "$stray" && unzip -q "$zip" -d "$stray"
+          echo "notes" > "$stray/SmartBlessingBar/notes.txt"
+          mkdir -p "$RUNNER_TEMP/stray-zip"
+          (cd "$stray" && zip -q -r "$RUNNER_TEMP/stray-zip/$(basename "$zip")" SmartBlessingBar)
+          if bash .github/scripts/check-package.sh "$RUNNER_TEMP/stray-zip/$(basename "$zip")" .release/release.json; then
+              echo "the check accepted a zip with a stray file"; exit 1
+          fi
+          echo "the checks refused all six wrong packages, as they must"
 
       - name: A release's CHANGELOG entry is dated
         if: inputs.tag != ''
