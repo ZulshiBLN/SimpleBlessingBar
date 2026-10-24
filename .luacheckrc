@@ -63,7 +63,7 @@ files["tests/"] = {
 -- file and exits with a status (ruleset plan 2026-10-24-bug-report).
 files["tools/"] = {
     std = "lua51",
-    read_globals = { "io", "os", "arg", "debug", "dofile" },
+    read_globals = { "io", "os", "arg", "debug", "dofile", "loadfile" },
 }
 
 -- The mock *is* the WoW API: defining client globals is its whole job.

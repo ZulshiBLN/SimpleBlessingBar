@@ -472,6 +472,61 @@ describe("the state snapshot", function()
     end)
 end)
 
+-- The 1.1.0 review's F-06 and F-05 and the audit's S-05
+describe("the report's own values", function()
+    it("leave a secret buff out, and say when buffs cannot be read", function()
+        local ns = login()
+        local D = ns.D
+        local hidden = D.AURAS.RETRIBUTION[1]
+        STATE.units.player.auras = { { spellId = hidden, expirationTime = 0 },
+            { spellId = D.AURAS.DEVOTION[1], expirationTime = 0 } }
+        STATE.secrets = { [hidden] = true }
+        assert.is_truthy(contains(ns.StateSnapshot(), "^buffs " .. D.AURAS.DEVOTION[1] .. ":%-$"))
+        STATE.secrets = nil
+        STATE.aurasSecret = true
+        assert.is_truthy(contains(ns.StateSnapshot(), "^buffs unreadable$"))
+    end)
+
+    it("report the addon language through the allowlist", function()
+        local ns = login()
+        SmartBlessingBarGlobalDB.language = "Testplayer"
+        assert.is_truthy(build(ns, "OTHER"):find("addon language: <text:10>", 1, true))
+    end)
+
+    it("filter the realm in both spellings, a two-letter name, and a name with its second name whole", function()
+        local ns = login()
+        STATE.realm, STATE.normalizedRealm = "Twin Peaks", "TwinPeaks"
+        STATE.units.player = { name = "Testplayer", surname = "Testsecond", class = "PALADIN" }
+        STATE.units.party1 = { name = "Al", class = "MAGE" }
+        STATE.group = "party"
+        local names = ns.KnownNames()
+        assert.are.equal("<name> and <name> and <name> hit <name> on <name>",
+            ns.Scrub("Twin Peaks and TwinPeaks and Al hit Testplayer-Testsecond on Testsecond", names))
+    end)
+
+    it("take errors without a session number only from after the addon loaded", function()
+        local ns = login()
+        STATE.now = (STATE.now or 0) + 100
+        _G.BugGrabber = { GetDB = function() return {
+            ourError(time() - 99999, nil, { message = "Interface/AddOns/SmartBlessingBar/Bar.lua:1: before" }),
+            ourError(time() - 5, nil, { message = "Interface/AddOns/SmartBlessingBar/Bar.lua:2: after" }),
+        } end }
+        local text = build(ns, "OTHER")
+        assert.is_truthy(text:find("after", 1, true), text)
+        assert.is_nil(text:find("before", 1, true), text)
+    end)
+
+    it("filter names and paths in the loaded addons", function()
+        local ns = login()
+        STATE.units.player = { name = "Testplayer", class = "PALADIN" }
+        STATE.addons = { { name = "Testplayer_Tools", version = "C:\\Users\\JohnRoe\\x", loaded = true },
+            { name = "Testplayer", version = "1.0", loaded = true } }
+        local text = build(ns, "OTHER")
+        assert.is_nil(text:find("JohnRoe", 1, true), text)
+        assert.is_truthy(text:find("addon <name> 1.0", 1, true), text)
+    end)
+end)
+
 describe("the loaded addons", function()
     it("are listed by folder name and version, at most 60", function()
         local ns = login()
@@ -567,6 +622,15 @@ describe("the bug report window", function()
         STATE.secretName = true
         f.desc:SetText("Aldric saw it"); RUNSCRIPT(f.desc, "OnTextChanged", true)
         assert.are.equal(before, f.report:GetText())
+        -- the review's F-11: one line in chat however much is typed, again once it changes back
+        local said = #CHAT
+        for i = 1, 10 do f.desc:SetText("typed " .. i); RUNSCRIPT(f.desc, "OnTextChanged", true) end
+        assert.are.equal(said, #CHAT)
+        STATE.secretName = false
+        f.desc:SetText("clean"); RUNSCRIPT(f.desc, "OnTextChanged", true)
+        STATE.secretName = true
+        f.desc:SetText("secret again"); RUNSCRIPT(f.desc, "OnTextChanged", true)
+        assert.are.equal(said + 1, #CHAT)
     end)
 
     it("says what the report holds and that an issue is public", function()

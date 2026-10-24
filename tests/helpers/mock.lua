@@ -632,7 +632,8 @@ UnitFullName = function()
   return r.name or "Aldric", r.surname or "Vane"
 end
 GetRealmName = function() return STATE.realm or "Forever" end
-GetNormalizedRealmName = function() return STATE.realm or "Forever" end
+-- STATE.normalizedRealm: the realm without spaces, where it differs
+GetNormalizedRealmName = function() return STATE.normalizedRealm or STATE.realm or "Forever" end
 GetGuildInfo = function() return STATE.guild end
 -- The Unix clock, moving with STATE.now as GetTime does
 time = function() return 1800000000 + math.floor(STATE.now or 0) end

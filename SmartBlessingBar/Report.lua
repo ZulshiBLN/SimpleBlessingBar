@@ -69,19 +69,21 @@ local function QueueLine(label, b)
     return ("queue %s left=%d held=%d far=%d"):format(label, b.left or 0, held, queue.far or 0)
 end
 
+-- The player's buffs, as the aura rule allows reading them; a buff with a secret field is left out
 local function OwnBuffs()
+    local okRead, readable = pcall(ns.Blessings.AurasReadable)
+    if not (okRead and readable) then return "unreadable" end
     local parts = {}
     local GetAura = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
     for i = 1, 40 do
         local ok, aura = pcall(GetAura, "player", i, "HELPFUL")
         if not ok or not aura then break end
-        local okLeft, left = pcall(function()
+        local id = ns.Blessings.SpellOf(aura)
+        if id then
             local e = aura.expirationTime
-            if type(e) == "number" and e > 0 then return math.floor((e - GetTime()) / 60 + 0.5) .. "m" end
-            return "-"
-        end)
-        local okId, id = pcall(tostring, aura.spellId)
-        parts[#parts + 1] = (okId and id or "?") .. ":" .. (okLeft and left or "?")
+            local left = type(e) == "number" and e > 0 and math.floor((e - GetTime()) / 60 + 0.5) .. "m" or "-"
+            parts[#parts + 1] = tostring(id) .. ":" .. left
+        end
     end
     return table.concat(parts, " ")
 end
@@ -272,7 +274,7 @@ function ns.BuildReport(form)
         "- Addon version: " .. ns.VERSION,
         "- Client: " .. tostring(version) .. " (build " .. tostring(build) .. ", interface " .. tostring(interface) .. ")",
         "- Client locale: " .. tostring(GetLocale()) .. ", addon language: "
-            .. tostring(SmartBlessingBarGlobalDB.language or "auto"),
+            .. ns.SafeValue(SmartBlessingBarGlobalDB.language or "auto"),
         "- Character: " .. tostring(classFile) .. ", level " .. LevelBand()
             .. (IsInRaid() and ", raid" or IsInGroup() and ", party" or ", solo"),
         "- Settings: " .. SettingsText(),
@@ -347,13 +349,16 @@ local function FormValues()
     return { description = frame.desc:GetText(), area = frame.area, details = frame.details:GetText() }
 end
 
--- Each keystroke rebuilds the report; while a name is secret the last clean one stays
+-- Each keystroke rebuilds the report; while a name is secret the last clean one stays, and the
+-- chat says so once, not on every key
 local function Refresh()
     local text = ns.BuildReport(FormValues())
     if not text then
-        ns.Print(L.REPORT_SECRET)
+        if not frame.secretSaid then ns.Print(L.REPORT_SECRET) end
+        frame.secretSaid = true
         return
     end
+    frame.secretSaid = false
     frame.reportText = text
     frame.codeText = ns.ReportCode.Encode(text)
     ShowBox()

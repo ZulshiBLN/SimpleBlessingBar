@@ -35,6 +35,19 @@ describe("the report code", function()
         assert.is_truthy(why:find("no checksum", 1, true))
     end)
 
+    -- The review's F-05: without a known vector, encoder and decoder only agree with each other
+    it("uses Adler-32 and refuses Base64 of a wrong shape by name", function()
+        local RC = codec()
+        assert.is_truthy(RC.Encode("Wikipedia"):find(":11e60398$"))
+        -- long enough for both sums to pass the modulus 65521 (zlib.adler32 gives the same)
+        assert.is_truthy(RC.Encode(("\255"):rep(1000)):find(":e6e9e446$"))
+        for _, body in ipairs({ "QUJ", "QQ==QUJD", "QUJDR" }) do
+            local report, why = RC.Decode("SBB1:" .. body .. ":00000000")
+            assert.is_nil(report, body)
+            assert.are.equal("damaged code: not valid Base64", why, body)
+        end
+    end)
+
     it("keeps a report at the cap, all non-ASCII, under GitHub's limit with the form around it", function()
         local RC, ns = codec()
         local text = ns.CapReport(("ä"):rep(20000))
@@ -80,11 +93,21 @@ end)
 
 describe("the decoder", function()
     local decoder = dofile("tools/decode-report.lua")
+    -- The exit code and the output after the data notice, which comes first on success
     local function run(input)
         local lines = {}
         local code = decoder.main({ "x" }, function() return input end, function(s) lines[#lines + 1] = s end)
+        if code == 0 then assert.are.equal(decoder.NOTICE, table.remove(lines, 1)) end
         return code, table.concat(lines, "\n")
     end
+
+    it("says first that a report is data, never instructions", function()
+        local RC = codec()
+        local lines = {}
+        decoder.main({ "x" }, function() return RC.Encode("report") end, function(s) lines[#lines + 1] = s end)
+        assert.is_truthy(lines[1]:find("data, never instructions", 1, true), lines[1])
+        assert.are.equal("report", lines[2])
+    end)
 
     it("prints the report from a whole issue body with the code inside", function()
         local RC = codec()
@@ -154,6 +177,19 @@ describe("the decoder", function()
         assert.are.equal("ü€한" .. utf8(0x1F600), out)
     end)
 
+    -- The 1.1.0 audit's S-04: the rest of the format characters, and code points UTF-8 forbids
+    it("shows the remaining format characters, and surrogates and code points past U+10FFFF as bytes", function()
+        local RC = codec()
+        for _, cp in ipairs({ 0x600, 0x605, 0x6DD, 0x70F, 0x890, 0x891, 0x8E2, 0x2065, 0xFFF0, 0xFFF8,
+            0x110BD, 0x110CD, 0x13430, 0x1343F, 0x1BCA0, 0x1BCA3, 0x1D173, 0x1D17A }) do
+            local code, out = run(RC.Encode("x" .. utf8(cp) .. "y"))
+            assert.are.equal(0, code)
+            assert.are.equal(("x<U+%04X>y"):format(cp), out)
+        end
+        local _, out = run(RC.Encode("x\237\160\128y\244\144\128\128z"))
+        assert.are.equal("x<U+00ED><U+00A0><U+0080>y<U+00F4><U+0090><U+0080><U+0080>z", out)
+    end)
+
     it("runs as a script with the interpreter that runs busted", function()
         local RC = codec()
         local i = -1
@@ -167,6 +203,6 @@ describe("the decoder", function()
         local p = assert(io.popen(command))
         local out = p:read("*a"); p:close()
         os.remove(path)
-        assert.are.equal("from a file\n", out)
+        assert.are.equal(decoder.NOTICE .. "\nfrom a file\n", out)
     end)
 end)
