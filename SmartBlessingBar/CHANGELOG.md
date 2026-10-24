@@ -50,7 +50,7 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 - The bug report holds no date or clock and no settings it does not know, and filters the names
   the game knows - both of a character's names on Forever, group, pets, target, guild - also
-  beside punctuation, in Chinese, Japanese and Korean text and in Latin and Cyrillic capitals,
+  beside punctuation, in Chinese, Japanese and Korean text and in Latin-1 and Cyrillic capitals,
   and GUIDs, BattleTags, e-mail addresses, every file path on a line and characters that show
   nothing, from what you write and from errors. It opens out of combat only and not while a name
   cannot be read. README explains what it holds, what can remain and how reports are handled.

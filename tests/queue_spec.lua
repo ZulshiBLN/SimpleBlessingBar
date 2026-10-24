@@ -291,6 +291,17 @@ describe("the queue buttons' tooltips and right click", function()
             party1 = { class = "MAGE", range = false }, party2 = { class = "ROGUE", range = false } } })
         assert.is_nil(salv:GetAttribute("spell1"))
         assert.are.same({ ns.L.QUEUE_OUT_OF_RANGE }, tip(salv)[1])
+        -- out of range but not in need: carrying Salvation, a tank, too low for it
+        for _, far in ipairs({ { class = "MAGE", range = false, auras = { aura(D.SALVATION) } },
+                               { class = "WARRIOR", range = false, role = "TANK" },
+                               { class = "MAGE", range = false, level = 1 } }) do
+            ns, _, salv = login({ group = "party", units = {
+                player = { class = "PALADIN", auras = { aura(M.normal[6], true), aura(D.SALVATION, true) } },
+                party1 = far } })
+            STATE.learned = { [D.SALVATION] = 26 } -- fits from level 16
+            ns.Refresh()
+            assert.are.same({ ns.L.QUEUE_EMPTY }, tip(salv)[1], far.class .. tostring(far.role) .. tostring(far.level))
+        end
     end)
 
     -- The 1.1.0 review's F-07: a member out of range was counted in the Greater loop and again

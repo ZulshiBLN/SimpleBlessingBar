@@ -224,8 +224,10 @@ describe("the report's privacy", function()
         for _, c in ipairs(cases) do
             assert.are.equal(c[2], ns.Scrub(c[1], names), c[1])
         end
-        -- a name inside a longer word of a spaced script stays a word
-        assert.are.equal("Testplayerish Иванов Tèstnameé", ns.Scrub("Testplayerish Иванов Tèstnameé", names))
+        -- a name inside a longer word of a spaced script stays a word, before or after it
+        assert.are.equal("Testplayerish Иванов Tèstnameé çTestplayer жИван", ns.Scrub("Testplayerish Иванов Tèstnameé çTestplayer жИван", names))
+        -- the fold covers Latin-1 and basic Cyrillic only, as README says
+        assert.are.equal("łukasz <name>", ns.Scrub("łukasz ÉMILE", { "Łukasz", "Émile" }))
     end)
 
     -- The 1.1.0 audit's S-02 and S-03 and the code review's F-01
@@ -248,6 +250,10 @@ describe("the report's privacy", function()
             { "Test\205\143player x", { "Test" }, "<name> x" },                 -- U+034F
             { "Test\227\133\164player x", { "Test" }, "<name> x" },             -- U+3164
         }
+        -- an error text with hundreds of paths on one line: no stack overflow, every path gone
+        local many = ns.Scrub(("C:\\a.lua:1: "):rep(400) .. ("\\\\:1"):rep(300), names)
+        assert.is_nil(many:find("C:\\", 1, true))
+        assert.is_nil(many:find("\\\\", 1, true))
         for _, c in ipairs(cases) do
             local out = ns.Scrub(c[1], names)
             for _, bad in ipairs(c[2]) do

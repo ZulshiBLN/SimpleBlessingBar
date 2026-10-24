@@ -139,22 +139,25 @@ local function Fold(s)
     end))
 end
 
--- Whole words only, in any case Fold knows, found as plain text (names may hold "-", "'")
-local function ReplaceName(text, name)
-    local lowText, lowName = Fold(text), Fold(name)
-    local out, pos, from = {}, 1, 1
+-- Whole words only, in any case Fold knows, found as plain text (names may hold "-", "'").
+-- `lowText` is Fold(text), kept beside it so the text is folded once, not once per name; both
+-- come back with the same replacements.
+local function ReplaceName(text, lowText, name)
+    local lowName = Fold(name)
+    local out, lowOut, pos, from = {}, {}, 1, 1
     while true do
         local s, e = lowText:find(lowName, from, true)
         if not s then break end
         if Edge(lowText, s - 1, true) and Edge(lowText, e + 1, false) then
-            out[#out + 1] = text:sub(pos, s - 1)
-            out[#out + 1] = "<name>"
+            out[#out + 1], lowOut[#lowOut + 1] = text:sub(pos, s - 1), lowText:sub(pos, s - 1)
+            out[#out + 1], lowOut[#lowOut + 1] = "<name>", "<name>"
             pos = e + 1
         end
         from = e + 1
     end
-    out[#out + 1] = text:sub(pos)
-    return table.concat(out)
+    if pos == 1 then return text, lowText end
+    out[#out + 1], lowOut[#lowOut + 1] = text:sub(pos), lowText:sub(pos)
+    return table.concat(out), table.concat(lowOut)
 end
 
 local GUID_KINDS = { "Player", "Pet", "Creature", "Vehicle", "GameObject", "Item" }
@@ -187,21 +190,27 @@ end
 
 -- Folders that hold a user's name: a path from one of them runs to a quote, bracket or line
 -- end, spaces included ("C:\Users\First Last\..."). Its line number stays readable, and the
--- rest of the line after it is filtered again: it may hold a second path.
+-- rest of the line stays for the next round: it may hold a second path. A replaced path holds
+-- no root, so the rounds end; a loop, not a recursion, so hundreds of paths overflow nothing.
 local HOME_ROOTS = { "%f[%a]%a:[\\/]", "\\\\", "/Users/", "/home/", "/Volumes/", "/Applications/",
     "/run/media/", "/media/", "%f[%w]Users[\\/]" }
+local function Path(p)
+    local s = p:find(":%d+")
+    if not s then return "<path>" end
+    return "<path>" .. p:sub(s)
+end
 
 function ns.Scrub(text, names)
     text = Visible(tostring(text or ""))
     -- A path ends at Interface/AddOns, whatever drive or folder the game sits in
     text = text:gsub("%a:[\\/][^%[%]\"'\n]-[\\/][Ii]nterface[\\/][Aa]dd[Oo]ns[\\/]", "Interface/AddOns/")
     text = text:gsub("Interface[\\/]AddOns[\\/][^%]%s\"']*", function(p) return (p:gsub("\\", "/")) end)
-    local function Path(p)
-        local s, e = p:find(":%d+:?")
-        if not s then return "<path>" end
-        return "<path>" .. p:sub(s, e) .. ns.Scrub(p:sub(e + 1), names)
+    -- after each change from the first root again, so "/Users/" is never taken for "Users/"
+    local i = 1
+    while i <= #HOME_ROOTS do
+        local after = text:gsub(HOME_ROOTS[i] .. "[^%[%]\"'\n]*", Path)
+        if after ~= text then text, i = after, 1 else i = i + 1 end
     end
-    for _, root in ipairs(HOME_ROOTS) do text = text:gsub(root .. "[^%[%]\"'\n]*", Path) end
     text = text:gsub("%f[%a][Ww][Tt][Ff][\\/][^%[%]\"'\n]*", "<wtf>")
     -- The frontier starts a match only where a run of address characters starts: without it a
     -- long run of non-ASCII text would be scanned again from every byte
@@ -209,9 +218,11 @@ function ns.Scrub(text, names)
     for _, kind in ipairs(GUID_KINDS) do
         text = text:gsub(kind .. "%-%d+%-[%x%-]+", "<guid>")
     end
-    text = text:gsub("[^%s#<>\"'=%[%]]+#%d%d%d%d+", "<tag>")
-    text = text:gsub("%d+#%d+", "<tag>") -- an account folder, "12345678#1"
-    for _, name in ipairs(names or {}) do text = ReplaceName(text, name) end
+    -- a frontier as for e-mail: a match starts only where a run starts
+    text = text:gsub("%f[^%s#<>\"'=%[%]][^%s#<>\"'=%[%]]+#%d%d%d%d+", "<tag>")
+    text = text:gsub("%f[%d]%d+#%d+", "<tag>") -- an account folder, "12345678#1"
+    local low = Fold(text)
+    for _, name in ipairs(names or {}) do text, low = ReplaceName(text, low, name) end
     return text
 end
 

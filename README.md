@@ -263,11 +263,11 @@ public**: everyone can read it. Write no names or personal data into the form's 
 - **What it filters out** - free text and error messages pass a filter for character, guild,
   group and pet names the game knows right now - on Forever both of a character's names -
   GUIDs, BattleTags, account folders, e-mail addresses, the WTF folder and file paths outside
-  `Interface/AddOns`, and characters that show nothing. Names are matched as whole words in any
-  case for Latin and Cyrillic letters; beside punctuation and inside Chinese, Japanese or Korean
-  text they are found too. A name you type that the game does not know, one that is part of a
-  longer word - an addon folder named after yourself, say - or one in Greek or other capitals
-  can still remain. Check with "Show content".
+  `Interface/AddOns`, and characters that show nothing. Names are matched as whole words, in
+  any case for Western European (Latin-1) and basic Cyrillic letters; beside punctuation and
+  inside Chinese, Japanese or Korean text they are found too. A name you type that the game does
+  not know, one that is part of a longer word - an addon folder named after yourself, say - or
+  one in other capitals (`Ł`, Greek) can still remain. Check with "Show content".
 - **Where it is kept** - the action log in memory only, gone at logout; nothing is written to
   your saved variables for the report.
 - **Deletion** - see "Data protection" below.

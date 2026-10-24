@@ -47,6 +47,16 @@ describe("settings", function()
         end
     end)
 
+    it("take a version 7 file's role lists over any class lists it holds", function()
+        local ns = addon.load("enUS", { db = { dbVersion = 7,
+            classLists = { MAGE = { order = { "MIGHT" }, off = {} } },
+            roleLists = { CASTER = { order = { "KINGS", "WISDOM" }, off = { MIGHT = true, LIGHT = true } } } } })
+        ns.InitDB()
+        local role = ns.D.CLASS_ROLES.MAGE[1]
+        assert.are.equal("CASTER", role) -- the mage's default role, as this file assumes
+        assert.are.same({ "KINGS", "WISDOM" }, SmartBlessingBarDB.classLists.MAGE.order)
+    end)
+
     it("replace a damaged aura, lock and position", function()
         local ns = addon.load("enUS", { db = {
             dbVersion = 2, assign = "x", aura = "FOO", locked = "yes",
