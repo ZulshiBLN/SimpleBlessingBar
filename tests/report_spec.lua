@@ -228,6 +228,35 @@ describe("the report's privacy", function()
         assert.are.equal("Testplayerish Иванов Tèstnameé", ns.Scrub("Testplayerish Иванов Tèstnameé", names))
     end)
 
+    -- The 1.1.0 audit's S-02 and S-03 and the code review's F-01
+    it("filters a second path on a line, more home folders, and hidden marks inside a name", function()
+        local ns = login()
+        local names = { "Testplayer" }
+        local cases = {
+            { "C:\\Users\\JohnRoe\\a.lua:1: in C:\\Users\\JohnRoe\\b.lua:2", { "JohnRoe" }, "<path>:1: in <path>:2" },
+            { "C:\\Users\\Jane Doe\\Desktop\\a.lua:1: in C:\\Users\\Jane Doe\\b.lua:2", { "Jane", "Doe" },
+              "<path>:1: in <path>:2" },
+            { "/Users/janedoe/a.lua:3: then /Users/janedoe/b.lua:4", { "janedoe" }, "<path>:3: then <path>:4" },
+            { "x \\\\SERVER\\JaneDoe\\f.lua:5: and \\\\SERVER\\JaneDoe\\g.lua", { "JaneDoe" }, "x <path>:5: and <path>" },
+            { "D:\\x.lua:5: see C:\\Users\\Jane Roe\\f", { "Jane Roe" }, "<path>:5: see <path>" },
+            { "on /media/janeroe/Games/wow", { "janeroe" }, "on <path>" },
+            { "on /run/media/janeroe/wow", { "janeroe" }, "on <path>" },
+            { "in Users\\Jane Roe\\Games", { "Jane Roe" }, "in <path>" },
+            { "write jérôme@example.ch now", { "jérôme", "j\195" }, "write <email> now" },
+            { "Testplayer\239\184\143 x", { "Testplayer" }, "<name> x" },       -- U+FE0F
+            { "Testplayer\204\129 x", { "Testplayer" }, "<name> x" },           -- U+0301
+            { "Test\205\143player x", { "Test" }, "<name> x" },                 -- U+034F
+            { "Test\227\133\164player x", { "Test" }, "<name> x" },             -- U+3164
+        }
+        for _, c in ipairs(cases) do
+            local out = ns.Scrub(c[1], names)
+            for _, bad in ipairs(c[2]) do
+                assert.is_nil(out:find(bad, 1, true), c[1] .. " -> " .. out)
+            end
+            assert.are.equal(c[3], out, c[1])
+        end
+    end)
+
     it("knows both of the player's Forever names, pets and the target's target", function()
         local ns = login()
         STATE.units.player = { name = "Firstname", surname = "Secondname", class = "PALADIN" }

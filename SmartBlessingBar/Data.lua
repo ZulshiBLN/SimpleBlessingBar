@@ -160,6 +160,19 @@ D.REPORT_SAFE = {
     "^%l%l%u%u$", "^auto$",                                 -- locale codes
     "^/click SmartBlessingBarBuffRun LeftButton 1$", "^/targetfriendplayer$",
 }
+-- Characters that show nothing, as code point ranges: zero-width and format characters,
+-- direction marks, fillers, variation selectors, tag characters, line separators. Inside or
+-- beside a name they hide it, in a decoded report they hide text from the reader. The report
+-- drops them, tools/decode-report.lua shows them as <U+XXXX> (ruleset plan
+-- 2026-10-24-report-filter-fixes).
+D.HIDDEN = {
+    { 0xAD, 0xAD }, { 0x34F, 0x34F }, { 0x600, 0x605 }, { 0x61C, 0x61C }, { 0x6DD, 0x6DD },
+    { 0x70F, 0x70F }, { 0x890, 0x891 }, { 0x8E2, 0x8E2 }, { 0x115F, 0x1160 }, { 0x17B4, 0x17B5 },
+    { 0x180B, 0x180F }, { 0x200B, 0x200F }, { 0x2028, 0x202E }, { 0x2060, 0x206F },
+    { 0x3164, 0x3164 }, { 0xFE00, 0xFE0F }, { 0xFEFF, 0xFEFF }, { 0xFFA0, 0xFFA0 },
+    { 0xFFF0, 0xFFFB }, { 0x110BD, 0x110BD }, { 0x110CD, 0x110CD }, { 0x13430, 0x1343F },
+    { 0x1BCA0, 0x1BCA3 }, { 0x1D173, 0x1D17A }, { 0xE0000, 0xE007F }, { 0xE0100, 0xE01EF },
+}
 
 ---------------------------------------------------------------------------
 -- Look: SimpleConjureBar's, so both addons read as one family
