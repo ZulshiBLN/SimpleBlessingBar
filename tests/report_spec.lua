@@ -80,7 +80,7 @@ local function poison(db)
     local free = "Testplayer-Testrealm and partyone saw Tèstname\226\128\139 hit Raidseven, Totguy, Focusguy,"
         .. " Mouseguy, Tradeguy, Petname and Partypet in Testguild; Player-1111-0AAAAAAA Somebody#1234"
         .. " 12345678#1 john.doe@example.com C:\\Users\\Some One\\x.lua /home/linuxsomeone/wow"
-        .. " /Users/macsomeone/wow \\\\server\\Shareuser\\x WTF\\Account\\MYACCOUNT\\x"
+        .. " /Users/macsomeone/wow \\\\server\\Shareuser\\x"
     grabber({ ourError(time(), 1, {
         message = "Interface/AddOns/SmartBlessingBar/Bar.lua:10: " .. free,
         stack = "[C:\\Program Files\\World of Warcraft\\_forever_\\Interface\\AddOns\\SmartBlessingBar\\Bar.lua]:10: in function 'Targetguy'",
@@ -112,7 +112,8 @@ describe("the report's privacy", function()
     it("lets no name, GUID, tag, address or path through, and every line is a listed field", function()
         local ns, db = login()
         local free = poison(db)
-        local text = build(ns, "OTHER", free, "details: " .. free)
+        -- a path runs to the line end: the WTF folder gets a field of its own
+        local text = build(ns, "OTHER", free, "WTF\\Account\\MYACCOUNT\\x")
         assertClean(ns, text)
         -- what the developer needs is still there
         assert.is_truthy(text:find("<name>", 1, true))
@@ -136,10 +137,13 @@ describe("the report's privacy", function()
             names = function(t, _) return scrub(t, {}) end,
             paths = function(t, names) return (scrub(t, names):gsub("<path>", "C:\\Users\\Some One")) end,
             addresses = function(t, names) return (scrub(t, names):gsub("<email>", "john.doe@example.com")) end,
+            guids = function(t, names) return (scrub(t, names):gsub("<guid>", "Player-1111-0AAAAAAA")) end,
+            tags = function(t, names) return (scrub(t, names):gsub("<tag>", "Somebody#1234")) end,
+            wtf = function(t, names) return (scrub(t, names):gsub("<wtf>", "WTF\\Account\\MYACCOUNT")) end,
         }
         for what, weak in pairs(escapes) do
             ns.Scrub = weak
-            local ok = pcall(assertClean, ns, build(ns, "OTHER", free, free))
+            local ok = pcall(assertClean, ns, build(ns, "OTHER", free, "WTF\\Account\\MYACCOUNT\\x"))
             assert.is_false(ok, what)
         end
         ns.Scrub = scrub
@@ -149,6 +153,11 @@ describe("the report's privacy", function()
         ns.blessingButton:SetAttribute("unit1", "Partyone")
         assert.is_false(pcall(assertClean, ns, build(ns, "OTHER")), "the allowlist")
         ns.IsSafe = safe
+        -- a line of no listed field: the field check notices it
+        local fields = ns.D.REPORT_FIELDS
+        ns.D.REPORT_FIELDS = { { pattern = "^## SmartBlessingBar bug report$" } }
+        assert.is_false(pcall(assertClean, ns, build(ns, "OTHER")), "the field check")
+        ns.D.REPORT_FIELDS = fields
     end)
 
     -- The gaps SimpleConjureBar's security audit found in the free-text filter (its S-01 to S-03)
