@@ -13,8 +13,12 @@ Built for **WoW Forever**. Loads for paladins only.
   pay off, the best rank each player can take. A number shows how many are left.
 - **Other paladins count:** what they already gave is skipped, so nobody blesses twice.
 - **Renewed in time:** the button glows a few minutes before a blessing runs out.
+- **Says why it waits:** with nothing to cast, the tooltip tells you - everyone in need is
+  out of range, or the cast waits for the end of combat.
 - **Buff & Run:** middle-click to bless the player you target and jump to the next one -
-  perfect for blessing passers-by in town.
+  perfect for blessing passers-by in town. It never flags you for PvP: a flagged player is
+  blessed only while you are flagged for good yourself, or when you allow it.
+- **Light on your game:** your group's buffs are read again only when they change.
 
 ![Blessing button and Buff & Run](https://raw.githubusercontent.com/ZulshiBLN/SmartBlessingBar/main/.previews/02-blessing-button-buff-and-run.jpg)
 
