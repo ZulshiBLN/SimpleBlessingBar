@@ -415,7 +415,9 @@ function B.PlanBlessings()
         if spell then
             -- Only members in range count, so a cast that misses the others is not repeated.
             -- Members it does not fit count for nothing: they get a normal one that fits.
-            local lacking, target, exceptions = 0, nil, false
+            -- Members out of range count as far only if the Greater one covers them; if not,
+            -- the normal loop below counts them
+            local lacking, target, exceptions, farHere = 0, nil, false, 0
             for _, m in ipairs(members) do
                 m.fitsGreater = B.Fits(spell, m.unit)
                 if m.fitsGreater then
@@ -424,7 +426,7 @@ function B.PlanBlessings()
                         target = target or m.unit
                         if m.chosen == family and m.mine ~= family then lacking = lacking + 1 end
                     elseif m.chosen == family and m.mine ~= family then
-                        far = far + 1
+                        farHere = farHere + 1
                     end
                 end
             end
@@ -433,6 +435,7 @@ function B.PlanBlessings()
             local useGreater = greaterStrength > normalStrength
                 or (greaterStrength == normalStrength and IsInRaid() and lacking >= D.RAID_GREATER_MIN)
             if useGreater and (lacking == 0 or symbols > 0) then
+                far = far + farHere
                 if lacking > 0 then
                     symbols = symbols - 1
                     queue[#queue + 1] = { spell = spell, unit = target, greater = true, hold = exceptions, class = class }
@@ -476,17 +479,20 @@ end
 -- Symbols the blessing queue already plans. Out of combat only.
 function B.PlanSalvation(symbolsUsed)
     if not B.Known(D.SALVATION) then return {} end
-    local byClass, classes, position = {}, {}, {}
+    -- `far`: non-tanks out of range who lack it, so the tooltip can say why nothing is left
+    local byClass, classes, position, far = {}, {}, {}, 0
     for i, r in ipairs(Roster()) do
         position[r] = i
+        local tank = B.RoleOf(r.unit, r.class) == "TANK"
         if B.InRange(D.SALVATION, r.unit) then
-            local tank = B.RoleOf(r.unit, r.class) == "TANK"
             local m = { unit = r.unit, tank = tank, has = HasSalvation(r.unit, not tank), at = r }
             if not byClass[r.class] then
                 byClass[r.class] = {}
                 classes[#classes + 1] = r.class
             end
             table.insert(byClass[r.class], m)
+        elseif not tank and not HasSalvation(r.unit, true) and B.Fits(D.SALVATION, r.unit) then
+            far = far + 1
         end
     end
 
@@ -526,6 +532,7 @@ function B.PlanSalvation(symbolsUsed)
     local queue = mass
     for _, e in ipairs(revoke) do queue[#queue + 1] = e end
     for _, e in ipairs(single) do queue[#queue + 1] = e end
+    queue.far = far
     return queue
 end
 

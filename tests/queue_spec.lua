@@ -283,4 +283,27 @@ describe("the queue buttons' tooltips and right click", function()
         RUNTIMERS()
         assert.are.same({ ns.L.LEFTCLICK, "party1" }, tip(bless)[1])
     end)
+
+    -- The 1.1.0 review's F-08: the Salvation button said "nothing left" for members out of range
+    it("say so for Salvation too", function()
+        local ns, _, salv = login({ group = "party", units = {
+            player = { class = "PALADIN", auras = { aura(M.normal[6], true), aura(D.SALVATION, true) } },
+            party1 = { class = "MAGE", range = false }, party2 = { class = "ROGUE", range = false } } })
+        assert.is_nil(salv:GetAttribute("spell1"))
+        assert.are.same({ ns.L.QUEUE_OUT_OF_RANGE }, tip(salv)[1])
+    end)
+
+    -- The 1.1.0 review's F-07: a member out of range was counted in the Greater loop and again
+    it("count each member out of range once", function()
+        local ns = login({ group = "raid", units = {
+            player = { class = "PALADIN", auras = { aura(M.normal[6], true) } },
+            raid1 = { class = "PALADIN" },
+            raid2 = { class = "WARRIOR", range = false }, raid3 = { class = "WARRIOR", range = false },
+            raid4 = { class = "WARRIOR", range = false } } }, { M.greater[1] }, 0)
+        STATE.units.raid1 = STATE.units.player
+        ns.Refresh()
+        local line
+        for _, l in ipairs(ns.StateSnapshot()) do if l:find("^queue BLESSING ") then line = l end end
+        assert.is_truthy(line:find(" far=3$"), line)
+    end)
 end)
