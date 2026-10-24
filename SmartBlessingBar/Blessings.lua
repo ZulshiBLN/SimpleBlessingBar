@@ -42,7 +42,20 @@ end
 ---------------------------------------------------------------------------
 local read -- { auras = key -> list, known = id -> bool, level = unit -> level } during a read
 
-function B.BeginRead() read = { auras = {}, known = {}, level = {} } end
+-- A group member's buffs kept beyond the read (ruleset plan 2026-10-24-kept-snapshots): GUID ->
+-- { list, at }, used while younger than D.SNAPSHOT_MAX_AGE and dropped on his UNIT_AURA, a
+-- roster change or a loading screen. Members only: the client reports UNIT_AURA for a unit
+-- that has a token, and a stranger Buff & Run just blessed has lost `target` before his buff
+-- lands. A kept list is read-only.
+local kept = {}
+
+function B.BeginRead()
+    read = { auras = {}, known = {}, level = {} }
+    local now = GetTime()
+    for guid, k in pairs(kept) do
+        if now - k.at >= D.SNAPSHOT_MAX_AGE then kept[guid] = nil end
+    end
+end
 function B.EndRead() read = nil end
 
 -- The error with the stack where it happened, for BugSack, as a rethrow would lose it
@@ -95,6 +108,18 @@ end
 
 local NONE = {}
 
+-- A token that names a group member: the client keeps reporting his UNIT_AURA under it
+local function GroupToken(unit)
+    return unit == "player" or unit:find("^party%d$") ~= nil or unit:find("^raid%d%d?$") ~= nil
+end
+
+-- How many members' buffs are kept, for the bug report's state
+function B.KeptCount()
+    local n = 0
+    for _ in pairs(kept) do n = n + 1 end
+    return n
+end
+
 -- The buffs a unit carries. Demo mode reads none; `real` reads them there too - the aura
 -- button's own aura - kept apart from demo mode's empty answer.
 function B.Auras(unit, real)
@@ -103,12 +128,31 @@ function B.Auras(unit, real)
     if not read then return Scan(unit) end
     local key = PersonKey(unit)
     local list = read.auras[key]
-    if not list then
+    if list then return list end
+    -- A key that is the token itself has no GUID behind it: never kept
+    local k = key ~= unit and kept[key]
+    if k and GetTime() - k.at < D.SNAPSHOT_MAX_AGE then
+        list = k.list
+    else
         list = Scan(unit)
-        read.auras[key] = list
+        if key ~= unit and GroupToken(unit) then kept[key] = { list = list, at = GetTime() } end
     end
+    read.auras[key] = list
     return list
 end
+
+local keptEvents = CreateFrame("Frame")
+keptEvents:RegisterEvent("UNIT_AURA")
+keptEvents:RegisterEvent("GROUP_ROSTER_UPDATE")
+keptEvents:RegisterEvent("PLAYER_ENTERING_WORLD")
+keptEvents:SetScript("OnEvent", function(_, event, unit)
+    if event == "UNIT_AURA" then
+        local guid = unit and UnitGUID(unit)
+        if guid ~= nil and not issecretvalue(guid) then kept[guid] = nil end
+    else
+        kept = {}
+    end
+end)
 
 -- The one test of a known spell; in demo mode every spell counts as known
 function B.Known(id)

@@ -147,6 +147,7 @@ describe("the blessing and Salvation buttons", function()
         RUNSCRIPT(bless, "OnEnter")
         assert.are.equal(M.normal[6], GameTooltip.spell)
         STATE.units.player.auras = { aura(M.normal[6], true) }
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         RUNSCRIPT(bless, "OnEnter")
         assert.are.equal(ns.L.BTN_BLESSINGS, GameTooltip:GetText())
@@ -202,6 +203,7 @@ describe("the queue buttons' tooltips and right click", function()
         assert.are.equal(D.SALVATION, salv:GetAttribute("spell1"))
         assert.are.same({ { L.LEFTCLICK, "player" } }, tip(salv)) -- the player first, then Jaina
         STATE.units.player.auras = { aura(D.SALVATION, true) }
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         assert.are.same({ { L.LEFTCLICK, "Jaina" } }, tip(salv))
     end)
@@ -240,6 +242,7 @@ describe("the queue buttons' tooltips and right click", function()
     it("name the right click on the blessing button also with nothing to cast", function()
         local ns, bless = login()
         STATE.units.player.auras = { aura(M.normal[6], true) }
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         local lines = tip(bless)
         assert.are.equal(ns.L.BTN_BLESSINGS, GameTooltip:GetText())

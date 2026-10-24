@@ -162,6 +162,7 @@ describe("the aura button", function()
     it("counts no aura whose spell is a secret", function()
         local _, D, b = withAuras(own({ group = "party", units = { party1 = paladin(D_DEV) } }))
         STATE.secrets = { [D.AURAS.DEVOTION[1]] = true }
+        FIRE("UNIT_AURA", "party1")
         refresh()
         assert.are.equal(D.AURAS.DEVOTION[1], b:GetAttribute("spell1"))
         assert.are.same({}, STATE.errors)
@@ -257,6 +258,7 @@ describe("the Righteous Fury button", function()
         assert.is_true(b.ants:IsShown())
         assert.is_false(b.icon:IsDesaturated())
         STATE.units.player.auras = { { spellId = rf, expirationTime = 1800, mine = true } }
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         assert.is_false(b.ants:IsShown())
         assert.is_false(b.icon:IsDesaturated())
@@ -303,6 +305,7 @@ describe("Righteous Fury's renewal", function()
     end
     local function furyLeft(ns, seconds)
         STATE.units.player.auras = { { spellId = ns.D.RIGHTEOUS_FURY, expirationTime = STATE.now + seconds, mine = true } }
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         return ns.furyButton.ants:IsShown()
     end
@@ -320,6 +323,7 @@ describe("Righteous Fury's renewal", function()
         SmartBlessingBarDB.furyRenewMinutes = 0
         assert.is_false(furyLeft(ns, 10))
         STATE.units.player.auras = {}
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         assert.is_true(ns.furyButton.ants:IsShown())
     end)
@@ -328,6 +332,7 @@ describe("Righteous Fury's renewal", function()
         local ns = tankLogin(nil)
         assert.is_false(furyLeft(ns, 10))
         STATE.units.player.auras = {}
+        FIRE("UNIT_AURA", "player")
         ns.Refresh()
         assert.is_false(ns.furyButton.ants:IsShown())
     end)

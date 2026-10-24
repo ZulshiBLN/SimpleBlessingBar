@@ -91,6 +91,7 @@ describe("the blessing button", function()
     it("changes only after combat when the group changes in it", function()
         local _, D, b = login({ known = known(19740, 20217), group = "party", units = { party1 = { class = "MAGE" } } })
         STATE.units.player.auras = { { spellId = D.BLESSINGS.MIGHT.normal[1], expirationTime = 3600, mine = true } }
+        FIRE("UNIT_AURA", "player")
         TICK()
         assert.are.equal("party1", b:GetAttribute("unit1"))
         STATE.combat = true
@@ -118,7 +119,9 @@ describe("the refresh", function()
         RUNTIMERS()
         assert.are.equal("", b.count:GetText())
 
+        -- a lost buff the client did not report: the ticker sees it once the snapshot is 10 s old
         STATE.units.player.auras = {}
+        STATE.now = (STATE.now or 0) + 11
         TICK()
         assert.are.equal("1", b.count:GetText())
 
@@ -178,12 +181,12 @@ describe("the refresh", function()
             RUNTIMERS()
             assert.are.equal("2", b.count:GetText(), unit)
         end
-        FIRE("UNIT_AURA", "party1")
+        FIRE("UNIT_AURA", "player")
         RUNTIMERS()
         assert.are.equal("1", b.count:GetText())
         STATE.units.party1.auras = myMight(D)
         STATE.units.party1.auras[1].mine = true
-        FIRE("UNIT_AURA", "raid1")
+        FIRE("UNIT_AURA", "party1")
         RUNTIMERS()
         assert.are.equal("", b.count:GetText())
     end)

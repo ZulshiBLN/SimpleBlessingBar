@@ -202,6 +202,9 @@ D.SCALE_MIN, D.SCALE_MAX = 0.5, 2.0
 -- The settings and report windows' background as it looked before it could be set, in percent:
 -- matched by eye in game for SimpleConjureBar, which draws the same dialog texture
 D.WINDOW_OPACITY_TODAY = 60
+-- Seconds a group member's buffs are kept between refreshes (ruleset plan
+-- 2026-10-24-kept-snapshots); his UNIT_AURA drops them sooner
+D.SNAPSHOT_MAX_AGE = 10
 D.ANTS_SPEED_MIN, D.ANTS_SPEED_MAX = 1, 5
 D.BOOL_DEFAULTS = {
     showBorder = true, vertical = false, growRev = false, hideCombat = false,
