@@ -8,7 +8,7 @@ Exceptions for single characters come later.
 
 ## Installation
 
-Install it with the CurseForge app,
+Install it with the [CurseForge](https://www.curseforge.com/wow/addons/smartblessingbar) app,
 [Wago](https://addons.wago.io/addons/smartblessingbar) or WowUp, which also keep it up to
 date. By hand:
 download `SmartBlessingBar-vX.Y.Z-forever.zip` from the
@@ -171,9 +171,11 @@ closes when combat starts and opens again when combat ends. Every change takes e
 **Minimap button** - left click opens the settings, right click locks or unlocks the bar, middle
 click opens the Priorities tab, drag moves it around the minimap.
 
-**Bug report** - `/sbb bug` or "Report bug" builds a report with the addon version, client,
-language, settings and this addon's errors from BugSack, if installed. Copy it with Ctrl+C and
-paste it as a new issue on GitHub. It contains no character name or realm.
+**Bug report** - `/sbb bug` or "Report bug" opens a short form: what happened, where, and
+details. The window turns it, with what the addon knows - its errors from BugSack, if
+installed, its last actions and state - into one code. Copy it with Ctrl+C and paste it into the
+form the link opens; "Show content" shows everything the code holds. It opens out of combat
+only. What it holds and filters out: [Bug reports](#bug-reports).
 
 ## Chat commands
 
@@ -219,22 +221,74 @@ unless you choose another in the settings.
 | `Overview.lua` | The overview on the Priorities tab: members by class in two columns, their auras and what they carry |
 | `Merchant.lua` | Symbol of Kings auto-buy |
 | `Minimap.lua` | Minimap button, AddOn compartment, Options entry, the Priorities key |
-| `Report.lua` | Bug report window |
+| `Privacy.lua` | What a bug report may hold: the allowlist, the name and path filter, the size cap |
+| `ReportCode.lua` | The bug report as one code, and back |
+| `Report.lua` | Bug report: state snapshot, errors, content and window |
 | `Settings.lua` | Settings window, tabs, widgets, color picker |
 | `SettingsPages.lua` | The General, Tracking, Supplies, Priorities, Order and Macros pages |
 | `Main.lua` | Startup and chat commands |
+| `Log.lua` | The bug report's action log, in memory only |
+
+`tools/decode-report.lua` (not in the release zip) reads a report code back: `lua
+tools/decode-report.lua issue.txt`.
 
 Modules share code through the addon namespace (`ns`). Each file is its own Lua chunk, which keeps
 every file far below Lua's limit of 200 local variables per chunk.
 
 ## Privacy and security
 
-- Saved settings are validated at login, so damaged files cannot break the addon.
+- No network communication; no addon messages are sent yet - what other paladins gave is read
+  from the buffs themselves - and no chat messages to other players.
+- No dynamic code: secure snippets and macros are built from constants only.
+- Saved settings are validated at login (types and ranges), so damaged files cannot break the
+  addon.
 - No personal data is stored: only your choices and the bar's position.
-- No addon messages are sent yet; what other paladins gave is read from the buffs themselves.
-- The bug report is only shown to you, to copy; the addon sends nothing. It leaves out your
-  character's names and realm.
+
+### Bug reports
+
+A bug report leaves the game only when you copy its code and send it. **A GitHub issue is
+public**: everyone can read it. Write no names or personal data into the form's fields.
+
+- **What it holds, and why** - to find and fix the bug you report: your description, where it
+  happened and your details; the addon's version and its settings (known keys only); your
+  client's version, build and language; your class, level range (e.g. 30-39) and whether you are
+  solo, in a party or a raid; this addon's Lua errors of the current session with how long ago
+  they came and whether in combat; its last 50 actions (clicks with spell IDs and unit tokens
+  such as `party1`, combat, group size, settings changes); the state of its buttons and queues,
+  your Symbols of Kings count, your group by class and your buffs by spell ID; the names and
+  versions of your loaded addons, as conflicts need them.
+- **What it never holds** - chat, mail or whispers; positions or zones; date or clock time.
+  Strings the addon does not know are shown by their length only.
+- **What it filters out** - free text and error messages pass a filter for character, guild,
+  group and pet names the game knows right now - on Forever both of a character's names -
+  GUIDs, BattleTags, account folders, e-mail addresses, the WTF folder and file paths outside
+  `Interface/AddOns`. Names are matched as whole words: a name you type that the game does not
+  know, or one that is part of a longer word - an addon folder named after yourself, say - can
+  still remain. Check with "Show content".
+- **Where it is kept** - the action log in memory only, gone at logout; nothing is written to
+  your saved variables for the report.
+- **Deletion** - see "Data protection" below.
+
+### Data protection
+
+This is not legal advice; it says how bug reports are handled.
+
+- **Who is responsible** - ZulshiBLN, the author of SmartBlessingBar, Switzerland. Contact
+  through GitHub: an issue, or - for anything that should not be public - a private
+  vulnerability report on this repository (*Security > Report a vulnerability*).
+- **Why** - you choose to send a report; it is used only to fix the bug you report (legitimate
+  interest, GDPR Art. 6(1)(f); Swiss FADP). Nothing leaves the game unless you copy and post it.
+- **Who receives it** - GitHub, Inc. (USA) hosts the issue. It is public, and people who watch
+  the repository get a copy by e-mail. How GitHub protects data sent to the USA:
+  [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+- **How long** - once the bug is fixed, the author removes the code, with its edit history, from
+  the issue; on request earlier, or the whole issue. Copies outside GitHub - e-mail
+  notifications, web archives - cannot be recalled.
+- **Your rights** - access, correction, deletion and objection, through the contact above. You
+  may also complain to the Swiss FDPIC or to the data protection authority of your EU country.
+- **Under 16** - ask a parent before you post a report.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Author: ZulshiBLN.
+MIT, see [LICENSE](LICENSE). Author: ZulshiBLN. World of Warcraft screenshots and game art are
+(c) Blizzard Entertainment and not covered by the MIT license.

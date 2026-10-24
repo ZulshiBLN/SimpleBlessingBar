@@ -11,6 +11,10 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   player finds where to move the bar and open the settings. Off, it shows only under the mouse.
 - **Window background (%)** beside Scale: the settings and report windows' background from
   none to solid; 60 keeps the look they always had.
+- **A new bug report**: say what happened, where - a list - and details. The report adds this
+  addon's errors of the session with whether they came in combat, its last actions and the state
+  of its buttons and queues, and shows it all as one code for the GitHub form the link opens;
+  "Show content" shows what the code holds.
 
 ### Changed
 
@@ -43,6 +47,11 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Security
 
+- The bug report holds no date or clock and no settings it does not know, and filters every name
+  the game knows - both of a character's names on Forever, group, pets, target, guild - and
+  GUIDs, BattleTags, e-mail addresses and file paths from what you write and from errors. It opens
+  out of combat only and not while a name cannot be read. README explains what it holds and how
+  reports are handled.
 - The release workflows give the CurseForge and Wago uploads read rights only, and no step keeps
   GitHub's access token in the checked-out repository.
 
