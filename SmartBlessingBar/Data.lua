@@ -113,6 +113,52 @@ D.DEFAULT_ORDER = { "AURA", "FURY", "BLESSING", "SALVATION" }
 -- Where the bug report tells players to paste it
 D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SmartBlessingBar/issues"
 
+-- Where a bug happened, as the report form offers it; the report carries the key, the form the
+-- text AREA_<key> (ruleset plan 2026-10-24-bug-report)
+D.REPORT_AREAS = { "BLESSINGS", "SALVATION", "AURA", "FURY", "BUFF_RUN", "PRIORITIES", "OVERVIEW",
+    "SUPPLIES", "KEYS", "SETTINGS", "COMBAT", "OTHER" }
+-- The fields a bug report holds, one pattern per kind of line, and nothing else: a spec checks
+-- every line of a report against this list. A new field needs an entry here and a line in
+-- README's privacy section first (ruleset plan 2026-10-24-bug-report).
+D.REPORT_FIELDS = {
+    { pattern = "^$" },
+    { pattern = "^## SmartBlessingBar bug report$" },
+    { pattern = "^%*%*Description:%*%* " },                 -- player's text, filtered
+    { pattern = "^%*%*Area:%*%* [%u_]+$" },
+    { pattern = "^%*%*Details:%*%* " },                     -- player's text, filtered
+    { pattern = "^%- Addon version: [%w%.%-]+$" },
+    { pattern = "^%- Client: [%w%.]+ %(build %w+, interface %d+%)$" },
+    { pattern = "^%- Client locale: %a+, addon language: %a+$" },
+    { pattern = "^%- Character: %u+, level %d+%-%d+, %a+$" }, -- class token, level band, group kind
+    { pattern = "^%- Settings: " },                         -- known keys, allowlisted values
+    { pattern = "^%*%*Lua errors" },
+    { pattern = "^Error %d+ %(x%d+, [%w ,]+, combat: %a+%):$" },
+    { pattern = "^```$" },
+    { pattern = "^msg " },                                  -- error message, filtered
+    { pattern = "^at " },                                   -- stack line, filtered
+    { pattern = "^local " },                                -- locals rebuilt by allowlist
+    { pattern = "^%*%*Last actions %(seconds since login%):%*%*$" },
+    { pattern = "^log " },                                  -- generated, allowlisted values
+    { pattern = "^%*%*State:%*%*$" },
+    { pattern = "^state " },                                -- generated, allowlisted values
+    { pattern = "^%*%*Loaded addons:%*%*$" },
+    { pattern = "^addon " },                                -- folder and version, filtered
+    { pattern = "^%[%.%.%. cut: the report is too long%]$" },
+}
+D.REPORT_CUT = "[... cut: the report is too long]"
+D.REPORT_MAX_BYTES = 20000 -- fits a GitHub issue (65,536) also as a code, and stays readable
+-- Strings a report may carry as they are; any other string becomes <text:N>, its length only.
+-- Settings keys and the addon's own keys (buttons, families, classes, roles) count as safe too.
+D.REPORT_SAFE = {
+    "^player$", "^target$", "^focus$", "^mouseover$", "^pet$", "^party%d$", "^raid%d%d?$", "^NPC$",
+    "^%-?%d+%.?%d*$", "^true$", "^false$", "^nil$",
+    "^spell$", "^macro$", "^type%d?$", "^spell%d?$", "^unit%d?$", "^macrotext%d?$",
+    "^UIParent$", "^TOP$", "^BOTTOM$", "^LEFT$", "^RIGHT$", "^CENTER$", "^TOPLEFT$", "^TOPRIGHT$",
+    "^BOTTOMLEFT$", "^BOTTOMRIGHT$",
+    "^%l%l%u%u$", "^auto$",                                 -- locale codes
+    "^/click SmartBlessingBarBuffRun LeftButton 1$", "^/targetfriendplayer$",
+}
+
 ---------------------------------------------------------------------------
 -- Look: SimpleConjureBar's, so both addons read as one family
 ---------------------------------------------------------------------------

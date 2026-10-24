@@ -476,7 +476,18 @@ print = function(...)
   CHAT[#CHAT + 1] = table.concat(t, " ")
 end
 GetLocale = function() return STATE.locale end
-C_AddOns = { GetAddOnMetadata = TocField }
+-- The loaded addons: STATE.addons, { name, loaded, version } each; this addon alone without it
+C_AddOns = {
+  GetAddOnMetadata = function(addon, field)
+    for _, a in ipairs(STATE.addons or {}) do
+      if a.name == addon and field == "Version" then return a.version end
+    end
+    return TocField(addon, field)
+  end,
+  GetNumAddOns = function() return STATE.addons and #STATE.addons or 1 end,
+  IsAddOnLoaded = function(i) return not STATE.addons or STATE.addons[i].loaded ~= false end,
+  GetAddOnInfo = function(i) return STATE.addons and STATE.addons[i].name or "SmartBlessingBar" end,
+}
 SlashCmdList = {}
 InCombatLockdown = function() return STATE.combat end
 
@@ -604,16 +615,29 @@ BuyMerchantItem = function(i, quantity)
   STATE.money = STATE.money - quantity * w.price / w.stack
 end
 -- Who the player is, as Forever answers: a first and a second name, the second where a realm
--- used to be. STATE.secretName makes the name a secret value.
-UnitFullName = function() return "Zulshe", "Keshmar" end
-GetRealmName = function() return "Forever" end
+-- used to be - made up, the player record's name and surname when it has them.
+-- STATE.secretName makes the name a secret value.
+UnitFullName = function()
+  local r = STATE.units.player or {}
+  return r.name or "Aldric", r.surname or "Vane"
+end
+GetRealmName = function() return STATE.realm or "Forever" end
+GetNormalizedRealmName = function() return STATE.realm or "Forever" end
+GetGuildInfo = function() return STATE.guild end
+-- The Unix clock, moving with STATE.now as GetTime does
+time = function() return 1800000000 + math.floor(STATE.now or 0) end
+GetCVar = function(name)
+  if name == "ActionButtonUseKeyDown" then return STATE.keyDown and "1" or "0" end
+end
 UnitLevel = function(u) local r = U(u or "player") return r and r.level or 25 end
 GetBuildInfo = function() return "1.60.1", "70450", "Oct 1 2026", 16001 end
 date = function() return "2026-10-18 12:00" end
 -- STATE.secrets: further values made secret, e.g. a spell ID
 issecretvalue = function(v)
   if STATE.secrets and STATE.secrets[v] then return true end
-  return STATE.secretName == true and (v == "Zulshe" or v == "Keshmar")
+  if STATE.secretName ~= true then return false end
+  local first, second = UnitFullName()
+  return v == first or v == second
 end
 -- The client's stack text; a fixed mark the specs find
 debugstack = function() return "STACK" end

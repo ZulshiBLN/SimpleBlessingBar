@@ -1,8 +1,7 @@
 -- SmartBlessingBar - bug report window
--- As in SimpleConjureBar (ruleset plan 2026-10-18-settings-more). Addons cannot send data, open
--- a browser or write to the clipboard, so the window builds a ready report - addon version,
--- client, language, settings and this addon's Lua errors from BugGrabber - in a selected text
--- box, to copy with Ctrl+C and paste as a new issue. No character name or realm goes into it.
+-- Addons cannot send data, open a browser or write to the clipboard, so the window builds a
+-- ready report in a selected text box, to copy with Ctrl+C and paste as a new issue. What it may
+-- hold: Privacy.lua (ruleset plan 2026-10-24-bug-report).
 
 local _, ns = ...
 if not ns.enabled then return end
@@ -40,37 +39,123 @@ end
 
 local MAX_ERRORS = 5       -- newest errors of this addon included in the report
 local MAX_STACK_LINES = 12 -- stack lines per error
+local MAX_ADDONS = 60      -- loaded addons named in the report
+
+---------------------------------------------------------------------------
+-- State snapshot (ruleset plan 2026-10-24-bug-report): what decides a misbehaviour without a
+-- Lua error - each button's click, the queues, the Symbols, the group by class, own buffs - as
+-- IDs, tokens and counts
+---------------------------------------------------------------------------
+local ATTRS = { "type", "spell", "unit", "macrotext" }
+
+local function ButtonLine(label, b)
+    local parts = { "button " .. label, "shown=" .. tostring(b:IsShown()) }
+    for _, suffix in ipairs({ "", "1", "2", "3" }) do
+        for _, a in ipairs(ATTRS) do
+            local v = b:GetAttribute(a .. suffix)
+            if v ~= nil then
+                parts[#parts + 1] = a .. suffix .. "=" .. (a == "macrotext" and ns.SafeMacro(v) or ns.SafeValue(v))
+            end
+        end
+    end
+    return table.concat(parts, " ")
+end
+
+-- A queue as counts: entries left, held back at combat start, members in need out of range
+local function QueueLine(label, b)
+    local queue, held = b.queue or {}, 0
+    for _, entry in ipairs(queue) do if entry.hold then held = held + 1 end end
+    return ("queue %s left=%d held=%d far=%d"):format(label, b.left or 0, held, queue.far or 0)
+end
+
+local function OwnBuffs()
+    local parts = {}
+    local GetAura = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+    for i = 1, 40 do
+        local ok, aura = pcall(GetAura, "player", i, "HELPFUL")
+        if not ok or not aura then break end
+        local okLeft, left = pcall(function()
+            local e = aura.expirationTime
+            if type(e) == "number" and e > 0 then return math.floor((e - GetTime()) / 60 + 0.5) .. "m" end
+            return "-"
+        end)
+        local okId, id = pcall(tostring, aura.spellId)
+        parts[#parts + 1] = (okId and id or "?") .. ":" .. (okLeft and left or "?")
+    end
+    return table.concat(parts, " ")
+end
+
+local function GroupLine()
+    local kind = IsInRaid() and "raid" or IsInGroup() and "party" or "solo"
+    local units, size = { "player" }, 1
+    if IsInRaid() then
+        size = GetNumGroupMembers()
+        units = {}
+        for i = 1, size do units[i] = "raid" .. i end
+    elseif IsInGroup() then
+        size = GetNumSubgroupMembers() + 1
+        for i = 1, size - 1 do units[#units + 1] = "party" .. i end
+    end
+    local byClass, classes = {}, {}
+    for _, u in ipairs(units) do
+        local _, class = UnitClass(u)
+        if class then
+            if not byClass[class] then classes[#classes + 1] = class end
+            byClass[class] = (byClass[class] or 0) + 1
+        end
+    end
+    table.sort(classes)
+    local parts = {}
+    for _, c in ipairs(classes) do parts[#parts + 1] = c .. "=" .. byClass[c] end
+    return ("group %s size=%d %s"):format(kind, size, table.concat(parts, " "))
+end
+
+local function YesNo(v) return v and "yes" or "no" end
+
+function ns.StateSnapshot()
+    local lines = {}
+    local buttons = { AURA = ns.auraButton, FURY = ns.furyButton, BLESSING = ns.blessingButton,
+        SALVATION = ns.salvationButton }
+    for _, key in ipairs(D.DEFAULT_ORDER) do lines[#lines + 1] = ButtonLine(key, buttons[key]) end
+    for _, b in ipairs({ ns.buffKey, SmartBlessingBarBuffRun }) do
+        lines[#lines + 1] = ButtonLine(b:GetName(), b)
+    end
+    lines[#lines + 1] = QueueLine("BLESSING", ns.blessingButton)
+    lines[#lines + 1] = QueueLine("SALVATION", ns.salvationButton)
+    lines[#lines + 1] = "symbols " .. tostring(C_Item.GetItemCount(D.SYMBOL_OF_KINGS) or 0)
+    lines[#lines + 1] = GroupLine()
+    lines[#lines + 1] = "buffs " .. OwnBuffs()
+    local okRead, readable = pcall(ns.Blessings.AurasReadable)
+    lines[#lines + 1] = "auras readable=" .. (okRead and YesNo(readable) or "?")
+    lines[#lines + 1] = "demo " .. YesNo(ns.IsDemo())
+    lines[#lines + 1] = "keydown " .. tostring(GetCVar("ActionButtonUseKeyDown"))
+    lines[#lines + 1] = "combat " .. YesNo(InCombatLockdown())
+    return lines
+end
+
+-- Loaded addons by folder name - the title may carry colour codes - and declared version
+function ns.AddonList()
+    local lines, extra = {}, 0
+    for i = 1, C_AddOns.GetNumAddOns() do
+        if C_AddOns.IsAddOnLoaded(i) then
+            if #lines < MAX_ADDONS then
+                local name = C_AddOns.GetAddOnInfo(i)
+                lines[#lines + 1] = name .. " " .. tostring(C_AddOns.GetAddOnMetadata(name, "Version") or "?")
+            else
+                extra = extra + 1
+            end
+        end
+    end
+    if extra > 0 then lines[#lines + 1] = ("... %d more"):format(extra) end
+    return lines
+end
 
 ---------------------------------------------------------------------------
 -- Report content
 ---------------------------------------------------------------------------
--- What could name the reporter: on Forever a character has a first and a second name, and
--- UnitFullName returns the second where a realm used to be (ruleset research
--- 2026-10-18-paladin-facts). A secret value is never compared (code.md).
-local function Identity()
-    local list = {}
-    local first, second = UnitFullName("player")
-    for _, part in ipairs({ { first, "<player>" }, { second, "<player>" }, { GetRealmName(), "<realm>" } }) do
-        local value = part[1]
-        -- issecretvalue first: comparing a secret, even with "", raises an error
-        if type(value) == "string" and not issecretvalue(value) and value ~= "" then
-            list[#list + 1] = part
-        end
-    end
-    return list
-end
-
--- The text with every name of the reporter replaced
-local function Anonymize(text, identity)
-    text = tostring(text or "")
-    for _, part in ipairs(identity) do
-        local pattern = part[1]:gsub("%W", "%%%0")
-        text = text:gsub(pattern, part[2])
-    end
-    return text
-end
-
--- This addon's errors from BugGrabber (the collector BugSack builds on), newest first.
+-- This addon's errors of the current session from BugGrabber (the error collector BugSack
+-- builds on), newest first. Errors of earlier sessions come from BugGrabber's saved data and
+-- stay out; without a session number, an error from before this addon loaded counts as one.
 -- BugGrabber is optional (project.md), and its data comes from outside: checked here.
 local function CollectErrors()
     local list = {}
@@ -78,11 +163,19 @@ local function CollectErrors()
     if not (grabber and grabber.GetDB) then return list, false end
     local ok, errors = pcall(grabber.GetDB, grabber)
     if not ok or type(errors) ~= "table" then return list, true end
+    local okSession, session = pcall(function() return grabber.GetSessionId and grabber:GetSessionId() end)
+    if not okSession then session = nil end
     for i = #errors, 1, -1 do
         local e = errors[i]
         if type(e) == "table" then
+            local current
+            if type(session) == "number" and type(e.session) == "number" then
+                current = e.session == session
+            else
+                current = type(e.time) == "number" and e.time >= ns.logStartClock
+            end
             local text = tostring(e.message or "") .. "\n" .. tostring(e.stack or "")
-            if text:find(ns.ADDON_NAME, 1, true) then
+            if current and text:find(ns.ADDON_NAME, 1, true) then
                 list[#list + 1] = e
                 if #list >= MAX_ERRORS then break end
             end
@@ -91,46 +184,95 @@ local function CollectErrors()
     return list, true
 end
 
-local function FirstLines(text, max)
+-- The first lines of a text, each with the tag of its report field and filtered
+local function FirstLines(text, max, tag, names)
     local out, n = {}, 0
     for line in tostring(text or ""):gmatch("[^\n]+") do
         n = n + 1
-        if n > max then out[#out + 1] = "..." break end
-        out[#out + 1] = line
+        if n > max then out[#out + 1] = tag .. " ..." break end
+        out[#out + 1] = tag .. " " .. ns.Scrub(line, names)
     end
-    return table.concat(out, "\n")
+    return out
 end
 
--- Plain settings (numbers, booleans, strings) sorted by name, and the bar's order
+-- When an error came, relative only - no date or clock in a report - and whether in combat
+local function ErrorWhen(e)
+    if type(e.time) ~= "number" then return "time unknown", "unknown" end
+    local when = ("%d min ago"):format(math.floor((time() - e.time) / 60 + 0.5))
+    local since = e.time - ns.logStartClock
+    if since >= 0 then when = when .. (", %d s after login"):format(since) end
+    return when, ns.CombatAt(e.time)
+end
+
+local function OrDash(s) return (s and s ~= "") and s or "-" end
+
+-- A list of keys, each by allowlist
+local function KeyList(list)
+    local out = {}
+    for i, key in ipairs(list) do out[i] = ns.SafeValue(key) end
+    return table.concat(out, ">")
+end
+
+-- The settings the addon knows, sorted by name, values by allowlist; a key it does not know is
+-- left out (it could hold anything). Tables are summarized, colors left out.
+local SETTINGS_EXTRA = { "locked", "point", "rel", "dbVersion" }
 local function SettingsText()
+    if not db then return "(not loaded)" end
     local keys = {}
-    for k, v in pairs(db) do
-        local t = type(v)
-        if t == "number" or t == "boolean" or t == "string" then keys[#keys + 1] = k end
-    end
+    for k in pairs(D.BOOL_DEFAULTS) do keys[#keys + 1] = k end
+    for k in pairs(D.NUMBER_DEFAULTS) do keys[#keys + 1] = k end
+    for _, k in ipairs(SETTINGS_EXTRA) do keys[#keys + 1] = k end
     table.sort(keys)
     local parts = {}
-    for _, k in ipairs(keys) do parts[#parts + 1] = k .. "=" .. tostring(db[k]) end
-    parts[#parts + 1] = "order=" .. table.concat(db.order, ",")
+    for _, k in ipairs(keys) do
+        local v = db[k]
+        local t = type(v)
+        if t == "number" or t == "boolean" or t == "string" then parts[#parts + 1] = k .. "=" .. ns.SafeValue(v) end
+    end
+    if type(db.order) == "table" then parts[#parts + 1] = "order=" .. KeyList(db.order) end
+    if type(db.auraList) == "table" then parts[#parts + 1] = "auraList=" .. KeyList(db.auraList) end
+    if type(db.classLists) == "table" then
+        local lists = {}
+        for _, class in ipairs(D.CLASS_ORDER) do
+            local entry = db.classLists[class]
+            if type(entry) == "table" and type(entry.order) == "table" then
+                lists[#lists + 1] = class .. ":" .. KeyList(entry.order)
+            end
+        end
+        parts[#parts + 1] = "classLists=" .. table.concat(lists, "/")
+    end
     return table.concat(parts, ", ")
 end
 
-function ns.BuildReport(description)
+-- The level in a band of ten: enough for ranks, too coarse to tell a character apart
+local function LevelBand()
+    local low = math.floor((tonumber(UnitLevel("player")) or 0) / 10) * 10
+    return ("%d-%d"):format(low, low + 9)
+end
+
+-- Every line belongs to a field of D.REPORT_FIELDS (Privacy.lua). form: { description, area (a
+-- key of D.REPORT_AREAS), details }. nil while a name is secret: a name that cannot be compared
+-- cannot be filtered, so no report at all, not one without the filter.
+function ns.BuildReport(form)
+    form = form or {}
+    ns.LogSettings()
+    local names = ns.KnownNames()
+    if not names then return nil end
     local version, build, _, interface = GetBuildInfo()
     local _, classFile = UnitClass("player")
-    local identity = Identity()
     local lines = {
         "## SmartBlessingBar bug report",
         "",
-        "**Description:** " .. ((description and description ~= "") and Anonymize(description, identity) or "-"),
+        "**Description:** " .. OrDash(ns.Scrub(form.description, names)),
+        "**Area:** " .. (form.area or "OTHER"),
+        "**Details:** " .. OrDash(ns.Scrub(form.details, names)),
         "",
         "- Addon version: " .. ns.VERSION,
         "- Client: " .. tostring(version) .. " (build " .. tostring(build) .. ", interface " .. tostring(interface) .. ")",
         "- Client locale: " .. tostring(GetLocale()) .. ", addon language: "
             .. tostring(SmartBlessingBarGlobalDB.language or "auto"),
-        "- Character: " .. tostring(classFile) .. ", level " .. tostring(UnitLevel("player"))
+        "- Character: " .. tostring(classFile) .. ", level " .. LevelBand()
             .. (IsInRaid() and ", raid" or IsInGroup() and ", party" or ", solo"),
-        "- Date: " .. date("%Y-%m-%d %H:%M"),
         "- Settings: " .. SettingsText(),
         "",
     }
@@ -138,19 +280,31 @@ function ns.BuildReport(description)
     if not hasGrabber then
         lines[#lines + 1] = "**Lua errors:** BugGrabber/BugSack not installed"
     elseif #errors == 0 then
-        lines[#lines + 1] = "**Lua errors:** none from SmartBlessingBar"
+        lines[#lines + 1] = "**Lua errors:** none from SmartBlessingBar in this session"
     else
         lines[#lines + 1] = "**Lua errors (newest first):**"
         for i, e in ipairs(errors) do
+            local when, combat = ErrorWhen(e)
             lines[#lines + 1] = ""
-            lines[#lines + 1] = ("Error %d (x%s, %s):"):format(i, tostring(e.counter or 1), tostring(e.time or "?"))
+            lines[#lines + 1] = ("Error %d (x%d, %s, combat: %s):"):format(i, tonumber(e.counter) or 1, when, combat)
             lines[#lines + 1] = "```"
-            lines[#lines + 1] = Anonymize(FirstLines(e.message, 6), identity)
-            lines[#lines + 1] = Anonymize(FirstLines(e.stack, MAX_STACK_LINES), identity)
+            for _, l in ipairs(FirstLines(e.message, 6, "msg", names)) do lines[#lines + 1] = l end
+            for _, l in ipairs(FirstLines(e.stack, MAX_STACK_LINES, "at", names)) do lines[#lines + 1] = l end
+            for _, l in ipairs(ns.SafeLocals(e.locals, names)) do lines[#lines + 1] = "local " .. l end
             lines[#lines + 1] = "```"
         end
     end
-    return table.concat(lines, "\n")
+    local function Block(title, tag, list, scrub)
+        lines[#lines + 1] = ""
+        lines[#lines + 1] = title
+        lines[#lines + 1] = "```"
+        for _, l in ipairs(list) do lines[#lines + 1] = tag .. " " .. (scrub and ns.Scrub(l, names) or l) end
+        lines[#lines + 1] = "```"
+    end
+    Block("**Last actions (seconds since login):**", "log", ns.LogLines())
+    Block("**State:**", "state", ns.StateSnapshot())
+    Block("**Loaded addons:**", "addon", ns.AddonList(), true)
+    return ns.CapReport(table.concat(lines, "\n"))
 end
 
 ---------------------------------------------------------------------------
@@ -164,7 +318,9 @@ local function SelectReport()
 end
 
 local function Refresh()
-    frame.reportText = ns.BuildReport(frame.desc:GetText())
+    local text = ns.BuildReport({ description = frame.desc:GetText() })
+    if not text then return end -- a name is secret: the last clean report stays
+    frame.reportText = text
     frame.report:SetText(frame.reportText)
     frame.report:SetCursorPosition(0)
 end

@@ -44,8 +44,10 @@ Queue.lua
 Demo.lua
 Merchant.lua
 Minimap.lua
+Privacy.lua
 Report.lua
 Settings.lua
 SettingsPages.lua
 Overview.lua
 Main.lua
+Log.lua
