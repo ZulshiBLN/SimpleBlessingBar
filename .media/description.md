@@ -47,7 +47,9 @@ Key bindings for the next buff, Buff & Run and the priorities.
 
 ## 🕯️ Found a bug?
 
-Type `/sbb bug`: the addon writes the report for you and opens the form to send it.
+Type `/sbb bug`: the addon writes the report for you and shows the code and the link to the
+form. What a report holds and how it is handled:
+[Privacy and security](https://github.com/ZulshiBLN/SmartBlessingBar#privacy-and-security).
 
 ---
 
