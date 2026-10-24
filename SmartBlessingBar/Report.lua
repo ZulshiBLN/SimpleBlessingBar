@@ -1,7 +1,8 @@
 -- SmartBlessingBar - bug report window
--- Addons cannot send data, open a browser or write to the clipboard, so the window builds a
--- ready report in a selected text box, to copy with Ctrl+C and paste as a new issue. What it may
--- hold: Privacy.lua (ruleset plan 2026-10-24-bug-report).
+-- Addons cannot send data, open a browser or write to the clipboard. The window therefore builds
+-- the report from a short form and the game, shows it as one code (ReportCode.lua), selected for
+-- Ctrl+C, and links the GitHub form the code is pasted into. What it may hold: Privacy.lua
+-- (ruleset plan 2026-10-24-bug-report).
 
 local _, ns = ...
 if not ns.enabled then return end
@@ -321,9 +322,24 @@ function ns.ReportAreaText(key)
     return L[AREA_KEYS[key] or ("AREA_" .. key)]
 end
 
+-- The box shows the code, selected for Ctrl+C, or - "Show content" - the readable report,
+-- never selected, so what gets copied is the code
+local function Shown() return frame.showContent and frame.reportText or frame.codeText end
+
+local function MarkSelection()
+    if frame.showContent then frame.report:HighlightText(0, 0) else frame.report:HighlightText() end
+end
+
 local function SelectReport()
     frame.report:SetFocus()
-    frame.report:HighlightText()
+    MarkSelection()
+end
+
+local function ShowBox()
+    frame.report:SetText(Shown())
+    frame.report:SetCursorPosition(0)
+    MarkSelection()
+    SetL(frame.toggle, frame.showContent and "REPORT_SHOW_CODE" or "REPORT_SHOW_CONTENT")
 end
 
 local function FormValues()
@@ -338,8 +354,8 @@ local function Refresh()
         return
     end
     frame.reportText = text
-    frame.report:SetText(frame.reportText)
-    frame.report:SetCursorPosition(0)
+    frame.codeText = ns.ReportCode.Encode(text)
+    ShowBox()
 end
 
 -- A one-line text field: typing rebuilds the report, Enter selects it for copying
@@ -451,12 +467,12 @@ local function CreateWindow()
     report:SetFontObject("ChatFontNormal")
     report:SetWidth(W - 2 * PAD - 30)
     report:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    report:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
-    -- Read-only: user edits are undone right away
+    report:SetScript("OnEditFocusGained", MarkSelection)
+    -- Read-only: user edits are undone right away, back to what the box shows
     report:SetScript("OnTextChanged", function(self, userInput)
         if userInput then
-            self:SetText(frame.reportText or "")
-            self:HighlightText()
+            self:SetText(Shown() or "")
+            MarkSelection()
         end
     end)
     scroll:SetScrollChild(report)
@@ -484,6 +500,15 @@ local function CreateWindow()
     done:SetPoint("BOTTOMRIGHT", -PAD, 16)
     SetL(done, "CLOSE")
     done:SetScript("OnClick", function() frame:Hide() end)
+
+    local toggle = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    toggle:SetSize(160, 22)
+    toggle:SetPoint("BOTTOMLEFT", PAD, 16)
+    toggle:SetScript("OnClick", function()
+        frame.showContent = not frame.showContent
+        ShowBox()
+    end)
+    frame.toggle = toggle
 
     -- Built out of combat only: names and auras are readable then. The window closes when
     -- combat starts and comes back after it, as the settings window does.
@@ -528,5 +553,6 @@ function ns.OpenBugReport()
     frame.details:SetText("")
     frame.area = "OTHER"
     frame.areaMenu:GenerateMenu()
+    frame.showContent = false
     if frame:IsShown() then Refresh() SelectReport() else frame:Show() end
 end

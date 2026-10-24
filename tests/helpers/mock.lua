@@ -138,6 +138,11 @@ function Methods:SetText(t)
   if self.kind == "Button" then self:GetFontString().text = t end
 end
 function Methods:GetText() return self.text end
+-- An edit box's selection: "all" for HighlightText(), "none" for HighlightText(0, 0); focus
+-- runs OnEditFocusGained, as in the client
+function Methods:HighlightText(a, b) self.selection = (a == nil and b == nil) and "all" or (a == b and "none" or "part") end
+function Methods:SetFocus() self.focused = true; RUNSCRIPT(self, "OnEditFocusGained") end
+function Methods:ClearFocus() self.focused = false end
 function Methods:GetFontString()
   self.fontString = rawget(self, "fontString") or NEWOBJ("FontString")
   return self.fontString

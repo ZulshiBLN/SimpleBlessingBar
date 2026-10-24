@@ -89,7 +89,16 @@ jobs:
           if bash .github/scripts/check-package.sh "$RUNNER_TEMP/nobind-zip/$(basename "$zip")" .release/release.json; then
               echo "the check accepted a zip without Bindings.xml"; exit 1
           fi
-          echo "the checks refused all four wrong packages, as they must"
+          # The report decoder stays out of the zip (ruleset plan 2026-10-24-bug-report)
+          withtools="$RUNNER_TEMP/withtools"
+          mkdir -p "$withtools" && unzip -q "$zip" -d "$withtools"
+          mkdir -p "$withtools/SmartBlessingBar/tools" && cp tools/decode-report.lua "$withtools/SmartBlessingBar/tools/"
+          mkdir -p "$RUNNER_TEMP/withtools-zip"
+          (cd "$withtools" && zip -q -r "$RUNNER_TEMP/withtools-zip/$(basename "$zip")" SmartBlessingBar)
+          if bash .github/scripts/check-package.sh "$RUNNER_TEMP/withtools-zip/$(basename "$zip")" .release/release.json; then
+              echo "the check accepted a zip with tools/"; exit 1
+          fi
+          echo "the checks refused all five wrong packages, as they must"
 
       - name: A release's CHANGELOG entry is dated
         if: inputs.tag != ''

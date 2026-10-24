@@ -450,7 +450,7 @@ describe("the bug report window", function()
         assert.is_truthy(text:find("**Area:** AURA", 1, true), text)
         assert.is_truthy(text:find("The aura button does nothing", 1, true))
         assert.is_truthy(text:find("after a reload in combat", 1, true))
-        assert.are.equal(text, f.report:GetText())
+        assert.are.equal(ns.ReportCode.Encode(text), f.report:GetText())
     end)
 
     it("names the areas in the language just switched to", function()

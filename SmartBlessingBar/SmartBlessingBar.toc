@@ -45,6 +45,7 @@ Demo.lua
 Merchant.lua
 Minimap.lua
 Privacy.lua
+ReportCode.lua
 Report.lua
 Settings.lua
 SettingsPages.lua

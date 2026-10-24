@@ -111,7 +111,9 @@ D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "
 D.DEFAULT_ORDER = { "AURA", "FURY", "BLESSING", "SALVATION" }
 
 -- Where the bug report tells players to paste it
-D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SmartBlessingBar/issues"
+-- Where bug reports go: the issue form with one field for the code
+-- (.github/ISSUE_TEMPLATE/bug_report.yml)
+D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SmartBlessingBar/issues/new?template=bug_report.yml"
 
 -- Where a bug happened, as the report form offers it; the report carries the key, the form the
 -- text AREA_<key> (ruleset plan 2026-10-24-bug-report)

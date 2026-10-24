@@ -53,10 +53,17 @@ files["tests/"] = {
     -- Specs build the mocked world by changing STATE's fields
     globals = { "STATE" },
     read_globals = {
-        "io", "require", "loadfile",
+        "io", "require", "loadfile", "dofile", "os",
         -- What tests/helpers/mock.lua provides to drive the mocked client
         "FIRE", "CHAT", "RUNSCRIPT", "RUNCLICK", "RUNTIMERS", "TICK", "NEWOBJ", "MENU", "UIParent",
     },
+}
+
+-- The decoder runs in plain Lua 5.1 on a developer's machine, not in the client: it reads a
+-- file and exits with a status (ruleset plan 2026-10-24-bug-report).
+files["tools/"] = {
+    std = "lua51",
+    read_globals = { "io", "os", "arg", "debug", "dofile" },
 }
 
 -- The mock *is* the WoW API: defining client globals is its whole job.
