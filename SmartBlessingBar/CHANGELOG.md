@@ -56,6 +56,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   cannot be read. README explains what it holds, what can remain and how reports are handled.
 - The release workflows give the CurseForge and Wago uploads read rights only, and no step keeps
   GitHub's access token in the checked-out repository.
+- The CurseForge and Wago upload tokens reach only a release's own run, through a protected
+  GitHub environment; the checks on every other push run without them.
 - A release ships only the addon's own files: the package check refuses any file or folder the
   addon does not load, not only a known list of tooling.
 
