@@ -18,6 +18,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Changed
 
+- Group members' buffs are read again only when the game reports a change, or after 10 s,
+  instead of every second: alone about ten times fewer reads, less memory churn in raids.
 - Buff & Run blesses players flagged for PvP while you are flagged for good yourself - /pvp,
   the portrait menu, a battleground, an arena or a PvP zone. A flag that runs out, as after
   blessing a flagged player, does not count.

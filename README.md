@@ -212,7 +212,7 @@ unless you choose another in the settings.
 | `Locales.lua` | All texts per language, locale switching |
 | `Data.lua` | Spell IDs by rank, roles and the default priority lists, defaults, the settings' schema version |
 | `Core.lua` | Paladin check, chat output, language registry, secure attributes, saved variables, demo mode |
-| `Blessings.lua` | Known spells and ranks, roles, group scan, what others gave, the blessing and Salvation planner, the aura choice |
+| `Blessings.lua` | Known spells and ranks, roles, group scan with members' buffs kept up to 10 s, what others gave, the blessing and Salvation planner, the aura choice |
 | `Bar.lua` | Bar, handle, position and lock, layout, scale and look, Symbol count, refresh |
 | `SelfBuffs.lua` | Aura and Righteous Fury buttons and their highlight |
 | `Queue.lua` | Blessing and Salvation buttons, their queue, count and tooltip, the buff key |
