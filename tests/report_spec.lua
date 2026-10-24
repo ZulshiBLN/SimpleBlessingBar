@@ -59,7 +59,15 @@ local POISON = {
     "Raidseven", "Targetguy", "Totguy", "Focusguy", "Mouseguy", "Tradeguy", "Petname", "Partypet",
     "Player-1111-0AAAAAAA", "Somebody#1234", "12345678#1", "john.doe@example.com",
     "Some One", "linuxsomeone", "macsomeone", "Shareuser", "MYACCOUNT", "Program Files",
+    -- the 1.1.0 audit's S-01: CJK, Korean and Cyrillic names, non-ASCII capitals
+    "张三", "철수", "Иван", "ИВАН", "TÈSTNAME",
 }
+
+-- The 1.1.0 audit's S-01: known names beside non-ASCII punctuation, inside text without word
+-- spaces, with a Korean particle, in non-ASCII capitals
+local S01 = "„Partyone“ hat ¡Raidseven! ¿Totguy? «Focusguy» ‹Mouseguy› Tradeguy… then"
+    .. " Petname—and x–Partypet a·Testguild Testplayer　x Testplayer，x 我和张三一起 철수가 x"
+    .. " ИВАН x TÈSTNAME x"
 
 local function poison(db)
     STATE.realm, STATE.guild = "Testrealm", "Testguild"
@@ -68,6 +76,9 @@ local function poison(db)
     STATE.units.raid1 = STATE.units.player
     STATE.units.raid2 = { name = "Partyone", class = "PRIEST" }
     STATE.units.raid3 = { name = "Tèstname", class = "DRUID" }
+    STATE.units.raid4 = { name = "Иван", class = "ROGUE" }
+    STATE.units.raid5 = { name = "张三", class = "HUNTER" }
+    STATE.units.raid6 = { name = "철수", class = "WARLOCK" }
     STATE.units.raid7 = { name = "Raidseven", class = "MAGE" }
     STATE.units.target = { name = "Targetguy" }
     STATE.units.targettarget = { name = "Totguy" }
@@ -80,7 +91,7 @@ local function poison(db)
     local free = "Testplayer-Testrealm and partyone saw Tèstname\226\128\139 hit Raidseven, Totguy, Focusguy,"
         .. " Mouseguy, Tradeguy, Petname and Partypet in Testguild; Player-1111-0AAAAAAA Somebody#1234"
         .. " 12345678#1 john.doe@example.com C:\\Users\\Some One\\x.lua /home/linuxsomeone/wow"
-        .. " /Users/macsomeone/wow \\\\server\\Shareuser\\x"
+        .. " /Users/macsomeone/wow \\\\server\\Shareuser\\x " .. S01
     grabber({ ourError(time(), 1, {
         message = "Interface/AddOns/SmartBlessingBar/Bar.lua:10: " .. free,
         stack = "[C:\\Program Files\\World of Warcraft\\_forever_\\Interface\\AddOns\\SmartBlessingBar\\Bar.lua]:10: in function 'Targetguy'",
@@ -113,7 +124,7 @@ describe("the report's privacy", function()
         local ns, db = login()
         local free = poison(db)
         -- a path runs to the line end: the WTF folder gets a field of its own
-        local text = build(ns, "OTHER", free, "WTF\\Account\\MYACCOUNT\\x")
+        local text = build(ns, "OTHER", free, S01 .. " WTF\\Account\\MYACCOUNT\\x")
         assertClean(ns, text)
         -- what the developer needs is still there
         assert.is_truthy(text:find("<name>", 1, true))
@@ -192,6 +203,29 @@ describe("the report's privacy", function()
         assert.are.equal("Testplayerish and Untestplayer", ns.Scrub("Testplayerish and Untestplayer", names))
         assert.are.equal("Interface/AddOns/SmartBlessingBar/Bar.lua:10: x",
             ns.Scrub("C:\\Program Files\\World of Warcraft\\_forever_\\Interface\\AddOns\\SmartBlessingBar\\Bar.lua:10: x", names))
+    end)
+
+    -- The 1.1.0 audit's S-01, case by case
+    it("replaces names beside non-ASCII punctuation, in text without spaces and in any case", function()
+        local ns = login()
+        local names = { "Testplayer", "张三", "철수", "Иван", "Tèstname" }
+        local cases = {
+            { "„Testplayer“ hat", "„<name>“ hat" },
+            { "¡Testplayer! ¿Testplayer?", "¡<name>! ¿<name>?" },
+            { "«Testplayer» ‹Testplayer›", "«<name>» ‹<name>›" },
+            { "Testplayer… then Testplayer—and x–Testplayer a·Testplayer", "<name>… then <name>—and x–<name> a·<name>" },
+            { "Testplayer　x Testplayer，x", "<name>　x <name>，x" },
+            { "我和张三一起", "我和<name>一起" },
+            { "철수가 x", "<name>가 x" },
+            { "ИВАН x иван", "<name> x <name>" },
+            { "TÈSTNAME x tèstname", "<name> x <name>" },
+            { "Testplayer Secondname", "<name> Secondname" },
+        }
+        for _, c in ipairs(cases) do
+            assert.are.equal(c[2], ns.Scrub(c[1], names), c[1])
+        end
+        -- a name inside a longer word of a spaced script stays a word
+        assert.are.equal("Testplayerish Иванов Tèstnameé", ns.Scrub("Testplayerish Иванов Tèstnameé", names))
     end)
 
     it("knows both of the player's Forever names, pets and the target's target", function()
