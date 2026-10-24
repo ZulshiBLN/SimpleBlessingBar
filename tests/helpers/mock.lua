@@ -9,7 +9,9 @@
 -- connected, visible and range default to true, dead to false, level to 25.
 -- STATE.learned maps a spell ID to the level it is learned at; unset, the game gives none.
 local noop = function() end
-local eventFrames = {}
+-- Frames get events in the order they first registered: a fixed order, so a spec can rely on
+-- one (SimpleConjureBar 3ecc2ea: the random order of pairs had hidden a lost-window bug)
+local eventFrames, eventOrder = {}, {}
 STATE = {
   class = "PALADIN", locale = "deDE", errors = {},
   units = {},       -- unit token -> record; "player" is added by the loader
@@ -30,7 +32,10 @@ local Methods = {}
 local function Guard(self, what)
   if STATE.combat and self.protected then error("protected " .. what .. " in combat", 3) end
 end
-function Methods:RegisterEvent(e) self.events[e] = true; eventFrames[self] = true end
+function Methods:RegisterEvent(e)
+  self.events[e] = true
+  if not eventFrames[self] then eventFrames[self] = true; eventOrder[#eventOrder + 1] = self end
+end
 function Methods:UnregisterEvent(e) self.events[e] = nil end
 function Methods:SetScript(s, f) self.scripts[s] = f end
 function Methods:GetScript(s) return self.scripts[s] end
@@ -449,7 +454,7 @@ tinsert = table.insert
 -- Runs every OnEvent script registered for the event; an error is recorded
 -- in STATE.errors, as BugGrabber would, instead of stopping the spec.
 function FIRE(event, ...)
-  for f in pairs(eventFrames) do
+  for _, f in ipairs(eventOrder) do
     if f.events[event] and f.scripts.OnEvent then
       local ok, err = pcall(f.scripts.OnEvent, f, event, ...)
       if not ok then table.insert(STATE.errors, event .. ": " .. tostring(err)) end
