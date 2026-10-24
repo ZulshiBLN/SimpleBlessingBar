@@ -159,7 +159,7 @@ end
 ---------------------------------------------------------------------------
 -- This addon's errors of the current session from BugGrabber (the error collector BugSack
 -- builds on), newest first. Errors of earlier sessions come from BugGrabber's saved data and
--- stay out; without a session number, an error from before this addon loaded counts as one.
+-- stay out; without a session number, an error from before this addon loaded counts as one of an earlier session.
 -- BugGrabber is optional (project.md), and its data comes from outside: checked here.
 local function CollectErrors()
     local list = {}
@@ -204,7 +204,7 @@ local function ErrorWhen(e)
     if type(e.time) ~= "number" then return "time unknown", "unknown" end
     local when = ("%d min ago"):format(math.floor((time() - e.time) / 60 + 0.5))
     local since = e.time - ns.logStartClock
-    if since >= 0 then when = when .. (", %d s after login"):format(since) end
+    if since >= 0 then when = when .. (", %d s after load"):format(since) end
     return when, ns.CombatAt(e.time)
 end
 
@@ -305,7 +305,7 @@ function ns.BuildReport(form)
         for _, l in ipairs(list) do lines[#lines + 1] = tag .. " " .. (scrub and ns.Scrub(l, names) or l) end
         lines[#lines + 1] = "```"
     end
-    Block("**Last actions (seconds since login):**", "log", ns.LogLines())
+    Block("**Last actions (seconds since load):**", "log", ns.LogLines())
     Block("**State:**", "state", ns.StateSnapshot())
     Block("**Loaded addons:**", "addon", ns.AddonList(), true)
     return ns.CapReport(table.concat(lines, "\n"))

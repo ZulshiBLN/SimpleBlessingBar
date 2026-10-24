@@ -282,13 +282,15 @@ end)
 -- Errors, log, state, size (plan criterion 2)
 ---------------------------------------------------------------------------
 describe("the report's errors", function()
-    it("dates nothing: times are relative to now and to the login", function()
+    it("dates nothing: times are relative to now and to the addon loading", function()
         local ns = login()
         STATE.now = (STATE.now or 0) + 600
         grabber({ ourError(time() - 90, 1) }, 1)
         local text = build(ns, "OTHER")
         assert.is_nil(text:find("Date:", 1, true), text)
-        assert.is_truthy(text:find("2 min ago, 510 s after login", 1, true), text)
+        assert.is_truthy(text:find("2 min ago, 510 s after load", 1, true), text)
+        -- the clock starts when the addon loads: after a /reload, not at login (review F-10)
+        assert.is_truthy(text:find("**Last actions (seconds since load):**", 1, true), text)
     end)
 
     it("says whether an error came in combat, and keeps earlier sessions out", function()

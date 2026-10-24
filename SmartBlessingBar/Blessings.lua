@@ -129,7 +129,8 @@ function B.Auras(unit, real)
     local key = PersonKey(unit)
     local list = read.auras[key]
     if list then return list end
-    -- A key that is the token itself has no GUID behind it: never kept
+    -- A key that is the token itself has no GUID behind it: never kept. B.BeginRead already
+    -- drops lists past D.SNAPSHOT_MAX_AGE; the age test keeps the rule here on its own (F-09).
     local k = key ~= unit and kept[key]
     if k and GetTime() - k.at < D.SNAPSHOT_MAX_AGE then
         list = k.list

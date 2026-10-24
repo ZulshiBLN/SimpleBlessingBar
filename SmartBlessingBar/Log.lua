@@ -14,8 +14,8 @@ local loginAt, loginClock = GetTime(), time()
 ns.logStartClock = loginClock -- the report's fallback to tell this session's errors apart
 local combats = {} -- { start = clock, stop = clock or nil }, kept apart from the ring
 
--- How an entry reads in the report: seconds since login, then the text. A field of ns, so a
--- spec can make it fail.
+-- How an entry reads in the report: seconds since the addon loaded (login or /reload), then
+-- the text. A field of ns, so a spec can make it fail.
 function ns.LogFormat(e)
     return ("+%.1fs %s"):format(e.since, e.text)
 end

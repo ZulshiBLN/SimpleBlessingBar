@@ -36,7 +36,6 @@ local function ShowTooltip(b)
         GameTooltip:AddDoubleLine(L.LEFTCLICK, Target(head), 1, 1, 1)
     else
         GameTooltip:SetText(b.title())
-        -- Entries left but none to cast: every one held at combat start
         -- Nothing to cast now: every entry held at combat start, or everyone in need out of range
         local why = L.QUEUE_EMPTY
         if b.left > 0 then why = L.QUEUE_HELD elseif (b.queue and b.queue.far or 0) > 0 then why = L.QUEUE_OUT_OF_RANGE end
@@ -93,6 +92,8 @@ end
 -- global cooldown the click does nothing at all, so no player is passed by. Demo mode casts
 -- nothing and says once, on the press, what it would cast.
 blessing:SetScript("PreClick", function(_, mouseButton, down)
+    -- In combat ns.SetAttr writes nothing anyway; the test spares the read (defence in depth
+    -- at the secure boundary, code review 1.1.0 F-09)
     if mouseButton ~= "MiddleButton" or InCombatLockdown() or not db.buffRun then return end
     -- No spell from an earlier click, should the choice below fail
     SetAttr(buffRun, "spell", nil)
@@ -170,6 +171,8 @@ local function ArmBuffKey()
     for _, key in ipairs(db.order) do
         local entry = ns.BAR_BUTTONS[key]
         local b = entry[1]()
+        -- A hidden button's queue is empty already; asking its setting too keeps the key from
+        -- arming a button the player switched off, whatever its ants say (F-09)
         if db[entry[2]] and b.antsShown then
             source = b
             break

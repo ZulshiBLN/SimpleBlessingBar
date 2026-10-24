@@ -110,7 +110,6 @@ D.CLASS_ORDER = { "WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "
 -- 2026-10-19-blessing-core)
 D.DEFAULT_ORDER = { "AURA", "FURY", "BLESSING", "SALVATION" }
 
--- Where the bug report tells players to paste it
 -- Where bug reports go: the issue form with one field for the code
 -- (.github/ISSUE_TEMPLATE/bug_report.yml)
 D.BUG_REPORT_URL = "https://github.com/ZulshiBLN/SmartBlessingBar/issues/new?template=bug_report.yml"
@@ -139,7 +138,7 @@ D.REPORT_FIELDS = {
     { pattern = "^msg " },                                  -- error message, filtered
     { pattern = "^at " },                                   -- stack line, filtered
     { pattern = "^local " },                                -- locals rebuilt by allowlist
-    { pattern = "^%*%*Last actions %(seconds since login%):%*%*$" },
+    { pattern = "^%*%*Last actions %(seconds since load%):%*%*$" },
     { pattern = "^log " },                                  -- generated, allowlisted values
     { pattern = "^%*%*State:%*%*$" },
     { pattern = "^state " },                                -- generated, allowlisted values

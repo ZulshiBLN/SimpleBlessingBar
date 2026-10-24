@@ -29,23 +29,22 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 
 ### Fixed
 
-- The blessing button's tooltip says when everyone who still needs a blessing is out of
-  range, instead of "Nothing left to cast".
-
+- The blessing and Salvation buttons' tooltips say when everyone who still needs a cast is
+  out of range, instead of "Nothing left to cast".
 - The aura button moves on when another paladin runs the same aura as you. The game shows only
   one of two equal auras, so his stayed hidden and yours looked free.
-
 - A right click on the minimap button or in the AddOn menu shows the new lock state in the
   open tooltip at once, not only after the mouse left and came back.
-
 - In demo mode Buff & Run names what it would cast for other players too, not only for you:
   a rank you have not learned yet no longer counts as out of range.
-
 - After a login or `/reload` in combat the bar no longer jumps to its start place for good
   when combat ends.
-
 - Buff & Run no longer raises a Lua error when the game reports no cooldown for the chosen
   blessing, as for a rank demo mode counts as known.
+- A settings file whose version got lost keeps your aura and class priority lists; they were
+  reset to the defaults.
+- Group members' buffs, kept between reads, are checked for values the game keeps secret
+  before anything else is done with them, as the game requires in combat and instances.
 
 ### Security
 
@@ -56,6 +55,8 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
   reports are handled.
 - The release workflows give the CurseForge and Wago uploads read rights only, and no step keeps
   GitHub's access token in the checked-out repository.
+- A release ships only the addon's own files: the package check refuses any file or folder the
+  addon does not load, not only a known list of tooling.
 
 ## [1.0.0] - 2026-10-21
 
