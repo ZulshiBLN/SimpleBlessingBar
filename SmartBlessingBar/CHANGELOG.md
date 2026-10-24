@@ -41,6 +41,11 @@ This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and v
 - Buff & Run no longer raises a Lua error when the game reports no cooldown for the chosen
   blessing, as for a rank demo mode counts as known.
 
+### Security
+
+- The release workflows give the CurseForge and Wago uploads read rights only, and no step keeps
+  GitHub's access token in the checked-out repository.
+
 ## [1.0.0] - 2026-10-21
 
 ### Added
